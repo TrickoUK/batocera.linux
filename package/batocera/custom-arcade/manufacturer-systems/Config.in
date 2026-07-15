@@ -1,0 +1,364 @@
+#### Manufacturer-based system selections (custom-arcade fork) ####
+# This file is fork-only: it lives outside package/batocera/core/ specifically
+# so it never touches a file batocera upstream edits, avoiding merge
+# conflicts on sync and any risk of this content leaking into an upstream
+# contribution by accident.
+#
+# These regroup the same underlying packages selected by ARCADE_SYSTEMS/
+# HANDHELD_SYSTEMS/COMPUTER_SYSTEMS/CONSOLE_SYSTEMS in
+# package/batocera/core/batocera-system/Config.in, but organized by
+# manufacturer instead of by category, so a single option can be used to opt
+# into e.g. "all Nintendo systems" or "all Sega systems". Conditions are
+# copied verbatim from their original location so these remain valid for any
+# board, not just x86_64. None of these are selected by BATOCERA_ALL_SYSTEMS
+# or by any board defconfig yet.
+#
+# This file only gets parsed if it's `source`d from somewhere in the Kconfig
+# tree — that one-line hookup lives in
+# board/batocera/x86/local-patches/manufacturer-systems.patch (applied the
+# same way as no-nvidia.patch), not as a permanent edit to the shared
+# top-level Config.in. See USER-INSTRUCTIONS.md for the apply/revert workflow.
+
+config BR2_PACKAGE_BATOCERA_NINTENDO_SYSTEMS
+	bool "batocera.linux Nintendo systems/emulators"
+
+	# NES / Famicom
+	select BR2_PACKAGE_LIBRETRO_FCEUMM		# ALL
+	select BR2_PACKAGE_LIBRETRO_NESTOPIA		# ALL
+	select BR2_PACKAGE_LIBRETRO_MESEN		if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY	|| \
+							   BR2_PACKAGE_BATOCERA_TARGET_RK3399	   || \
+							   BR2_PACKAGE_BATOCERA_TARGET_RK3576      || \
+							   BR2_PACKAGE_BATOCERA_TARGET_RK3588	   || \
+							   BR2_PACKAGE_BATOCERA_TARGET_RK3588_SDIO || \
+							   BR2_PACKAGE_BATOCERA_TARGET_RK3588_MAINLINE    || \
+							   BR2_PACKAGE_BATOCERA_TARGET_S905GEN3	   || \
+							   BR2_PACKAGE_BATOCERA_TARGET_S922X	   || \
+							   BR2_PACKAGE_BATOCERA_TARGET_A3GEN2	   || \
+							   BR2_PACKAGE_BATOCERA_TARGET_BCM2711	   || \
+							   BR2_PACKAGE_BATOCERA_TARGET_BCM2712	   || \
+							   BR2_PACKAGE_BATOCERA_TARGET_RK3288      || \
+							   BR2_PACKAGE_BATOCERA_TARGET_QCS6490     || \
+							   BR2_PACKAGE_BATOCERA_TARGET_SM6115      || \
+							   BR2_PACKAGE_BATOCERA_TARGET_SM8250      || \
+							   BR2_PACKAGE_BATOCERA_TARGET_SM8550      || \
+							   BR2_PACKAGE_BATOCERA_TARGET_SM8750
+
+	# SNES / Super Famicom
+	select BR2_PACKAGE_LIBRETRO_SNES9X		if !BR2_PACKAGE_BATOCERA_TARGET_BCM2835
+	select BR2_PACKAGE_LIBRETRO_SNES9X_NEXT		if !BR2_PACKAGE_BATOCERA_TARGET_BCM2835
+	select BR2_PACKAGE_LIBRETRO_BSNES		if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY  || \
+							   BR2_PACKAGE_BATOCERA_TARGET_BCM2711	   || \
+							   BR2_PACKAGE_BATOCERA_TARGET_BCM2712	   || \
+							   BR2_PACKAGE_BATOCERA_TARGET_RK3576      || \
+							   BR2_PACKAGE_BATOCERA_TARGET_RK3588	   || \
+							   BR2_PACKAGE_BATOCERA_TARGET_RK3588_SDIO || \
+							   BR2_PACKAGE_BATOCERA_TARGET_RK3588_MAINLINE    || \
+							   BR2_PACKAGE_BATOCERA_TARGET_S922X	   || \
+							   BR2_PACKAGE_BATOCERA_TARGET_A3GEN2      || \
+							   BR2_PACKAGE_BATOCERA_TARGET_QCS6490     || \
+							   BR2_PACKAGE_BATOCERA_TARGET_SM6115      || \
+							   BR2_PACKAGE_BATOCERA_TARGET_SM8250      || \
+							   BR2_PACKAGE_BATOCERA_TARGET_SM8550      || \
+							   BR2_PACKAGE_BATOCERA_TARGET_SM8750
+	select BR2_PACKAGE_LIBRETRO_BSNES_HD            if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY
+	select BR2_PACKAGE_LIBRETRO_MESENS              if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY	|| \
+							   BR2_PACKAGE_BATOCERA_TARGET_S922X		|| \
+							   BR2_PACKAGE_BATOCERA_TARGET_BCM2712		|| \
+							   BR2_PACKAGE_BATOCERA_TARGET_RK3576       || \
+							   BR2_PACKAGE_BATOCERA_TARGET_RK3588		|| \
+							   BR2_PACKAGE_BATOCERA_TARGET_RK3588_SDIO  || \
+							   BR2_PACKAGE_BATOCERA_TARGET_RK3588_MAINLINE     || \
+							   BR2_PACKAGE_BATOCERA_TARGET_RK3399		|| \
+							   BR2_PACKAGE_BATOCERA_TARGET_A3GEN2       || \
+							   BR2_PACKAGE_BATOCERA_TARGET_QCS6490      || \
+							   BR2_PACKAGE_BATOCERA_TARGET_SM6115       || \
+							   BR2_PACKAGE_BATOCERA_TARGET_SM8250       || \
+							   BR2_PACKAGE_BATOCERA_TARGET_SM8550       || \
+							   BR2_PACKAGE_BATOCERA_TARGET_SM8750
+
+	# Nintendo 64
+	select BR2_PACKAGE_BATOCERA_MUPEN64		if !BR2_PACKAGE_BATOCERA_TARGET_BCM2835
+	select BR2_PACKAGE_LIBRETRO_MUPEN64PLUS_NEXT	if !BR2_riscv && !BR2_PACKAGE_BATOCERA_TARGET_BCM2835 && !BR2_PACKAGE_BATOCERA_TARGET_H3 && !BR2_PACKAGE_BATOCERA_TARGET_H5
+	select BR2_PACKAGE_LIBRETRO_PARALLEL_N64	 if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY	 || \
+													BR2_PACKAGE_BATOCERA_TARGET_RK3399		 || \
+													BR2_PACKAGE_BATOCERA_TARGET_RK3288	 	 || \
+													BR2_PACKAGE_BATOCERA_TARGET_RK3128		 || \
+													BR2_PACKAGE_BATOCERA_TARGET_S905GEN2	 || \
+													BR2_PACKAGE_BATOCERA_TARGET_S905GEN3	 || \
+													BR2_PACKAGE_BATOCERA_TARGET_RK3576		 || \
+													BR2_PACKAGE_BATOCERA_TARGET_RK3588		 || \
+													BR2_PACKAGE_BATOCERA_TARGET_RK3588_SDIO  || \
+													BR2_PACKAGE_BATOCERA_TARGET_RK3588_MAINLINE     || \
+													BR2_PACKAGE_BATOCERA_TARGET_S922X		 || \
+													BR2_PACKAGE_BATOCERA_TARGET_A3GEN2		 || \
+													BR2_PACKAGE_BATOCERA_TARGET_BCM2712      || \
+													BR2_PACKAGE_BATOCERA_TARGET_SM6115		 || \
+													BR2_PACKAGE_BATOCERA_TARGET_SM8250		 || \
+													BR2_PACKAGE_BATOCERA_TARGET_SM8550		 || \
+													BR2_PACKAGE_BATOCERA_TARGET_SM8750
+
+	# GameCube / Wii / Triforce
+	select BR2_PACKAGE_DOLPHIN_EMU			if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY || \
+						   BR2_PACKAGE_BATOCERA_TARGET_BCM2712    || \
+						   BR2_PACKAGE_BATOCERA_TARGET_QCS6490    || \
+						   BR2_PACKAGE_BATOCERA_TARGET_SM6115     || \
+						   BR2_PACKAGE_BATOCERA_TARGET_SM8250     || \
+						   BR2_PACKAGE_BATOCERA_TARGET_SM8550     || \
+						   BR2_PACKAGE_BATOCERA_TARGET_SM8750     || \
+						   BR2_PACKAGE_BATOCERA_TARGET_RK3588     || \
+						   BR2_PACKAGE_BATOCERA_TARGET_RK3588_SDIO || \
+						   BR2_PACKAGE_BATOCERA_TARGET_RK3588_MAINLINE
+	select BR2_PACKAGE_LIBRETRO_DOLPHIN		if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY  || \
+			             					   BR2_PACKAGE_BATOCERA_TARGET_BCM2712     || \
+				                 			   BR2_PACKAGE_BATOCERA_TARGET_S922X	   || \
+							                   BR2_PACKAGE_BATOCERA_TARGET_A3GEN2	   || \
+							                   BR2_PACKAGE_BATOCERA_TARGET_RK3588      || \
+							                   BR2_PACKAGE_BATOCERA_TARGET_RK3588_SDIO || \
+							                   BR2_PACKAGE_BATOCERA_TARGET_RK3588_MAINLINE    || \
+							                   BR2_PACKAGE_BATOCERA_TARGET_QCS6490     || \
+							                   BR2_PACKAGE_BATOCERA_TARGET_SM6115      || \
+							                   BR2_PACKAGE_BATOCERA_TARGET_SM8250      || \
+							                   BR2_PACKAGE_BATOCERA_TARGET_SM8550      || \
+							                   BR2_PACKAGE_BATOCERA_TARGET_SM8750
+
+	# Wii U
+	select BR2_PACKAGE_CEMU				if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY || \
+						   BR2_PACKAGE_BATOCERA_TARGET_SM8250     || \
+						   BR2_PACKAGE_BATOCERA_TARGET_SM8550     || \
+						   BR2_PACKAGE_BATOCERA_TARGET_SM8750
+
+	# Game Boy / Game Boy Color
+	select BR2_PACKAGE_LIBRETRO_GAMBATTE		# ALL
+	select BR2_PACKAGE_LIBRETRO_TGBDUAL		# ALL
+
+	# Game Boy Advance
+	select BR2_PACKAGE_LIBRETRO_MGBA		# ALL
+	select BR2_PACKAGE_LIBRETRO_VBA_M		if !BR2_PACKAGE_BATOCERA_TARGET_BCM2835 && !BR2_PACKAGE_BATOCERA_TARGET_H3
+	select BR2_PACKAGE_NANOBOYADVANCE		if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY
+
+	# Nintendo DS
+	select BR2_PACKAGE_LIBRETRO_DESMUME		  if BR2_PACKAGE_BATOCERA_TARGET_X86_ANY
+	select BR2_PACKAGE_LIBRETRO_MELONDS		  if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY || (BR2_aarch64 && BR2_PACKAGE_BATOCERA_GLES3)
+	select BR2_PACKAGE_LIBRETRO_MELONDS_DS		  if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY || BR2_PACKAGE_BATOCERA_XWAYLAND
+	select BR2_PACKAGE_MELONDS    if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY || \
+								     BR2_PACKAGE_BATOCERA_TARGET_BCM2712    || \
+								     BR2_PACKAGE_BATOCERA_TARGET_QCS6490    || \
+									 BR2_PACKAGE_BATOCERA_TARGET_SM6115     || \
+								     BR2_PACKAGE_BATOCERA_TARGET_SM8250     || \
+								     BR2_PACKAGE_BATOCERA_TARGET_SM8550	    || \
+									 BR2_PACKAGE_BATOCERA_TARGET_SM8750	    || \
+									 BR2_PACKAGE_BATOCERA_TARGET_RK3568     || \
+									 BR2_PACKAGE_BATOCERA_TARGET_RK3576     || \
+								     BR2_PACKAGE_BATOCERA_TARGET_RK3588     || \
+								     BR2_PACKAGE_BATOCERA_TARGET_RK3588_SDIO || \
+								     BR2_PACKAGE_BATOCERA_TARGET_RK3588_MAINLINE
+
+	# 3DS
+	select BR2_PACKAGE_AZAHAR    if BR2_PACKAGE_BATOCERA_TARGET_X86_ANY	|| \
+	                                BR2_PACKAGE_BATOCERA_TARGET_QCS6490 || \
+	                                BR2_PACKAGE_BATOCERA_TARGET_SM6115	|| \
+									BR2_PACKAGE_BATOCERA_TARGET_SM8250	|| \
+									BR2_PACKAGE_BATOCERA_TARGET_SM8550	|| \
+									BR2_PACKAGE_BATOCERA_TARGET_SM8750
+	select BR2_PACKAGE_LIBRETRO_AZAHAR    if BR2_PACKAGE_BATOCERA_TARGET_X86_ANY || \
+	                                         BR2_PACKAGE_BATOCERA_TARGET_QCS6490 || \
+											 BR2_PACKAGE_BATOCERA_TARGET_SM6115	 || \
+											 BR2_PACKAGE_BATOCERA_TARGET_SM8250	 || \
+											 BR2_PACKAGE_BATOCERA_TARGET_SM8550	 || \
+											 BR2_PACKAGE_BATOCERA_TARGET_SM8750
+
+
+	help
+	  Nintendo systems/emulators (this fork's manufacturer-scoped grouping)
+
+config BR2_PACKAGE_BATOCERA_SEGA_SYSTEMS
+	bool "batocera.linux Sega systems/emulators"
+
+	# Master System / Game Gear / Genesis-Megadrive / SegaCD-MegaCD / 32X
+	select BR2_PACKAGE_LIBRETRO_PICODRIVE		          # ALL
+	select BR2_PACKAGE_LIBRETRO_GENESISPLUSGX	          # ALL
+	select BR2_PACKAGE_LIBRETRO_GENESISPLUSGX_EXPANDED    # ALL
+	select BR2_PACKAGE_LIBRETRO_GENESISPLUSGX_WIDE	      if BR2_PACKAGE_BATOCERA_TARGET_X86_ANY
+	select BR2_PACKAGE_LIBRETRO_BLASTEM		              if BR2_PACKAGE_BATOCERA_TARGET_X86_ANY
+	select BR2_PACKAGE_LIBRETRO_SMSPLUS_GX		          # ALL
+	select BR2_PACKAGE_LIBRETRO_GEARSYSTEM		          # ALL
+
+	# Saturn
+	select BR2_PACKAGE_LIBRETRO_BEETLE_SATURN	if BR2_PACKAGE_BATOCERA_TARGET_X86_ANY     || \
+						                               BR2_PACKAGE_BATOCERA_TARGET_BCM2712     || \
+												   BR2_PACKAGE_BATOCERA_TARGET_RK3576	   || \
+												   BR2_PACKAGE_BATOCERA_TARGET_RK3588      || \
+												   BR2_PACKAGE_BATOCERA_TARGET_RK3588_SDIO || \
+												   BR2_PACKAGE_BATOCERA_TARGET_RK3588_MAINLINE || \
+												   BR2_PACKAGE_BATOCERA_TARGET_QCS6490     || \
+												   BR2_PACKAGE_BATOCERA_TARGET_SM6115      || \
+												   BR2_PACKAGE_BATOCERA_TARGET_SM8250      || \
+												   BR2_PACKAGE_BATOCERA_TARGET_SM8550      || \
+												   BR2_PACKAGE_BATOCERA_TARGET_SM8750
+	select BR2_PACKAGE_YMIR    if BR2_PACKAGE_BATOCERA_TARGET_X86_ANY     || \
+								  BR2_PACKAGE_BATOCERA_TARGET_BCM2712     || \
+								  BR2_PACKAGE_BATOCERA_TARGET_RK3576	  || \
+								  BR2_PACKAGE_BATOCERA_TARGET_RK3588      || \
+								  BR2_PACKAGE_BATOCERA_TARGET_RK3588_SDIO || \
+								  BR2_PACKAGE_BATOCERA_TARGET_RK3588_MAINLINE || \
+								  BR2_PACKAGE_BATOCERA_TARGET_QCS6490     || \
+								  BR2_PACKAGE_BATOCERA_TARGET_SM6115      || \
+								  BR2_PACKAGE_BATOCERA_TARGET_SM8250      || \
+								  BR2_PACKAGE_BATOCERA_TARGET_SM8550      || \
+								  BR2_PACKAGE_BATOCERA_TARGET_SM8750
+	select BR2_PACKAGE_LIBRETRO_KRONOS		if BR2_PACKAGE_BATOCERA_TARGET_X86_ANY
+	select BR2_PACKAGE_LIBRETRO_YABASANSHIRO	if !BR2_riscv && \
+							(BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY || BR2_PACKAGE_BATOCERA_GLES3)
+
+	# Dreamcast / Naomi / Atomiswave
+	select BR2_PACKAGE_FLYCAST		if !BR2_riscv					&& \
+						   !BR2_PACKAGE_BATOCERA_TARGET_BCM2835		&& \
+						   !BR2_PACKAGE_BATOCERA_TARGET_BCM2836		&& \
+						   !BR2_PACKAGE_BATOCERA_TARGET_BCM2837		&& \
+						   !BR2_PACKAGE_BATOCERA_TARGET_RK3326		&& \
+						   !BR2_PACKAGE_BATOCERA_TARGET_X86		&& \
+						   !BR2_PACKAGE_BATOCERA_TARGET_H3
+	select BR2_PACKAGE_LIBRETRO_FLYCAST	if !BR2_riscv					&& \
+						   !BR2_PACKAGE_BATOCERA_TARGET_BCM2835		&& \
+						   !BR2_PACKAGE_BATOCERA_TARGET_BCM2836		&& \
+						   !BR2_PACKAGE_BATOCERA_TARGET_BCM2837		&& \
+						   !BR2_PACKAGE_BATOCERA_TARGET_RK3326		&& \
+						   !BR2_PACKAGE_BATOCERA_TARGET_H3		&& \
+						   !BR2_PACKAGE_BATOCERA_TARGET_H5		&& \
+						   !BR2_PACKAGE_BATOCERA_TARGET_X86
+	select BR2_PACKAGE_REDREAM		if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY || \
+	                                   BR2_PACKAGE_BATOCERA_XWAYLAND
+
+	# Standalone Sega Model 2 emulator
+	select BR2_PACKAGE_MODEL2EMU		if BR2_PACKAGE_BATOCERA_WINE
+
+	# Standalone Sega Model 3 emulator
+	select BR2_PACKAGE_SUPERMODEL		    if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY || \
+	                                           BR2_PACKAGE_BATOCERA_TARGET_SM6115     || \
+											   BR2_PACKAGE_BATOCERA_TARGET_SM8250     || \
+											   BR2_PACKAGE_BATOCERA_TARGET_SM8550     || \
+											   BR2_PACKAGE_BATOCERA_TARGET_SM8750
+
+	# Demul emulator - multiple Sega arcade systems
+	select BR2_PACKAGE_DEMUL		if BR2_PACKAGE_BATOCERA_WINE
+
+	# Sega Lindbergh
+	select BR2_PACKAGE_LINDBERGH_LOADER    if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY
+
+	help
+	  Sega systems/emulators (this fork's manufacturer-scoped grouping)
+
+config BR2_PACKAGE_BATOCERA_SONY_SYSTEMS
+	bool "batocera.linux Sony systems/emulators"
+
+	# PSX
+	select BR2_PACKAGE_DUCKSTATION    if BR2_PACKAGE_BATOCERA_GLES3 && \
+	                                     !BR2_PACKAGE_BATOCERA_TARGET_RK3326 && \
+										 !BR2_PACKAGE_BATOCERA_TARGET_S9GEN4
+	select BR2_PACKAGE_DUCKSTATION_LEGACY		if !BR2_PACKAGE_BATOCERA_GLES3			&& \
+							   !BR2_riscv					&& \
+							   !BR2_PACKAGE_BATOCERA_TARGET_BCM2835		&& \
+							   !BR2_PACKAGE_BATOCERA_TARGET_H3		&& \
+							   !BR2_PACKAGE_BATOCERA_TARGET_RK3326		&& \
+							   !BR2_PACKAGE_BATOCERA_TARGET_RK3128
+	select BR2_PACKAGE_LIBRETRO_SWANSTATION		if !BR2_riscv					&& \
+							   !BR2_PACKAGE_BATOCERA_TARGET_X86		&& \
+							   !BR2_PACKAGE_BATOCERA_TARGET_H3		&& \
+							   !BR2_PACKAGE_BATOCERA_TARGET_BCM2835
+	select BR2_PACKAGE_LIBRETRO_PCSX		# All
+	select BR2_PACKAGE_LIBRETRO_BEETLE_PSX		if !BR2_PACKAGE_BATOCERA_TARGET_H3	&& \
+							   !BR2_PACKAGE_BATOCERA_TARGET_RK3326	&& \
+							(!BR2_PACKAGE_BATOCERA_RPI_ANY || BR2_PACKAGE_BATOCERA_TARGET_BCM2712)
+
+	# PS2
+	select BR2_PACKAGE_PCSX2			if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY || \
+	                                       BR2_PACKAGE_BATOCERA_TARGET_SM8250     || \
+	                                       BR2_PACKAGE_BATOCERA_TARGET_SM8550     || \
+										   BR2_PACKAGE_BATOCERA_TARGET_SM8750
+	select BR2_PACKAGE_LIBRETRO_PS2     if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY
+	select BR2_PACKAGE_PLAY				if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY
+	select BR2_PACKAGE_LIBRETRO_PLAY	if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY
+
+	# PS3
+	select BR2_PACKAGE_RPCS3			if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY
+
+	# PSP
+	select BR2_PACKAGE_PPSSPP			if !BR2_PACKAGE_BATOCERA_TARGET_BCM2835 && \
+								           !BR2_PACKAGE_BATOCERA_TARGET_SM8250 # causes audio corruption
+	select BR2_PACKAGE_LIBRETRO_PPSSPP		if !BR2_PACKAGE_BATOCERA_TARGET_BCM2835
+
+	# Sony PS Vita
+	select BR2_PACKAGE_VITA3K			if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY || \
+	                                       BR2_PACKAGE_BATOCERA_TARGET_SM8250     || \
+										   BR2_PACKAGE_BATOCERA_TARGET_SM8550
+
+	help
+	  Sony systems/emulators (this fork's manufacturer-scoped grouping)
+
+config BR2_PACKAGE_BATOCERA_COMMODORE_SYSTEMS
+	bool "batocera.linux Commodore systems/emulators"
+
+	# CAPS image support (IPF, used by Amiga cores)
+	select BR2_PACKAGE_LIBCAPSIMAGE		# ALL
+
+	# Commodore 64/128/VIC20/PET/Plus4/16
+	select BR2_PACKAGE_VICE			if !BR2_PACKAGE_BATOCERA_TARGET_BCM2835
+	select BR2_PACKAGE_LIBRETRO_VICE	# ALL
+
+	# Commodore Amiga
+	select BR2_PACKAGE_AMIBERRY		if !BR2_PACKAGE_BATOCERA_TARGET_BCM2835 && (!BR2_riscv || !BR2_RISCV_64) # No dynamic recompiler for riscv
+	select BR2_PACKAGE_FSUAE		if BR2_PACKAGE_BATOCERA_TARGET_X86_ANY
+	select BR2_PACKAGE_LIBRETRO_PUAE	if !BR2_PACKAGE_BATOCERA_TARGET_BCM2835 && !BR2_PACKAGE_BATOCERA_TARGET_H3
+
+	help
+	  Commodore systems/emulators (this fork's manufacturer-scoped grouping)
+
+config BR2_PACKAGE_BATOCERA_AMSTRAD_SYSTEMS
+	bool "batocera.linux Amstrad systems/emulators"
+
+	# Amstrad CPC / GX4000
+	select BR2_PACKAGE_LIBRETRO_CAP32	# ALL
+
+	help
+	  Amstrad systems/emulators (this fork's manufacturer-scoped grouping)
+
+config BR2_PACKAGE_BATOCERA_NEC_SYSTEMS
+	bool "batocera.linux NEC systems/emulators"
+
+	# PC Engine / PC Engine CD / TurboGrafx-16 / SuperGrafx
+	select BR2_PACKAGE_LIBRETRO_BEETLE_PCE		if BR2_PACKAGE_BATOCERA_TARGET_X86_ANY
+	select BR2_PACKAGE_LIBRETRO_BEETLE_PCE_FAST	# ALL
+	select BR2_PACKAGE_LIBRETRO_BEETLE_SUPERGRAFX	# ALL
+
+	help
+	  NEC systems/emulators (this fork's manufacturer-scoped grouping)
+
+config BR2_PACKAGE_BATOCERA_ATARI_SYSTEMS
+	bool "batocera.linux Atari systems/emulators"
+
+	# Atari 2600
+	select BR2_PACKAGE_LIBRETRO_STELLA		# ALL
+
+	# Atari 7800
+	select BR2_PACKAGE_LIBRETRO_PROSYSTEM		# ALL
+
+	# Atari Jaguar
+	select BR2_PACKAGE_LIBRETRO_VIRTUALJAGUAR	if BR2_PACKAGE_BATOCERA_TARGET_X86_ANY	|| \
+						   BR2_PACKAGE_BATOCERA_TARGET_BCM2712	   || \
+						   BR2_PACKAGE_BATOCERA_TARGET_S922X	   || \
+						   BR2_PACKAGE_BATOCERA_TARGET_A3GEN2	   || \
+						   BR2_PACKAGE_BATOCERA_TARGET_RK3576      || \
+						   BR2_PACKAGE_BATOCERA_TARGET_RK3588      || \
+						   BR2_PACKAGE_BATOCERA_TARGET_RK3588_SDIO || \
+						   BR2_PACKAGE_BATOCERA_TARGET_RK3588_MAINLINE    || \
+						   BR2_PACKAGE_BATOCERA_TARGET_QCS6490     || \
+						   BR2_PACKAGE_BATOCERA_TARGET_SM6115      || \
+						   BR2_PACKAGE_BATOCERA_TARGET_SM8250      || \
+						   BR2_PACKAGE_BATOCERA_TARGET_SM8550      || \
+						   BR2_PACKAGE_BATOCERA_TARGET_SM8750
+	select BR2_PACKAGE_BIGPEMU    if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY || \
+	                                 BR2_PACKAGE_BATOCERA_TARGET_SM8250     || \
+									 BR2_PACKAGE_BATOCERA_TARGET_SM8550
+
+	help
+	  Atari systems/emulators (this fork's manufacturer-scoped grouping)
