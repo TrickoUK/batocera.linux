@@ -1582,6 +1582,8 @@ systems:
           Enabled: 1
           Disabled (Default): 0
   - name: neogeo
+    exclude_extensions:
+      - neo
     custom_features:
       altlayout:
         prompt: SPECIAL CONTROL LAYOUTS

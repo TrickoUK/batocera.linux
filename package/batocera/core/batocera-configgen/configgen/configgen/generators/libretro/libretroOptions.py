@@ -2058,6 +2058,23 @@ def _fbneo_options(
         _set_from_system(coreSettings, 'fbneo-memcard-mode', system, 'fbneo-memcard-mode', default='per-game')
 
 
+# SNK Neogeo AES/MVS / Neogeo CD (Geolith)
+def _geolith_options(
+    coreSettings: UnixSettings, system: Emulator, rom: Path, guns: Guns, wheels: DeviceInfoMapping, /,
+) -> None:
+    _set_from_system(coreSettings, 'geolith_system_type', system, default='aes')
+    _set_from_system(coreSettings, 'geolith_unibios_hw', system, default='mvs')
+    _set_from_system(coreSettings, 'geolith_region', system, default='us')
+    _set_from_system(coreSettings, 'geolith_aspect', system, default='1:1')
+    _set_from_system(coreSettings, 'geolith_memcard', system, default='on')
+    _set_from_system(coreSettings, 'geolith_palette', system, default='resnet')
+    _set_from_system(coreSettings, 'geolith_sprlimit', system, default='96')
+    _set_from_system(coreSettings, 'geolith_oc', system, default='off')
+
+    if system.name == 'neogeocd':
+        _set_from_system(coreSettings, 'geolith_cd_system_type', system, default='cdz')
+
+
 # SNK Neogeo CD
 def _neocd_options(
     coreSettings: UnixSettings, system: Emulator, rom: Path, guns: Guns, wheels: DeviceInfoMapping, /,
@@ -2508,6 +2525,7 @@ _option_functions: dict[str, Callable[[UnixSettings, Emulator, Path, Guns, Devic
     '81': _81_options,
     'fuse': _fuse_options,
     'fbneo': _fbneo_options,
+    'geolith': _geolith_options,
     'neocd': _neocd_options,
     'ppsspp': _ppsspp_options,
     'mednafen_psx': _mednafen_psx_options,

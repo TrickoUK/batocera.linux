@@ -1009,19 +1009,20 @@ neogeo:
   manufacturer: SNK
   release: 1990
   hardware: console
-  extensions: [7z, zip]
+  extensions: [7z, zip, neo]
   platform:   neogeo, arcade
   emulators:
     libretro:
-      fbalpha:      { requireAnyOf: [BR2_PACKAGE_LIBRETRO_FBALPHA]        }
-      fbneo:        { requireAnyOf: [BR2_PACKAGE_LIBRETRO_FBNEO]          }
-      imame4all:    { requireAnyOf: [BR2_PACKAGE_LIBRETRO_IMAME]          }
-      mame078plus:  { requireAnyOf: [BR2_PACKAGE_LIBRETRO_MAME2003_PLUS]  }
-      mame:         { requireAnyOf: [BR2_PACKAGE_LIBRETRO_MAME]           }
+      fbalpha:      { requireAnyOf: [BR2_PACKAGE_LIBRETRO_FBALPHA],       incompatible_extensions: [neo] }
+      fbneo:        { requireAnyOf: [BR2_PACKAGE_LIBRETRO_FBNEO],         incompatible_extensions: [neo] }
+      imame4all:    { requireAnyOf: [BR2_PACKAGE_LIBRETRO_IMAME],         incompatible_extensions: [neo] }
+      mame078plus:  { requireAnyOf: [BR2_PACKAGE_LIBRETRO_MAME2003_PLUS], incompatible_extensions: [neo] }
+      mame:         { requireAnyOf: [BR2_PACKAGE_LIBRETRO_MAME],          incompatible_extensions: [neo] }
+      geolith:      { requireAnyOf: [BR2_PACKAGE_LIBRETRO_GEOLITH],       incompatible_extensions: [7z, zip] }
     mame:
-      mame:         { requireAnyOf: [BR2_PACKAGE_MAME]                    }
+      mame:         { requireAnyOf: [BR2_PACKAGE_MAME],                  incompatible_extensions: [neo] }
     fba2x:
-      fba2x:        { requireAnyOf: [BR2_PACKAGE_PIFBA]                   }
+      fba2x:        { requireAnyOf: [BR2_PACKAGE_PIFBA],                 incompatible_extensions: [neo] }
 
 neogeocd:
   name:       Neo-Geo CD
@@ -1031,7 +1032,8 @@ neogeocd:
   extensions: [cue, iso, chd]
   emulators:
     libretro:
-      neocd:  { requireAnyOf: [BR2_PACKAGE_LIBRETRO_NEOCD] }
+      neocd:    { requireAnyOf: [BR2_PACKAGE_LIBRETRO_NEOCD]    }
+      geolith:  { requireAnyOf: [BR2_PACKAGE_LIBRETRO_GEOLITH]  }
 
 colecovision:
   name:       ColecoVision

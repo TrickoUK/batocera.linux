@@ -5,4 +5,6 @@ shared_features:
   - autosave
 systems:
   - mame
-  - neogeo
+  - name: neogeo
+    exclude_extensions:
+      - neo

@@ -1525,7 +1525,9 @@ systems:
   - loopy
   - mame
   - namco22
-  - neogeo
+  - name: neogeo
+    exclude_extensions:
+      - neo
   - oricatmos
   - samcoupe
   - tvgames

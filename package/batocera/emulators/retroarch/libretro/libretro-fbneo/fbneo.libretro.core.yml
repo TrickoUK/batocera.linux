@@ -56,6 +56,8 @@ custom_features:
       Modern Fightstick Style: fightstick
 systems:
   - name: neogeo
+    exclude_extensions:
+      - neo
     custom_features:
       fbneo-neogeo-mode-switch:
         prompt: NEO GEO BIOS

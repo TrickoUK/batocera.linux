@@ -1,0 +1,73 @@
+shared_features:
+  - rewind
+  - autosave
+custom_features:
+  geolith_system_type:
+    prompt: SYSTEM TYPE
+    description: Restarts core. AES = home console, MVS = arcade, Universe BIOS = region-free/cheats.
+    choices:
+      Console (AES): aes
+      Arcade (MVS): mvs
+      Universe BIOS: uni
+  geolith_unibios_hw:
+    prompt: UNIVERSE BIOS HARDWARE
+    description: Restarts core. Hardware the Universe BIOS reports itself as when SYSTEM TYPE is set to Universe BIOS.
+    choices:
+      Console (AES): aes
+      Arcade (MVS): mvs
+  geolith_region:
+    prompt: REGION
+    description: Restarts core.
+    choices:
+      USA: us
+      Japan: jp
+      Asia: as
+      Europe: eu
+  geolith_aspect:
+    prompt: ASPECT RATIO
+    choices:
+      '1:1': '1:1'
+      '45:44 (original)': '45:44'
+      '4:3': '4:3'
+  geolith_memcard:
+    group: ADVANCED OPTIONS
+    prompt: MEMORY CARD
+    choices:
+      'Off': 'off'
+      'On': 'on'
+  geolith_palette:
+    group: ADVANCED OPTIONS
+    prompt: PALETTE
+    choices:
+      ResNet: resnet
+      Raw: raw
+  geolith_sprlimit:
+    group: ADVANCED OPTIONS
+    prompt: SPRITES-PER-LINE LIMIT (HACK)
+    description: Higher values reduce flicker but are less accurate.
+    choices:
+      Accurate: '96'
+      '192': '192'
+      '288': '288'
+      Max: '381'
+  geolith_oc:
+    group: ADVANCED OPTIONS
+    prompt: OVERCLOCK (HACK)
+    choices:
+      'Off': 'off'
+      'On': 'on'
+systems:
+  - name: neogeo
+    exclude_extensions:
+      - 7z
+      - zip
+  - name: neogeocd
+    custom_features:
+      geolith_cd_system_type:
+        prompt: CD SYSTEM TYPE
+        description: Restarts core. Selects the CD unit's BIOS type.
+        choices:
+          Front Loader: cd_front
+          Top Loader: cd_top
+          CDZ: cdz
+          CDZ (Universe BIOS): cdz_unibios
