@@ -1,0 +1,73 @@
+include batocera-board.common
+
+# Target definition
+BR2_x86_64=y
+BR2_PACKAGE_BATOCERA_TARGET_X86_64=y
+BR2_TARGET_OPTIMIZATION="-pipe -fsigned-char"
+#BR2_TARGET_GENERIC_GETTY_PORT="tty1"
+BR2_TARGET_GENERIC_GETTY_BAUDRATE_115200=y
+BR2_GLOBAL_PATCH_DIR="$(BR2_EXTERNAL_BATOCERA_PATH)/board/batocera/patches $(BR2_EXTERNAL_BATOCERA_PATH)/board/batocera/x86/patches"
+BR2_ROOTFS_OVERLAY="$(BR2_EXTERNAL_BATOCERA_PATH)/board/batocera/fsoverlay $(BR2_EXTERNAL_BATOCERA_PATH)/board/batocera/x86/fsoverlay"
+
+# Kernel
+BR2_LINUX_KERNEL=y
+BR2_LINUX_KERNEL_CUSTOM_VERSION=y
+BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE="7.1.3"
+BR2_KERNEL_HEADERS_7_1=y
+BR2_LINUX_KERNEL_PATCH="$(BR2_EXTERNAL_BATOCERA_PATH)/board/batocera/x86/linux_patches"
+BR2_LINUX_KERNEL_USE_CUSTOM_CONFIG=y
+BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE="$(BR2_EXTERNAL_BATOCERA_PATH)/board/batocera/x86/linux_x86_64-defconfig.config"
+BR2_LINUX_KERNEL_NEEDS_HOST_LIBELF=y
+
+# System
+BR2_PACKAGE_TSLIB=y
+BR2_TARGET_ROOTFS_SQUASHFS4_ZSTD=y
+BR2_PACKAGE_SQUASHFS_ZSTD=y
+BR2_PACKAGE_BATOCERA_SYSLINUX_EFI=y
+BR2_TARGET_SYSLINUX=y
+BR2_TARGET_SYSLINUX_MBR=y
+BR2_TARGET_SYSLINUX_C32="menu.c32 libutil.c32"
+BR2_PACKAGE_SDL_X11=y
+BR2_PACKAGE_EFIBOOTMGR=y
+BR2_PACKAGE_BATOCERA_SHIM_SIGNED_EFI_X64=y
+BR2_PACKAGE_BATOCERA_SHIM_SIGNED_EFI_IA32=y
+BR2_PACKAGE_BATOCERA_SHIM_SIGNED_EFI_HELPERS_IA32=y
+BR2_TARGET_SHIM=y
+
+BR2_PACKAGE_BATOCERA_SPLASH_MPV=y
+
+# required for ia32 uefi mixed mode 64 bit kernel loading
+BR2_TARGET_GRUB2=y
+BR2_TARGET_GRUB2_I386_EFI=y
+BR2_TARGET_GRUB2_BUILTIN_MODULES_EFI="boot linux ext2 fat squash4 part_msdos part_gpt normal efi_gop echo"
+
+# --- Stripped-down systems selection (this fork) ---
+# batocera-board.common turns on BR2_PACKAGE_BATOCERA_ALL_SYSTEMS=y; override
+# it here and select only the system categories/packages we actually want,
+# instead of every emulator for every platform. See AGENTS.md for the full
+# rationale and the phased plan (arcade now, PS1/PS2 next).
+BR2_PACKAGE_BATOCERA_ALL_SYSTEMS=n
+
+# RetroArch itself is normally pulled in by BATOCERA_ALL_SYSTEMS, not by the
+# category umbrellas below, so it needs to be selected explicitly.
+BR2_PACKAGE_BATOCERA_RETROARCH=y
+
+# Phase 1: arcade only (MAME, FBNeo, MAME2003-Plus, laserdisc, Model 2/3, etc.)
+BR2_PACKAGE_BATOCERA_ARCADE_SYSTEMS=y
+
+# Optional Neo Geo core: plays TerraOnion .neo files (and Neo Geo CD),
+# opt-in rather than force-selected via BATOCERA_ARCADE_SYSTEMS since it
+# needs ROMs converted to .neo, unlike FBNeo/MAME's zip/7z sets. See
+# ADD-GEOLITH.md.
+BR2_PACKAGE_LIBRETRO_GEOLITH=y
+
+# Phase 2 (not yet enabled): add PS1 + PS2 without pulling in the rest of
+# BATOCERA_CONSOLE_SYSTEMS (N64, GameCube, Xbox, etc.):
+# BR2_PACKAGE_DUCKSTATION=y
+# BR2_PACKAGE_PCSX2=y
+
+# Note: Nvidia is force-selected via a Kconfig `select` for every x86_64
+# build (package/batocera/core/batocera-system/Config.in) and cannot be
+# disabled from this defconfig alone - apply
+# board/batocera/x86/local-patches/no-nvidia.patch before generating the
+# defconfig. AMD/Intel mesa drivers are unaffected by that patch.

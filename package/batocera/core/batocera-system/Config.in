@@ -2368,7 +2368,8 @@ config BR2_PACKAGE_BATOCERA_GPU_X86
 	bool "batocera.linux GPU support for x86 platform"
 
 	# nvidia
-	select BR2_PACKAGE_BATOCERA_NVIDIA			if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY
+	# Disabled for this fork: AMD-only x86_64 build, no Nvidia drivers.
+	# select BR2_PACKAGE_BATOCERA_NVIDIA			if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY
 
 	# mesa
 	select BR2_PACKAGE_MESA3D
