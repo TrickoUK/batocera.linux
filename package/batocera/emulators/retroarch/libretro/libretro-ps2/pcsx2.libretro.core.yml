@@ -18,6 +18,13 @@ custom_features:
     choices:
       Disabled: disabled
       Enabled: enabled
+  lr_pcsx2_shared_memory_cards:
+    submenu: SYSTEM
+    prompt: SHARED MEMORY CARDS
+    description: Use per-content or shared memory cards.
+    choices:
+      Disabled: disabled
+      Enabled: enabled
   lr_pcsx2_cheats:
     submenu: SYSTEM
     prompt: CHEATS
@@ -32,8 +39,26 @@ custom_features:
     choices:
       Disabled: disabled
       Enabled: enabled
+  lr_pcsx2_use_external_gameindex:
+    submenu: SYSTEM
+    prompt: USE EXTERNAL GAME DATABASE
+    description: Load the compatibility database from the bios/pcsx2/resources folder if present, instead of the one built into the core.
+    choices:
+      Disabled: disabled
+      Enabled: enabled
+  lr_pcsx2_renderer:
+    submenu: VIDEO
+    prompt: GS RENDERER
+    description: Auto uses the system's graphics backend (OpenGL/Vulkan). paraLLEl-GS is a modern hardware renderer with advanced upscaling options. Software renderers are the most accurate but slow.
+    choices:
+      Auto: Auto
+      OpenGL: OpenGL
+      Vulkan: Vulkan
+      paraLLEl-GS: paraLLEl-GS
+      Software (HW): Software (HW)
+      Software (SW): Software (SW)
   lr_pcsx2_resolution:
-    submenu: GRAPHICS
+    submenu: VIDEO
     prompt: RENDERING RESOLUTION
     description: Enhancement. Increase the rendering resolution. Makes 3D objects clearer.
     choices:
@@ -54,7 +79,7 @@ custom_features:
       15x Native (~6720p): 15x Native (~6720p)
       16x Native (~7168p): 16x Native (~7168p)
   lr_pcsx2_texture_filtering:
-    submenu: GRAPHICS
+    submenu: VIDEO
     prompt: TEXTURE FILTERING
     description: Enhancement. Smooth/upscale textures on 3D objects.
     choices:
@@ -63,7 +88,7 @@ custom_features:
       Bilinear (PS2): Bilinear (PS2)
       Bilinear (Forced excluding sprite): Bilinear (Forced excluding sprite)
   lr_pcsx2_trilinear_filtering:
-    submenu: GRAPHICS
+    submenu: VIDEO
     prompt: TRILINEAR FILTERING
     description: Control the texture's trilinear filtering of the emulation.
     choices:
@@ -71,7 +96,7 @@ custom_features:
       Trilinear (PS2): Trilinear (PS2)
       Trilinear (Forced): Trilinear (Forced)
   lr_pcsx2_anisotropic:
-    submenu: GRAPHICS
+    submenu: VIDEO
     prompt: ANISOTROPIC FILTERING
     description: Improves clarity of distant textures.
     choices:
@@ -81,7 +106,7 @@ custom_features:
       8x: 8x
       16x: 16x
   lr_pcsx2_dithering:
-    submenu: GRAPHICS
+    submenu: VIDEO
     prompt: DITHERING
     description: Reduces banding between colours and improves the preceived colour depth.
     choices:
@@ -90,7 +115,7 @@ custom_features:
       Unscaled: Unscaled
       Force 32bit: Force 32bit
   lr_pcsx2_blending:
-    submenu: GRAPHICS
+    submenu: VIDEO
     prompt: BLENDING ACCURACY
     description: The higher the setting, the more blending is emulated in the shader accurately, and the higher the speed penalty will be.
     choices:
@@ -100,5 +125,153 @@ custom_features:
       High: High
       Full: Full
       Maximum: Maximum
+  lr_pcsx2_pgs_ssaa:
+    submenu: VIDEO
+    prompt: PARALLEL SUPER SAMPLING
+    description: Apply supersampled anti-aliasing (SSAA), only used by the paraLLEl-GS renderer. High-res scanout requires at least '4x SSAA (ordered)' or higher. Native disables super sampling.
+    choices:
+      Native: Native
+      2x SSAA: 2x SSAA
+      4x SSAA (sparse grid): 4x SSAA (sparse grid)
+      4x SSAA (ordered, can high-res): 4x SSAA (ordered, can high-res)
+      8x SSAA (can high-res): 8x SSAA (can high-res)
+      16x SSAA (can high-res): 16x SSAA (can high-res)
+  lr_pcsx2_pgs_high_res_scanout:
+    submenu: VIDEO
+    prompt: HIGH-RES SCANOUT (EXPERIMENTAL)
+    description: Allows upscaling with paraLLEl-GS. Doesn't work with every game. Requires Parallel Super Sampling set to at least 4x SSAA (ordered) or higher.
+    choices:
+      Disabled: disabled
+      Enabled: enabled
+  lr_pcsx2_pgs_ss_tex:
+    submenu: VIDEO
+    prompt: SSAA TEXTURE (EXPERIMENTAL)
+    description: Feedback higher resolution textures. May help high-res scanout image quality. Highly experimental and may cause rendering glitches.
+    choices:
+      Disabled: disabled
+      Enabled: enabled
+  lr_pcsx2_pgs_deblur:
+    submenu: VIDEO
+    prompt: SHARP BACKBUFFER (EXPERIMENTAL)
+    description: Attempts to work around games that add extra blit passes before scanning out. May lead to better image quality in certain games.
+    choices:
+      Disabled: disabled
+      Enabled: enabled
+  lr_pcsx2_pgs_disable_mipmaps:
+    submenu: VIDEO
+    prompt: FORCE TEXTURE LOD0
+    description: Bypasses mipmapping and always uses texture LOD0 for better image quality. Disable for traditional hardware mipmapping. Only a small handful of games have issues with this enabled.
+    choices:
+      Disabled: disabled
+      Enabled: enabled
+  lr_pcsx2_deinterlace_mode:
+    submenu: VIDEO
+    prompt: DEINTERLACING
+    description: Select a deinterlacing method. Use Automatic if unsure what to pick.
+    choices:
+      Automatic: Automatic
+      'OFF': Off
+      Weave TFF: Weave TFF
+      Weave BFF: Weave BFF
+      Bob TFF: Bob TFF
+      Bob BFF: Bob BFF
+      Blend TFF: Blend TFF
+      Blend BFF: Blend BFF
+      Adaptive TFF: Adaptive TFF
+      Adaptive BFF: Adaptive BFF
+  lr_pcsx2_hw_download_mode:
+    submenu: VIDEO
+    prompt: HARDWARE DOWNLOAD MODE
+    description: Controls how the GS reads rendered data back to the CPU (e.g. memory-card save images). Accurate is safest but can hurt performance, especially with paraLLEl-GS.
+    choices:
+      Accurate: Accurate
+      Disable Readbacks: Disable Readbacks
+      Unsynchronized: Unsynchronized
+      Disabled: Disabled
+  lr_pcsx2_nointerlacing_hint:
+    submenu: VIDEO
+    prompt: NO INTERLACING HINT
+    description: Looks in the internal database for a patch to turn the image into a non-interlaced/progressive-scan signal. Image will be more stable and Deinterlacing can be turned off.
+    choices:
+      Disabled: disabled
+      Enabled: enabled
+  lr_pcsx2_pcrtc_antiblur:
+    submenu: VIDEO
+    prompt: PCRTC ANTI-BLUR
+    description: Disable for the most accurate output image. Enabling attempts to deblur the image. Most noticeable on the software renderer and paraLLEl-GS.
+    choices:
+      Disabled: disabled
+      Enabled: enabled
+  lr_pcsx2_pcrtc_screen_offsets:
+    submenu: VIDEO
+    prompt: PCRTC SCREEN OFFSETS
+    description: null
+    choices:
+      Disabled: disabled
+      Enabled: enabled
+  lr_pcsx2_disable_interlace_offset:
+    submenu: VIDEO
+    prompt: DISABLE INTERLACE OFFSET
+    description: null
+    choices:
+      Disabled: disabled
+      Enabled: enabled
+  lr_pcsx2_auto_flush_software:
+    submenu: VIDEO
+    prompt: AUTO FLUSH (SOFTWARE)
+    description: null
+    choices:
+      Disabled: disabled
+      Enabled: enabled
+  lr_pcsx2_ee_cycle_rate:
+    submenu: EMULATION
+    prompt: EE CYCLE RATE
+    description: Underclock or overclock the PS2's Emotion Engine. Underclocking can speed up many games that are CPU limited, at the cost of graphical errors or slowdown. Overclocking may help games that are otherwise too demanding to run.
+    choices:
+      50% (Underclock): 50% (Underclock)
+      60% (Underclock): 60% (Underclock)
+      75% (Underclock): 75% (Underclock)
+      100% (Normal Speed): 100% (Normal Speed)
+      130% (Overclock): 130% (Overclock)
+      180% (Overclock): 180% (Overclock)
+      300% (Overclock): 300% (Overclock)
+  lr_pcsx2_ee_cycle_skip:
+    submenu: EMULATION
+    prompt: EE CYCLE SKIPPING
+    description: Skips cycles on the Emotion Engine, reducing accuracy but speeding up some games. Can cause graphical errors, sound issues, and instability in many games.
+    choices:
+      Disabled: disabled
+      Mild Underclock: Mild Underclock
+      Moderate Underclock: Moderate Underclock
+      Maximum Underclock: Maximum Underclock
+  lr_pcsx2_game_enhancements_hint:
+    submenu: EMULATION
+    prompt: GAME ENHANCEMENTS HINT
+    description: Applies game-specific enhancements if patches for the game can be found inside the internal database. Examples include level of detail enhancements, better draw distance, ability to skip FMVs, etc.
+    choices:
+      Disabled: disabled
+      Enabled: enabled
+  lr_pcsx2_uncapped_framerate_hint:
+    submenu: EMULATION
+    prompt: UNCAPPED FRAMERATE HINT
+    description: Uncaps the framerate if a patch for the game can be found inside the internal database. Can turn a 30fps game into 60fps locked, or stabilize the framerate. You may need to increase the EE Cycle Rate in combination with this for a stable locked framerate.
+    choices:
+      Disabled: disabled
+      Enabled: enabled
+      60fps PAL-to-NTSC: 60fps PAL-to-NTSC
+  lr_pcsx2_analog_mode1:
+    submenu: CONTROLLERS
+    prompt: PORT 1 - START IN ANALOG MODE
+    description: Start the controller in analog mode instead of digital. Needed by some games (e.g. Ridge Racer V) that otherwise expect the ANALOG button to be pressed.
+    choices:
+      Disabled: disabled
+      Enabled: enabled
+  lr_pcsx2_analog_mode2:
+    submenu: CONTROLLERS
+    prompt: PORT 2 - START IN ANALOG MODE
+    description: Start the controller in analog mode instead of digital. Needed by some games (e.g. Ridge Racer V) that otherwise expect the ANALOG button to be pressed.
+    choices:
+      Disabled: disabled
+      Enabled: enabled
 systems:
   - name: ps2

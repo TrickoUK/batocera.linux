@@ -2197,16 +2197,20 @@ def _pcsx2_options(
     _set_from_system(coreSettings, 'pcsx2_fastboot', system, 'lr_pcsx2_fast_boot', default='disabled')
     # Fast CD/DVD Access
     _set_from_system(coreSettings, 'pcsx2_fastcdvd', system, 'lr_pcsx2_fast_cdvd', default='disabled')
+    # Shared Memory Cards
+    _set_from_system(coreSettings, 'pcsx2_shared_memory_cards', system, 'lr_pcsx2_shared_memory_cards', default='disabled')
     # Enable Cheats
-    _set_from_system(coreSettings, 'pcsx2_enable_cheats', system, 'lr_pcsx2_fast_cheats', default='disabled')
+    _set_from_system(coreSettings, 'pcsx2_enable_cheats', system, 'lr_pcsx2_cheats', default='disabled')
     # Language Unlock
     _set_from_system(coreSettings, 'pcsx2_hint_language_unlock', system, 'lr_pcsx2_language_unlock', default='disabled')
-    # Graphics API
-    gfxbackend = system.config.get("gfxbackend")
-    if gfxbackend == "vulkan":
-        _set(coreSettings, 'pcsx2_renderer', 'Vulkan')
-    else:
-        _set(coreSettings, 'pcsx2_renderer', 'OpenGL')
+    # Use External Game Database
+    _set_from_system(coreSettings, 'pcsx2_use_external_gameindex', system, 'lr_pcsx2_use_external_gameindex', default='disabled')
+    # Graphics API / GS Renderer
+    renderer = system.config.get('lr_pcsx2_renderer', 'Auto')
+    if renderer == 'Auto':
+        gfxbackend = system.config.get("gfxbackend")
+        renderer = 'Vulkan' if gfxbackend == 'vulkan' else 'OpenGL'
+    _set(coreSettings, 'pcsx2_renderer', renderer)
     # Render resolution
     _set_from_system(coreSettings, 'pcsx2_upscale_multiplier', system, 'lr_pcsx2_resolution', default='1x Native (PS2)')
     # Texture Filtering
@@ -2219,6 +2223,41 @@ def _pcsx2_options(
     _set_from_system(coreSettings, 'pcsx2_dithering', system, 'lr_pcsx2_dithering', default='Unscaled')
     # Blending Accuracy
     _set_from_system(coreSettings, 'pcsx2_blending_accuracy', system, 'lr_pcsx2_blending', default='Basic')
+    # paraLLEl-GS: Super Sampling
+    _set_from_system(coreSettings, 'pcsx2_pgs_ssaa', system, 'lr_pcsx2_pgs_ssaa', default='Native')
+    # paraLLEl-GS: High-res Scanout
+    _set_from_system(coreSettings, 'pcsx2_pgs_high_res_scanout', system, 'lr_pcsx2_pgs_high_res_scanout', default='disabled')
+    # paraLLEl-GS: SSAA Texture
+    _set_from_system(coreSettings, 'pcsx2_pgs_ss_tex', system, 'lr_pcsx2_pgs_ss_tex', default='disabled')
+    # paraLLEl-GS: Sharp Backbuffer
+    _set_from_system(coreSettings, 'pcsx2_pgs_deblur', system, 'lr_pcsx2_pgs_deblur', default='disabled')
+    # paraLLEl-GS: Force Texture LOD0
+    _set_from_system(coreSettings, 'pcsx2_pgs_disable_mipmaps', system, 'lr_pcsx2_pgs_disable_mipmaps', default='disabled')
+    # Deinterlacing
+    _set_from_system(coreSettings, 'pcsx2_deinterlace_mode', system, 'lr_pcsx2_deinterlace_mode', default='Automatic')
+    # Hardware Download Mode
+    _set_from_system(coreSettings, 'pcsx2_hw_download_mode', system, 'lr_pcsx2_hw_download_mode', default='Accurate')
+    # No Interlacing hint
+    _set_from_system(coreSettings, 'pcsx2_nointerlacing_hint', system, 'lr_pcsx2_nointerlacing_hint', default='enabled')
+    # PCRTC Anti-Blur
+    _set_from_system(coreSettings, 'pcsx2_pcrtc_antiblur', system, 'lr_pcsx2_pcrtc_antiblur', default='enabled')
+    # PCRTC Screen Offsets
+    _set_from_system(coreSettings, 'pcsx2_pcrtc_screen_offsets', system, 'lr_pcsx2_pcrtc_screen_offsets', default='disabled')
+    # Disable Interlace Offset
+    _set_from_system(coreSettings, 'pcsx2_disable_interlace_offset', system, 'lr_pcsx2_disable_interlace_offset', default='disabled')
+    # Auto Flush (Software)
+    _set_from_system(coreSettings, 'pcsx2_auto_flush_software', system, 'lr_pcsx2_auto_flush_software', default='enabled')
+    # EE Cycle Rate
+    _set_from_system(coreSettings, 'pcsx2_ee_cycle_rate', system, 'lr_pcsx2_ee_cycle_rate', default='100% (Normal Speed)')
+    # EE Cycle Skipping
+    _set_from_system(coreSettings, 'pcsx2_ee_cycle_skip', system, 'lr_pcsx2_ee_cycle_skip', default='disabled')
+    # Game Enhancements hint
+    _set_from_system(coreSettings, 'pcsx2_game_enhancements_hint', system, 'lr_pcsx2_game_enhancements_hint', default='disabled')
+    # Uncapped Framerate hint
+    _set_from_system(coreSettings, 'pcsx2_uncapped_framerate_hint', system, 'lr_pcsx2_uncapped_framerate_hint', default='disabled')
+    # Start in Analog Mode (per port)
+    _set_from_system(coreSettings, 'pcsx2_analog_mode1', system, 'lr_pcsx2_analog_mode1', default='disabled')
+    _set_from_system(coreSettings, 'pcsx2_analog_mode2', system, 'lr_pcsx2_analog_mode2', default='disabled')
     # Widescreen hint
     widescreenhint = system.config.get("ratio")
     if widescreenhint == "16/9" or widescreenhint == "full":

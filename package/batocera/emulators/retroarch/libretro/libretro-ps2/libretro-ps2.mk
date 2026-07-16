@@ -3,8 +3,8 @@
 # libretro-ps2
 #
 ################################################################################
-# Version: Commits on May 14, 2026
-LIBRETRO_PS2_VERSION = 285abf462a0662b53168d11cbbe1fbd7fe11d179
+# Version: Commits on June 29, 2026
+LIBRETRO_PS2_VERSION = b03969a333f38de21f866c2a10da4300d170364d
 LIBRETRO_PS2_SITE = https://github.com/libretro/ps2.git
 LIBRETRO_PS2_SITE_METHOD = git
 LIBRETRO_PS2_GIT_SUBMODULES = YES
@@ -19,6 +19,12 @@ LIBRETRO_PS2_CONF_OPTS += -DLIBRETRO=ON
 LIBRETRO_PS2_CONF_OPTS += -DBUILD_REGRESS=OFF
 LIBRETRO_PS2_CONF_OPTS += -DBUILD_TOOLS=OFF
 LIBRETRO_PS2_CONF_OPTS += -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+# Multi-ISA runtime SIMD dispatch links per-tier (sse4/avx/avx2) static libs via
+# CMake's $<LINK_LIBRARY:WHOLE_ARCHIVE,...>, which the Unix Makefiles generator
+# does not support for the CXX link language (fails the CMake generate step
+# regardless of CMake version). We target a single known CPU baseline, so keep
+# the old single-build path instead of upstream's new default.
+LIBRETRO_PS2_CONF_OPTS += -DDISABLE_ADVANCE_SIMD=OFF
 
 ifeq ($(BR2_PACKAGE_HAS_LIBGL),y)
     LIBRETRO_PS2_CONF_OPTS += -DUSE_OPENGL=ON
