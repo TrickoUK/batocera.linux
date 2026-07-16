@@ -11,6 +11,17 @@ technical reference for CLI sessions). **Whenever you work out something
 useful for the user to know or learn from, add it to
 `USER-INSTRUCTIONS.md`** in addition to keeping this file current.
 
+There is also a `PROJECT-OVERVIEW.md` at the repo root — a generic,
+fork-agnostic knowledge base about batocera.linux/Buildroot mechanics
+(directory layout, the config/build pipeline, systems-selection Kconfig
+hierarchy, build gotchas), written in neutral wiki-article voice with
+nothing fork-specific in it, intended as a useful contribution toward the
+project's actual wiki. **When something learned is generic Buildroot/batocera
+mechanics that would apply to any checkout or build target — not a
+decision or incident specific to this fork — add it to
+`PROJECT-OVERVIEW.md` instead of (or in addition to, generalized)
+`USER-INSTRUCTIONS.md`.**
+
 ## What batocera.linux is
 
 A Buildroot-based Linux distro that boots into EmulationStation (ES-DE
@@ -109,6 +120,35 @@ against the container's system Perl, so no broad host-clean is needed; fix is
 `make <target>-build CMD="<pkg>-dirclean <pkg>"` targeted at whichever
 package errors. Full incident in `USER-INSTRUCTIONS.md`.
 
+Same class of problem, different trigger, hit again on `batocera-configgen`
+(2026-07-14, full trace in `USER-INSTRUCTIONS.md`): it builds via
+`BATOCERA_CONFIGGEN_OVERRIDE_SRCDIR` (plain rsync from
+`package/batocera/core/batocera-configgen/configgen`), and that rsync step
+is just another stamp-gated Buildroot target
+(`buildroot/package/pkg-generic.mk`, `.stamp_rsynced`) — editing the Python
+source there does **not** invalidate it. A configgen fix (new `_geolith_options()`
+function) silently missed two consecutive rebuilds because of this;
+confirmed by comparing `.stamp_rsynced`'s timestamp against the fix
+commit's timestamp, and finally by `unsquashfs`-ing the actual
+`output/<target>/images/rootfs.squashfs` and grepping the installed `.py`
+directly. Same fix: `make <target>-build CMD="batocera-configgen-dirclean
+batocera-configgen" BATCH_MODE=1`, then a normal `-build`. **Any**
+`OVERRIDE_SRCDIR`-built package in this tree has this same gotcha, not just
+these two — if a source edit doesn't seem to take effect, check that
+package's stamp timestamps before assuming the code is wrong.
+
+Don't trust `/usr/share/batocera/batocera.version` as a build-freshness
+signal for a specific change. It's written by `batocera-system`'s own
+install step (`batocera-system.mk:104-111`, embeds `git rev-parse --short
+HEAD` at the time *that* package last (re)installed) — itself just another
+independently-stamped package with no dependency edge onto whatever you
+actually changed, so it can lag behind (or race ahead of) the real content
+of any other package. To verify a specific fix actually landed, grep the
+installed file under `output/<target>/target/...` directly, or better,
+extract it straight from `output/<target>/images/rootfs.squashfs`
+(`unsquashfs -d <dir> -f rootfs.squashfs <path-inside-image>`) — that's the
+only artifact that's actually flashed.
+
 Speed levers: `PARALLEL_BUILD=y` (+ `MAKE_JLEVEL`/`MAKE_LLEVEL`, default
 `nproc`) adds `BR2_PER_PACKAGE_DIRECTORIES` and `-j`; ccache is **on by
 default** for every board (`BR2_CCACHE=y` in `configs/batocera-board.common`)
@@ -132,6 +172,45 @@ umbrellas — `BATOCERA_ARCADE_SYSTEMS`, `BATOCERA_CONSOLE_SYSTEMS`,
 console/PSX block ~line 1416). `BR2_PACKAGE_BATOCERA_RETROARCH` is selected
 directly by `ALL_SYSTEMS`, **not** by the category umbrellas — a trimmed
 config that skips `ALL_SYSTEMS` must select it explicitly.
+
+**Manufacturer-scoped umbrellas (added 2026-07-15, enabled in the arcade
+board as of 2026-07-15):** seven parallel options —
+`BATOCERA_NINTENDO_SYSTEMS`, `BATOCERA_SEGA_SYSTEMS`, `BATOCERA_SONY_SYSTEMS`,
+`BATOCERA_COMMODORE_SYSTEMS`, `BATOCERA_AMSTRAD_SYSTEMS`,
+`BATOCERA_NEC_SYSTEMS`, `BATOCERA_ATARI_SYSTEMS` — `select` the same
+underlying packages as the category umbrellas above, just regrouped by
+manufacturer instead of by category (e.g. `NINTENDO_SYSTEMS` pulls in
+NES/SNES/N64/GameCube-Wii/WiiU *and* GB/GBA/DS/3DS in one option, spanning
+what would otherwise be split across `CONSOLE_SYSTEMS` and
+`HANDHELD_SYSTEMS`). Each `select` line was copied verbatim including its
+original condition, so these stay valid for any board, not just x86_64.
+
+All 7 are now `=y` in `configs/batocera-x86_64-arcade.board`, replacing what
+used to be the hand-picked "Phase 2a: PS1" lines there (now redundant —
+`SONY_SYSTEMS` covers PS1 plus PS2/PS3/PSP/Vita). Not selected:
+`BR2_PACKAGE_BATOCERA_CORES_STILL_COMMERCIALIZED`, deliberately left off —
+without it, `NINTENDO_SYSTEMS`' `select BR2_PACKAGE_CITRON`/`RYUJINX`
+conditions never fire, so Switch emulation stays off while everything else
+under `NINTENDO_SYSTEMS` is unaffected. **Still not selected by
+`ALL_SYSTEMS`** — only this board's defconfig opts into them.
+
+**Deliberately not in `package/batocera/core/batocera-system/Config.in`.**
+That file is shared/upstream-touched constantly, so these live instead in a
+fork-only file, `package/batocera/custom-arcade/manufacturer-systems/Config.in`
+(a normal file, safe to commit — upstream has no path collision with it).
+Kconfig still requires *something* to `source` that file for its symbols to
+exist in the tree, so one line is needed in the shared top-level
+`./Config.in`; that line is kept as an uncommitted local patch,
+`board/batocera/x86/local-patches/manufacturer-systems.patch`, applied the
+same way and same lifecycle as `no-nvidia.patch` (see
+"The local `Config.in` patches" in `USER-INSTRUCTIONS.md`). Without the
+patch applied, `Config.in` is byte-for-byte upstream-clean and the seven
+options don't exist in the Kconfig tree.
+
+Full package-by-package breakdown and the deliberate scope exclusions (Sony
+handhelds included; Atari/NEC deliberately narrower than "everything that
+manufacturer made"; a mislabeled Sinclair core and the non-official
+Commander X16 left out of Amstrad/Commodore) are in `USER-INSTRUCTIONS.md`.
 
 The EmulationStation UI system list (`es_systems.cfg`) is **generated at
 build time**, not hand-maintained: each emulator package's `.mk` registers
@@ -220,10 +299,18 @@ clean tree to pull upstream changes).
   automatically. Worth re-checking the board file for other stock-copied
   flags like this (`diff` against `batocera-x86_64.board`) rather than
   assuming the systems tree covers everything.
-- Phase 2 (not yet enabled — uncomment when ready): add
-  `BR2_PACKAGE_DUCKSTATION=y` and `BR2_PACKAGE_PCSX2=y` directly rather than
-  the whole `BATOCERA_CONSOLE_SYSTEMS` umbrella, to get PS1/PS2 without
-  N64/GameCube/Xbox/etc.
+- Phase 2a: PS1 (done, 2026-07-14). Enabled directly rather than the whole
+  `BATOCERA_CONSOLE_SYSTEMS` umbrella, to get PS1 without
+  N64/GameCube/Xbox/etc: `BR2_PACKAGE_DUCKSTATION=y`,
+  `BR2_PACKAGE_LIBRETRO_SWANSTATION=y`, `BR2_PACKAGE_LIBRETRO_PCSX=y`,
+  `BR2_PACKAGE_LIBRETRO_BEETLE_PSX=y` — every core
+  `BATOCERA_CONSOLE_SYSTEMS`'s own `select` tree would enable for an
+  x86_64 target specifically (`batocera-system/Config.in` ~1445-1468).
+  `BR2_PACKAGE_DUCKSTATION_LEGACY` deliberately excluded: its condition is
+  `!BATOCERA_GLES3`, and GLES3 defaults to `y` on x86_64, so it would never
+  be selected here even in the stock full build.
+- Phase 2b (not yet enabled — uncomment when ready): PS2,
+  `BR2_PACKAGE_PCSX2=y`.
 - Future: once this base is proven, adding a new system/port means: a
   package dir under `package/batocera/emulators/` (or
   `.../retroarch/libretro/`) with its own `Config.in`/`.mk`, a
@@ -254,5 +341,14 @@ grep BATOCERA_NVIDIA output/x86_64-arcade/.config   # should be absent
 grep -E 'BR2_PACKAGE_(MAME|LIBRETRO_FBNEO)=y' output/x86_64-arcade/.config  # should be present
 make x86_64-arcade-show-build-order   # sanity check the package list first
 make x86_64-arcade-pkg PKG=mame       # optional: time one package
+make x86_64-arcade-build CMD="batocera-es-system-dirclean batocera-es-system" BATCH_MODE=1  # required after any Kconfig/es_systems.yml change — see below
 make x86_64-arcade-build              # full image build
 ```
+
+That `batocera-es-system` rebuild is required whenever the change enables/
+disables an emulator or edits `es_systems.yml` — its Buildroot stamps have
+no dependency edge onto other packages' Kconfig state (see "Two
+non-obvious things" below), so skipping it ships a stale `es_systems.cfg`
+and the expected system silently won't appear in EmulationStation even
+though the underlying package built fine. Omit it only for changes that
+don't touch emulator enablement (e.g. kernel/driver-only tweaks).

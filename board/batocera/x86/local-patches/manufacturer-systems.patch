@@ -1,0 +1,12 @@
+diff --git a/Config.in b/Config.in
+index fb12a217a6..9c727e6b2b 100644
+--- a/Config.in
++++ b/Config.in
+@@ -2,6 +2,7 @@ menu "batocera.linux"
+ 
+ menu "System"
+   source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/core/batocera-system/Config.in"
++  source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/custom-arcade/manufacturer-systems/Config.in"
+   source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/core/batocera-configgen/Config.in"
+   source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/core/batocera-desktopapps/Config.in"
+   source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/core/batocera-splash/Config.in"

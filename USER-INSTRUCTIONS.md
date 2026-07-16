@@ -10,6 +10,15 @@ see `AGENTS.md` instead.
 > add it here automatically, in addition to keeping `AGENTS.md` up to date
 > with anything a future CLI session would need. `AGENTS.md` stays terse and
 > technical; this file can be as detailed/explanatory as it needs to be.
+>
+> There's also `PROJECT-OVERVIEW.md` at the repo root, with a different
+> audience: generic, fork-agnostic batocera.linux/Buildroot knowledge
+> (project structure, the config/build pipeline, build gotchas) written in
+> neutral wiki-article voice, with nothing about this specific fork in it —
+> aimed at eventually improving the project's actual wiki. When something
+> learned is generic mechanics rather than a decision/incident specific to
+> this fork, it belongs there (generalized, fork details stripped) instead
+> of, or in addition to, this file.
 
 ---
 
@@ -96,6 +105,103 @@ older Duckstation-legacy, and a couple of RetroArch/libretro cores) — you
 can enable more than one and pick your favorite at runtime in
 EmulationStation, or just enable the one you actually want to keep the
 build lean.
+
+### Option 3 — turn on a whole manufacturer
+
+As of 2026-07-15, there are also seven manufacturer-scoped umbrellas:
+`BATOCERA_NINTENDO_SYSTEMS`, `BATOCERA_SEGA_SYSTEMS`, `BATOCERA_SONY_SYSTEMS`,
+`BATOCERA_COMMODORE_SYSTEMS`, `BATOCERA_AMSTRAD_SYSTEMS`,
+`BATOCERA_NEC_SYSTEMS`, `BATOCERA_ATARI_SYSTEMS`. They work exactly like the
+11 category umbrellas below — a `bool` option that `select`s every relevant
+emulator package, with each `select` conditioned on the target architectures
+it's actually buildable for (copied verbatim from wherever that package was
+already selected elsewhere in the file).
+
+**Unlike the 11 category umbrellas, these don't live in**
+`package/batocera/core/batocera-system/Config.in` **at all.** That file is
+one batocera upstream edits constantly (every new package addition touches
+it), so a ~350-line addition there would be a standing merge-conflict risk
+on every upstream sync, and easy to accidentally drag into any future
+upstream contribution. Instead:
+
+- The actual `config` blocks live in a brand-new, fork-only file:
+  `package/batocera/custom-arcade/manufacturer-systems/Config.in`. Upstream
+  has no knowledge of this path, so it can never conflict on sync, and it's
+  unambiguous that nothing under `package/batocera/custom-arcade/` should
+  ever go into an upstream PR.
+- Kconfig only recognizes `config` symbols reachable via a `source` chain
+  from the root `Config.in`, so *something* still has to point at that new
+  file — there's no way around at least one line somewhere. That one line
+  is delivered as a patch, not a permanent edit, using the exact same
+  mechanism as the Nvidia-exclusion patch documented below:
+  `board/batocera/x86/local-patches/manufacturer-systems.patch`, which adds
+  ```
+  source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/custom-arcade/manufacturer-systems/Config.in"
+  ```
+  to the top-level `./Config.in` (right after the line that sources
+  `core/batocera-system/Config.in`). Apply it the same way, and under the
+  same circumstances, as `no-nvidia.patch` — see "The Nvidia-exclusion
+  patch" section below, which now applies to both patches:
+  ```
+  git apply board/batocera/x86/local-patches/manufacturer-systems.patch
+  ```
+  Without it applied, the top-level `Config.in` is byte-for-byte identical
+  to upstream and the seven options simply don't exist in the Kconfig tree
+  (harmless — they're just invisible, not an error).
+
+The difference from Option 1: those umbrellas group by *category*
+(all consoles, regardless of maker); these group by *manufacturer*
+(all Nintendo systems, spanning both console and handheld). Useful for
+turning on "everything Nintendo" or "everything Sega" in one line, without
+pulling in every other maker's systems the way `CONSOLE_SYSTEMS` would.
+
+**As of 2026-07-15, all 7 are `=y` in `configs/batocera-x86_64-arcade.board`**
+(still not selected by `BATOCERA_ALL_SYSTEMS` itself — just this board's
+defconfig). They replaced what used to be a hand-picked "Phase 2a: PS1"
+block there — `SONY_SYSTEMS` covers those same PS1 cores plus PS2/PS3/PSP/
+Vita. Turning one on for a *different* board (or off again here) is the
+same mechanism as Option 1: set/remove the `=y` line in that board's
+defconfig. **Requires `manufacturer-systems.patch` applied first** (see
+"The local `Config.in` patches" below) — without it, these `=y` lines in
+the board file are silently inert, since Kconfig doesn't recognize a symbol
+it never parsed.
+
+One deliberate exception: `NINTENDO_SYSTEMS`'s Switch cores (`CITRON`,
+`RYUJINX`) need `BR2_PACKAGE_BATOCERA_CORES_STILL_COMMERCIALIZED=y` as well
+(their own `select` condition on top of `NINTENDO_SYSTEMS`), which is *not*
+set in the arcade board — so Switch stays off there even with
+`NINTENDO_SYSTEMS=y`; everything else under it (NES/SNES/N64/GameCube/Wii/
+Wii U/handhelds) still builds.
+
+What's in each:
+
+| Manufacturer | What it covers |
+|---|---|
+| `NINTENDO_SYSTEMS` | NES, SNES, N64, GameCube/Wii, Wii U, Switch, Game Boy/Color, GBA, DS, 3DS, Virtual Boy, Game & Watch, Pokémon Mini |
+| `SEGA_SYSTEMS` | Master System/Game Gear, Genesis/Mega Drive/32X, Saturn, Dreamcast/Naomi/Atomiswave, Model 2/3 arcade, Demul, Lindbergh |
+| `SONY_SYSTEMS` | PS1, PS2, PS3, PSP, PS Vita |
+| `COMMODORE_SYSTEMS` | C64/128/VIC-20/PET/Plus4/16, Amiga |
+| `AMSTRAD_SYSTEMS` | Amstrad CPC and GX4000 |
+| `NEC_SYSTEMS` | PC Engine, PC Engine CD, TurboGrafx-16, SuperGrafx |
+| `ATARI_SYSTEMS` | Atari 2600, 7800, Jaguar |
+
+A few scoping choices worth knowing, if you go looking for something and
+don't find it:
+
+- `SONY_SYSTEMS` deliberately includes the PSP and PS Vita handhelds
+  alongside PS1–3, even though the original ask was just "PS1, PS2, PS3" —
+  they're Sony too, and both have working x86_64 emulators.
+- `ATARI_SYSTEMS` and `NEC_SYSTEMS` are deliberately narrower than
+  "everything that manufacturer made". Atari's Lynx (handheld) and
+  800/5200/ST computers, and NEC's PC-FX console and PC-88/98 computers,
+  are *not* included. If you want those, they'd need adding by hand
+  (Option 2) or a follow-up expansion of these umbrellas.
+- Two items live in the source `Config.in` under a manufacturer's comment
+  header but aren't actually that manufacturer's hardware, and were
+  deliberately left out: `LIBRETRO_81` (a Sinclair ZX80/ZX81 core,
+  mislabeled under an "Amstrad CPC" comment in the original file) and the
+  Commander X16 (`X16EMU`, a modern community homage inspired by
+  Commodore, not an official Commodore product).
 
 ### The 11 system categories, and what's actually in each
 
@@ -227,6 +333,7 @@ sequence covered in more depth in "Triggering a build" below:
 make x86_64-arcade-defconfig
 make x86_64-arcade-config BATCH_MODE=1
 grep BR2_PACKAGE_<NAME>=y output/x86_64-arcade/.config   # confirm it's on
+make x86_64-arcade-build CMD="batocera-es-system-dirclean batocera-es-system" BATCH_MODE=1
 make x86_64-arcade-build
 ```
 
@@ -237,6 +344,15 @@ anything. That's your chance to double check the flag actually resolved to
 compiles what's newly enabled, and ccache caches anything you've built
 before, adding one more system later is much faster than the very first
 build was.
+
+The `batocera-es-system` rebuild step is not optional, and it has to run
+*before* the full `-build`, not after: that package's Buildroot stamps have
+no dependency edge onto other packages' Kconfig state, so an incremental
+build silently ships a stale `es_systems.cfg` and the new system won't
+appear in EmulationStation even though the emulator itself built and
+installed correctly. See "Debugging note (2026-07-14)" below for the full
+trace of what this looks like when missed, and the `es_systems.cfg`
+verification grep to confirm it worked.
 
 ## Adding a new emulator core for an existing system — the Geolith case study
 
@@ -418,6 +534,142 @@ No `.mk` changes required — `LIBRETRO_PLATFORM` resolves to plain `unix`
 on any x86_64 target (`package/batocera/emulators/retroarch/retroarch/retroarch.mk:196`),
 identical to what was already built and verified on `x86_64-arcade`.
 
+### Debugging note (2026-07-14): Geolith options visible in ES but never applied at launch — a second, different stale-package bug
+
+After the Bug A/Bug B fixes above got Geolith showing up correctly in
+EmulationStation, a follow-up commit (`d31a1ff6ba`, "Add geolith options to
+configgen") added a `_geolith_options()` function to
+`configgen/generators/libretro/libretroOptions.py` so the AES/MVS/Universe
+BIOS choice (and region/aspect/memcard/palette/etc.) picked in ES's
+non-advanced settings would actually get written into RetroArch's
+per-core options file at launch. Tested it, and the setting still had no
+effect in-game — picking "MVS" in ES, the game still booted as if nothing
+had been chosen. This turned out to be **the same root-cause pattern as Bug
+A above (a stale Buildroot package), just hitting a different package**, so
+it's worth writing up separately since the diagnostic path was different
+and more general — it applies to any Python-source-only edit under
+`package/batocera/core/batocera-configgen/`, not just Geolith.
+
+**Diagnosing from a real launch log first.** Batocera writes a full debug
+log for every game launch (`mylogs/es_launch_stdout.log` in this
+conversation's case — copy it off the device however you'd normally pull
+Batocera logs). Two things stood out:
+- The `Settings` dict logged at launch correctly showed
+  `'geolith_system_type': 'mvs'` — so ES *did* save the chosen value into
+  `batocera.conf`, and configgen *did* read it back. The read side was
+  fine.
+- Every actual settings **write** goes through `UnixSettings.save()`
+  (`configgen/settings/unixSettings.py`), which unconditionally logs
+  `Writing <key> = <value> to <path>` at DEBUG level — and every other
+  core's option writes appeared in the log (all the `retroarchcustom.cfg`
+  writes), but there was no line at all for
+  `.../cores/retroarch-core-options.cfg`, which is where
+  `_geolith_options()` should have written `geolith_system_type` and
+  friends. The write that should have produced that specific log line
+  simply never happened — meaning the *running* code didn't contain
+  `_geolith_options()` at all, despite the commit existing in the repo.
+
+**Confirming the code itself was correct before assuming a rebuild
+problem.** Before chasing a build issue, traced the whole path to rule out
+an actual bug: `geolith.libretro.core.yml`'s `custom_features` (already
+present pre-fix, hence why ES showed the menu) → `_geolith_options()` in
+`libretroOptions.py`, dispatched via `_option_functions['geolith']` →
+`generateCoreSettings()` → `createLibretroConfig()`
+(`configgen/generators/libretro/libretroConfig.py:147`) → written into
+`RETROARCH_CORE_CUSTOM`, which resolves to the exact
+`cores/retroarch-core-options.cfg` path RetroArch's own `core_options_path`
+setting points at. Checked the actual keys/defaults the built
+`geolith_libretro.so` expects, straight from its
+`libretro_core_options.h` (found under
+`output/x86_64-arcade/build/libretro-geolith-*/libretro/`) — every key and
+default in `_geolith_options()` matched exactly. So the code was right;
+something about the build had to be wrong.
+
+**Root cause: identical mechanism to the `batocera-es-system` bug above,
+different package.** `batocera-configgen` doesn't fetch a tarball — it uses
+`BATOCERA_CONFIGGEN_OVERRIDE_SRCDIR`
+(`package/batocera/core/batocera-configgen/batocera-configgen.mk:22`) to
+build straight from the local
+`package/batocera/core/batocera-configgen/configgen/` directory via
+`rsync`. That rsync step is implemented in Buildroot as a normal
+stamp-gated target (`buildroot/package/pkg-generic.mk`, `.stamp_rsynced`) —
+**it is not automatically re-run just because the source directory's
+content changed.** Once a package has built successfully, a plain `make
+<target>-build` leaves its stamps alone and skips it entirely, exactly like
+the `batocera-es-system` case, just for a different trigger (there, it was
+"newly enabled Kconfig option with no dependency edge"; here, it's "edited
+Python source with no dependency edge"). Two independent rebuilds after the
+fix commit both missed it, because neither was a *forced* rebuild of that
+specific package.
+
+Confirmed empirically by comparing timestamps in `output/x86_64-arcade/`:
+`batocera-configgen-custom/.stamp_rsynced` and `.stamp_installed` were both
+dated from the *very first* arcade build (01:05 that morning) — hours
+*before* the fix commit (`d31a1ff6ba`, authored 10:05:14 the same day) even
+existed. Running a plain `make x86_64-arcade-build` again afterward left
+those stamps completely untouched. `grep geolith` on both the rsynced
+build-dir copy and the installed target-rootfs copy of
+`libretroOptions.py` matched nothing — the fix genuinely never got copied
+in, on either attempt.
+
+**A red herring along the way: `batocera.version` is not a reliable
+freshness signal.** The natural instinct when a fix "isn't taking" is to
+check the running system's reported version
+(`/usr/share/batocera/batocera.version`, e.g. `44-dev-69379b2626
+2026/07/14 02:06` — shown in ES's system info and in every launch log).
+That string is written by a *completely different* package,
+`batocera-system`'s own `BATOCERA_SYSTEM_INSTALL_TARGET_CMDS`
+(`package/batocera/core/batocera-system/batocera-system.mk:104-111`),
+which embeds `git rev-parse --short HEAD` — but only at the moment *that*
+package's install step actually runs. `batocera-system` is itself just
+another independently-stamped Buildroot package with no dependency edge
+tying it to whatever else you changed, so its embedded commit hash can
+legitimately lag behind (or, in principle, sit ahead of) the real content
+of any other package, including `batocera-configgen`. In this incident the
+version string happened to correctly point at a build that predated the
+fix — but that was a coincidence of both packages being stamped at the same
+initial build, not something to rely on in general. **Don't use
+`batocera.version` to decide whether a specific source change made it into
+an image.** Verify the actual file instead:
+```
+grep -n geolith output/x86_64-arcade/target/usr/lib/python3.14/site-packages/configgen/generators/libretro/libretroOptions.py
+```
+or, to be certain about what's actually flashable (the target dir and the
+final packaged image can in principle diverge too), extract straight from
+the built image:
+```
+unsquashfs -d /tmp/rootfs-check -f output/x86_64-arcade/images/rootfs.squashfs \
+    usr/lib/python3.14/site-packages/configgen/generators/libretro/libretroOptions.py
+grep -c geolith /tmp/rootfs-check/usr/lib/python3.14/site-packages/configgen/generators/libretro/libretroOptions.py
+```
+
+**Fix**: same targeted-rebuild pattern as the `batocera-es-system` incident,
+just naming the other package:
+```
+make x86_64-arcade-build CMD="batocera-configgen-dirclean batocera-configgen" BATCH_MODE=1
+make x86_64-arcade-build
+```
+Confirmed this actually resolved it by re-running both greps above against
+the freshly built `rootfs.squashfs` — `_geolith_options`/`geolith_system_type`
+present, 10 matches.
+
+**The general lesson, extending the one from Bug A above**: *any* package
+in this tree that builds from local source without going through a normal
+tarball/git-commit fetch — `OVERRIDE_SRCDIR` packages like
+`batocera-configgen`, or packages Buildroot considers "already built" for
+any other reason — will not automatically pick up source edits on a plain
+incremental `<target>-build`. If you've edited Python (or any other
+locally-sourced package's code) and a behavior change doesn't show up after
+rebuilding, don't assume the code is wrong before checking whether the
+package was actually rebuilt: compare that package's `output/<target>/build/
+<pkg>*/.stamp_rsynced` (or `.stamp_built`) timestamp against your edit's
+commit time, and force it with `make <target>-build
+CMD="<pkg>-dirclean <pkg>" BATCH_MODE=1` if it's stale. `<target>-refresh
+PARALLEL_BUILD=y` (see "Triggering a build" below) is meant to automate
+exactly this detection, but it works off `git log --since=<days>`, so it
+only sees **committed** changes — commit first, then `-refresh`, if you want
+to rely on it instead of naming the package by hand.
+
 **Enabling it on an ARM board (e.g. Raspberry Pi 4 — `configs/batocera-bcm2711.board`)
 needs a second change, not just the flag.** `libretro-geolith.mk` currently
 has no RPi override:
@@ -461,6 +713,87 @@ something to cores whose own Makefile is written to expect it that way.
 Always check the *specific* core's upstream Makefile for how it actually
 parses `platform=` (exact match vs. `findstring`) before assuming the
 shared variable is enough, the same way this check turned up for Geolith.
+
+## Debugging note (2026-07-15): RPCS3 link failure — `cannot find -lLLVMIntelJITEvents`
+
+After enabling `BATOCERA_SONY_SYSTEMS` (which pulls in RPCS3), the build
+failed at RPCS3's final link step:
+```
+/x86_64-arcade/host/bin/x86_64-buildroot-linux-gnu-ld: cannot find -lLLVMIntelJITEvents: No such file or directory
+clang++: error: linker command failed with exit code 1
+```
+
+This looked at first like a missing dependency in batocera's own
+packaging, but it wasn't — `package/batocera/emulators/rpcs3/Config.in`
+already correctly does `select BR2_PACKAGE_LLVM_INTEL_JITEVENTS` right next
+to `select BR2_PACKAGE_LLVM` (that Kconfig option was added specifically
+for this, per the `# batcoera - add intel jit events option` comment
+sitting on it in `buildroot/package/llvm-project/llvm/Config.in:42`), and
+`output/x86_64-arcade/.config` confirmed it was correctly resolved to `y`.
+So the Kconfig wiring was right — the actual built `llvm` package just
+didn't match it.
+
+**Root cause: the same stale-Buildroot-stamp problem as the
+`batocera-es-system`/`batocera-configgen` incidents above, but a new
+variant.** Those were about a package's output depending on some *other*
+package's Kconfig state or on an unrelated data file changing. This one is
+narrower and easy to miss: **a package's *own* Kconfig-driven CMake
+configure flags changed, after that same package had already built
+successfully once.** `llvm` had been built early on, before `SONY_SYSTEMS`
+(and therefore `LLVM_INTEL_JITEVENTS`) was ever turned on, so its one-time
+CMake configure ran with `-DLLVM_USE_INTEL_JITEVENTS=OFF`. Once the Kconfig
+option flipped on later, Buildroot had no reason to know `llvm`'s own build
+was now out of date with its current `.config` — incremental builds only
+re-run a package's configure/build steps in response to source/patch
+changes or an explicit forced rebuild, not "this package's resolved
+`_CONF_OPTS` changed since it was last built."
+
+**How this was confirmed**, rather than guessed: `llvm`'s actual CMake
+cache on disk was checked directly against the current `.config`:
+```
+grep LLVM_USE_INTEL_JITEVENTS output/x86_64-arcade/build/llvm-22.1.5/llvm/buildroot-build/CMakeCache.txt
+```
+showed `LLVM_USE_INTEL_JITEVENTS:BOOL=OFF`, while `.config` had
+`BR2_PACKAGE_LLVM_INTEL_JITEVENTS=y` — a direct mismatch. The `llvm`
+package's stamps (`.stamp_configured`/`.stamp_built`/`.stamp_installed`)
+were all dated from the very first arcade-only build, well before
+`SONY_SYSTEMS` was ever turned on, confirming it. `libLLVMPerfJITEvents.a`
+(a different, always-on LLVM component) existed in staging, but
+`libLLVMIntelJITEvents.a` was nowhere in the build output — consistent with
+a `llvm` build that predates the flag turning on. This same technique — diff
+a package's own on-disk build-system cache file against the current
+`.config`, rather than assuming the Kconfig `select` graph alone explains
+the failure — is the general way to confirm this specific variant.
+
+**Fix**: force a targeted rebuild of just `llvm` (RPCS3 itself didn't need
+a forced rebuild — it failed at the link step, so it never got a
+completion stamp, and retried automatically on the next build once its
+dependency was fixed):
+```
+make x86_64-arcade-build CMD="llvm-dirclean llvm" BATCH_MODE=1
+make x86_64-arcade-build BATCH_MODE=1
+```
+Confirmed the fix by checking the rebuilt `CMakeCache.txt` showed
+`LLVM_USE_INTEL_JITEVENTS:BOOL=ON`, `libLLVMIntelJITEvents.a` now existed
+under the host sysroot's `usr/lib`, and RPCS3's own `.stamp_built` appeared
+with a fresh timestamp along with a real `usr/bin/rpcs3` binary landing in
+the target rootfs.
+
+**The general lesson, extending the `batocera-es-system`/`batocera-configgen`
+ones above**: it's not just *other* packages' Kconfig state or unrelated
+data files that can go stale without a forced rebuild — a package's *own*
+build-system configure flags can too, whenever those flags are themselves
+driven by a Kconfig option that gets turned on *after* the package already
+built successfully once. Newly enabling a whole category/manufacturer
+umbrella (which can flip on options for packages that were already built
+for an unrelated reason, e.g. `llvm` here was already needed by Mesa) is
+exactly the kind of change likely to trigger this. If a package that
+already builds without error still fails a *dependent* package's link step
+in a surprising way, check whether that package's own resolved Kconfig
+options actually match what it was last built with — its build-system's
+own cache file (`CMakeCache.txt` for CMake, or the equivalent for other
+build systems) is the direct way to check, rather than trusting the
+Kconfig `select` graph alone.
 
 ## Triggering a build
 
@@ -664,38 +997,62 @@ using Docker itself to get root:
 docker run --rm -v "$(pwd)/output:/output" alpine chown -R "$(id -u):$(id -g)" /output
 ```
 
-## The Nvidia-exclusion patch — one-time, or every build?
+## The local `Config.in` patches — one-time, or every build?
 
 **One-time**, with caveats. This is worth understanding precisely because
-it's easy to assume (wrongly) that it needs to be reapplied before every
-single build, like a `docker run` flag would.
+it's easy to assume (wrongly) that they need to be reapplied before every
+single build, like a `docker run` flag would. There are two of these
+patches now, both in `board/batocera/x86/local-patches/`, both following
+the same lifecycle described below:
 
-`package/batocera/core/batocera-system/Config.in` is a normal source file
-that lives directly in this git checkout — it isn't a tarball that gets
-freshly re-extracted and re-patched on every build the way, say, the Linux
-kernel source is (via `BR2_GLOBAL_PATCH_DIR`). So once you run:
+- `no-nvidia.patch` — comments out the forced Nvidia `select` in
+  `package/batocera/core/batocera-system/Config.in`.
+- `manufacturer-systems.patch` — adds the one `source` line to the
+  top-level `./Config.in` that hooks in
+  `package/batocera/custom-arcade/manufacturer-systems/Config.in` (the
+  seven manufacturer-scoped system umbrellas — see Option 3 above). Unlike
+  the Nvidia patch, this one is purely additive (a new line, not a
+  comment-out of existing content) and targets a different file (the
+  top-level `Config.in`, not `batocera-system/Config.in`) — but the
+  reasoning and lifecycle are identical: keep the shared file's committed
+  state byte-for-byte upstream-clean, and treat the one line that actually
+  enables the fork-only feature as a locally-applied patch instead of a
+  permanent diff.
+
+  Note this only applies to that one hookup line. The file it points at,
+  `package/batocera/custom-arcade/manufacturer-systems/Config.in` itself,
+  is *not* patch-based — it's a normal new file, safe to `git add`/commit
+  outright, since it's not a path upstream batocera has ever touched or
+  ever will. Only edits to a *shared* file need the patch treatment; wholly
+  new fork-owned files don't.
+
+`package/batocera/core/batocera-system/Config.in` and `./Config.in` are
+normal source files that live directly in this git checkout — they aren't
+tarballs that get freshly re-extracted and re-patched on every build the
+way, say, the Linux kernel source is (via `BR2_GLOBAL_PATCH_DIR`). So once
+you run:
 
 ```
 git apply board/batocera/x86/local-patches/no-nvidia.patch
+git apply board/batocera/x86/local-patches/manufacturer-systems.patch
 ```
 
-...the comment-out of the Nvidia `select` line is just sitting in your
-working tree as an ordinary uncommitted change (`git status` will show
-`Config.in` as modified). Every subsequent `make x86_64-arcade-*` command
-reads whatever is currently on disk, patched or not — there's no per-build
-re-patching step to remember.
+...both changes just sit in your working tree as ordinary uncommitted
+changes (`git status` will show both `Config.in` files as modified). Every
+subsequent `make x86_64-arcade-*` command reads whatever is currently on
+disk, patched or not — there's no per-build re-patching step to remember.
 
-**You only need to reapply it if the working tree loses that change**,
-which happens when:
+**You only need to reapply either one if the working tree loses that
+change**, which happens when:
 - You run something that resets tracked files — `git checkout --
-  package/batocera/core/batocera-system/Config.in`, `git reset --hard`,
-  `git stash` (without popping it back), etc.
+  package/batocera/core/batocera-system/Config.in` (or `-- Config.in`),
+  `git reset --hard`, `git stash` (without popping it back), etc.
 - You pull/rebase/merge from upstream batocera and that file gets
-  overwritten or the patch no longer applies cleanly (a conflict) — you'd
+  overwritten or a patch no longer applies cleanly (a conflict) — you'd
   need to reconcile it, possibly regenerating the patch if upstream has
   changed that section of the file.
 - You start from a fresh clone of the repo.
-- You (or a future Claude Code session) commit the Config.in change
+- You (or a future Claude Code session) commit the `Config.in` change
   directly instead of leaving it as an uncommitted local patch — at that
   point it's permanent and there's nothing left to "apply", but see the
   trade-off noted in `AGENTS.md` about why we chose *not* to do that.
@@ -703,17 +1060,21 @@ which happens when:
 **How to check the current state without guessing:**
 
 ```
-git status --porcelain package/batocera/core/batocera-system/Config.in
+git status --porcelain package/batocera/core/batocera-system/Config.in Config.in
 ```
 
-Empty output = patch is **not** currently applied (Nvidia will be built in
-if you build now). `M ...` output = it **is** currently applied. You can
-also just `grep` the line directly:
+Empty output for a given file = that patch is **not** currently applied
+(Nvidia will be built in / the manufacturer options won't exist in the
+Kconfig tree if you build now). `M ...` output = it **is** currently
+applied. You can also just `grep` the relevant line directly:
 
 ```
 grep "select BR2_PACKAGE_BATOCERA_NVIDIA" package/batocera/core/batocera-system/Config.in
+grep "custom-arcade/manufacturer-systems/Config.in" Config.in
 ```
 
-If the line is commented out (starts with `#`), the patch is applied. Note
-`git apply` itself refuses to double-apply — running it again when it's
-already applied just errors out safely, it won't corrupt the file.
+For Nvidia: if the line is commented out (starts with `#`), the patch is
+applied. For the manufacturer-systems patch: if the `grep` finds the
+`source` line, it's applied. Note `git apply` itself refuses to
+double-apply — running it again when it's already applied just errors out
+safely, it won't corrupt the file.

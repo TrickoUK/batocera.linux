@@ -45,7 +45,7 @@ BR2_TARGET_GRUB2_BUILTIN_MODULES_EFI="boot linux ext2 fat squash4 part_msdos par
 # batocera-board.common turns on BR2_PACKAGE_BATOCERA_ALL_SYSTEMS=y; override
 # it here and select only the system categories/packages we actually want,
 # instead of every emulator for every platform. See AGENTS.md for the full
-# rationale and the phased plan (arcade now, PS1/PS2 next).
+# rationale.
 BR2_PACKAGE_BATOCERA_ALL_SYSTEMS=n
 
 # RetroArch itself is normally pulled in by BATOCERA_ALL_SYSTEMS, not by the
@@ -61,10 +61,32 @@ BR2_PACKAGE_BATOCERA_ARCADE_SYSTEMS=y
 # ADD-GEOLITH.md.
 BR2_PACKAGE_LIBRETRO_GEOLITH=y
 
-# Phase 2 (not yet enabled): add PS1 + PS2 without pulling in the rest of
-# BATOCERA_CONSOLE_SYSTEMS (N64, GameCube, Xbox, etc.):
-# BR2_PACKAGE_DUCKSTATION=y
-# BR2_PACKAGE_PCSX2=y
+# Phase 2: manufacturer-scoped umbrellas (fork-only Config.in, see
+# package/batocera/custom-arcade/manufacturer-systems/Config.in). Each one
+# select()s every x86-available core/emulator for that manufacturer's
+# systems, replacing what used to be hand-picked PS1-only lines here.
+# Requires board/batocera/x86/local-patches/manufacturer-systems.patch to be
+# applied *before* generating the defconfig, or these 7 lines are silently
+# inert — see USER-INSTRUCTIONS.md, "The local Config.in patches".
+#
+BR2_PACKAGE_BATOCERA_NINTENDO_SYSTEMS=y
+BR2_PACKAGE_BATOCERA_SEGA_SYSTEMS=y
+BR2_PACKAGE_BATOCERA_SONY_SYSTEMS=y
+BR2_PACKAGE_BATOCERA_COMMODORE_SYSTEMS=y
+BR2_PACKAGE_BATOCERA_AMSTRAD_SYSTEMS=y
+BR2_PACKAGE_BATOCERA_NEC_SYSTEMS=y
+BR2_PACKAGE_BATOCERA_ATARI_SYSTEMS=y
+
+# Required by SEGA_SYSTEMS: lindbergh-loader hard-depends on wine-x86 at the
+# Buildroot Makefile level (LINDBERGH_LOADER_DEPENDENCIES), but its own
+# Config.in select never pulls Wine in — that only "works" in the stock
+# full build because BATOCERA_ALL_SYSTEMS enables WINE_SYSTEMS alongside
+# CONSOLE_SYSTEMS. Without this, `make x86_64-arcade-build` fails with:
+# "wine-x86 is in the dependency chain of lindbergh-loader that has added
+# it to its _DEPENDENCIES variable without selecting it or depending on it
+# from Config.in." Also unlocks Model2EMU and Demul, two more SEGA_SYSTEMS
+# emulators that were silently excluded for the same reason until now.
+BR2_PACKAGE_BATOCERA_WINE_SYSTEMS=y
 
 # Note: Nvidia is force-selected via a Kconfig `select` for every x86_64
 # build (package/batocera/core/batocera-system/Config.in) and cannot be
