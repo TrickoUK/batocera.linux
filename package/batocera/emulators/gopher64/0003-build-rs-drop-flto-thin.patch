@@ -1,0 +1,62 @@
+build.rs unconditionally passes -flto=thin (Clang ThinLTO, producing
+LLVM-bitcode-only .o files) when compiling the vendored C/C++ submodules
+(volk, parallel-rdp, simd compat, rcheevos) via the `cc` crate, and
+doesn't emit the extra linker flags parallel-rdp/volk actually need on
+this fork's GNU-binutils cross toolchain. Both are fixed together here
+since they touch adjacent lines.
+
+1. This fork's buildroot toolchain links with GNU binutils (ld/ar),
+   which cannot index or link LLVM-bitcode objects - the final link
+   fails with "libvolk.a: error adding symbols: archive has no index;
+   run ranlib to add one" regardless of which `ar`/`ranlib` binary is
+   explicitly configured, since no GNU-binutils `ar` can generate a
+   symbol table for bitcode-only objects (only `llvm-ar` understands
+   that format). Drop ThinLTO for these four translation units - a pure
+   optimization, not a correctness requirement.
+
+2. `-lvulkan`: parallel-rdp calls a handful of core (non-EXT) vk*
+   functions directly rather than through volk's function-pointer
+   indirection, needing an actual link-time libvulkan.
+
+3. `--start-group`/`--end-group` around volk/parallel-rdp/
+   retroachievements: cargo links these three vendored static libs in
+   the same order build.rs's `.compile()` calls happen in (`-lvolk`
+   before `-lparallel-rdp`), but libparallel-rdp.a's own objects are
+   what reference volk's exported symbols (volkLoadInstance,
+   volkInitializeCustom, the EXT/KHR extension trampolines volk.c
+   defines) - GNU ld doesn't re-scan an already-processed static
+   archive for a later, newly-discovered undefined symbol, so without
+   grouping they stay unresolved.
+
+Using `cargo:rustc-link-arg` (rather than a global RUSTFLAGS override in
+the buildroot .mk) scopes these extra flags to just gopher64's own
+binary link step - RUSTFLAGS is global to every crate rustc invokes in
+the whole dependency graph and broke unrelated dependency crates that
+build their own cdylib (e.g. sevenz-rust2) by handing them link args
+pointing at libraries only gopher64's own build.rs OUT_DIR has.
+
+--- a/build.rs
++++ b/build.rs
+@@ -150,15 +150,17 @@
+         println!("cargo:rustc-link-lib=dylib=freetype");
+     }
+ 
+-    volk_build.flag("-flto=thin");
+-    rdp_build.flag("-flto=thin");
+-    simd_build.flag("-flto=thin");
+-    retroachievements_build.flag("-flto=thin");
+-
+     volk_build.compile("volk");
+     rdp_build.compile("parallel-rdp");
+     retroachievements_build.compile("retroachievements");
+ 
++    println!("cargo:rustc-link-arg=-lvulkan");
++    println!("cargo:rustc-link-arg=-Wl,--start-group");
++    println!("cargo:rustc-link-arg=-lvolk");
++    println!("cargo:rustc-link-arg=-lparallel-rdp");
++    println!("cargo:rustc-link-arg=-lretroachievements");
++    println!("cargo:rustc-link-arg=-Wl,--end-group");
++
+     let out_path = std::path::PathBuf::from(std::env::var("OUT_DIR").unwrap());
+ 
+     let mut retroachievements_builder = bindgen::Builder::default()

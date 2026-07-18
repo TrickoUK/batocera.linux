@@ -1,0 +1,41 @@
+build.rs shells out to `git describe --dirty` (falling back to `git
+describe --always`) purely to embed a GIT_DESCRIBE version string, and
+panics ("Failed to get git describe") if both invocations fail.
+
+Buildroot's git-download + cargo-vendor pipeline (GIT_SUBMODULES = YES,
+cargo-package's offline vendoring) repackages the checked-out source into
+a plain tarball for the actual package build step, without a working
+`.git` directory - so both git invocations fail unconditionally in this
+cross-build environment, with no upstream-provided way to skip or
+override it (no env var checked before the git calls). Replace the whole
+git-describe dance with a plain version string derived from
+CARGO_PKG_VERSION (which cargo always provides, from Cargo.toml) - it's
+only ever used for a cosmetic GIT_DESCRIBE string, not anything
+functional.
+
+--- a/build.rs
++++ b/build.rs
+@@ -279,22 +279,5 @@
+     }
+
+-    let mut git_output = std::process::Command::new("git");
+-    git_output.args(["describe", "--dirty"]);
+-
+-    let git_describe = if let Ok(git_output) = git_output.output()
+-        && git_output.status.success()
+-    {
+-        String::from_utf8(git_output.stdout).unwrap()
+-    } else if let Ok(git_output) = git_output.args(["--always"]).output()
+-        && git_output.status.success()
+-    {
+-        format!(
+-            "v{}-{}",
+-            env!("CARGO_PKG_VERSION"),
+-            String::from_utf8(git_output.stdout).unwrap()
+-        )
+-    } else {
+-        panic!("Failed to get git describe");
+-    };
++    let git_describe = format!("v{}", env!("CARGO_PKG_VERSION"));
+     println!("cargo:rustc-env=GIT_DESCRIBE={git_describe}");
+

@@ -1,0 +1,21 @@
+custom_features:
+  gopher64_widescreen:
+    prompt: WIDESCREEN
+    description: Emulate anamorphic widescreen behavior in supported games.
+    choices:
+      Disabled: "false"
+      Enabled: "true"
+  gopher64_overclock:
+    prompt: OVERCLOCK N64 CPU
+    description: 93.75MHz -> 125MHz. Can cause timing-dependent games to run too fast.
+    choices:
+      Disabled: "false"
+      Enabled: "true"
+  gopher64_disable_expansion_pak:
+    prompt: DISABLE EXPANSION PAK
+    description: Reduce emulated memory from 8MB to 4MB.
+    choices:
+      Disabled: "false"
+      Enabled: "true"
+systems:
+  - n64

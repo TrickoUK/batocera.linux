@@ -1,0 +1,30 @@
+Skip SDL3's hard X11-or-Wayland-required CMake check for the vendored
+SDL3 build (via sdl3-sys's "build-from-source-static" feature).
+
+This fork's target renders through KMS/DRM directly (no X11/Wayland
+desktop session involved in actual gameplay - exactly how batocera
+normally launches emulators), and SDL3's own configure summary already
+shows the kmsdrm/dummy/offscreen video drivers enabled regardless of
+X11/Wayland availability. Without this, SDL's cmake/macros.cmake hard-fails
+configure ("SDL could not find X11 or Wayland development libraries...
+If you really don't need desktop windows, the documentation tells you how
+to skip this check") rather than just disabling those two backends, which
+otherwise makes gopher64 fail to build in a KMS/DRM-only cross-compile
+environment even though nothing gopher64 actually needs is missing.
+
+sdl3-sys exposes this exact skip as its own "sdl-unix-console-build"
+Cargo feature (maps to SDL3's own -DSDL_UNIX_CONSOLE_BUILD=ON), see
+https://github.com/maia-s/sdl3-sys-rs. --locked only pins dependency
+*versions* (Cargo.lock), not feature selection, so adding a feature here
+doesn't require touching Cargo.lock.
+
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -20,6 +20,6 @@
+ open = "5.3"
+ sha2 = "0.11"
+-sdl3-sys = { version = "0.6", features = ["build-from-source-static"] }
++sdl3-sys = { version = "0.6", features = ["build-from-source-static", "sdl-unix-console-build"] }
+ sdl3-ttf-sys = { version = "0.6", features = ["build-from-source-static", "no-sdlttf-harfbuzz", "no-sdlttf-plutosvg"] }
+ rfd = {version = "0.17", optional = true }
+ tokio = {version = "1.46", features = ["rt-multi-thread", "macros", "fs", "process"] }

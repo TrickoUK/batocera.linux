@@ -1,0 +1,15 @@
+config BR2_PACKAGE_GOPHER64
+	bool "gopher64"
+	depends on BR2_PACKAGE_HOST_RUSTC_TARGET_ARCH_SUPPORTS
+	select BR2_PACKAGE_HOST_RUSTC
+	select BR2_PACKAGE_BATOCERA_VULKAN
+	help
+	  gopher64 is a cross-platform, RetroAchievements-capable Nintendo 64
+	  emulator written in Rust. Vendors/statically links its own SDL3
+	  (not this fork's own SDL3 package) and uses Vulkan (parallel-rdp)
+	  for rendering.
+
+	  An additional, optional core for the n64 system alongside
+	  mupen64plus.
+
+	  https://github.com/gopher64/gopher64

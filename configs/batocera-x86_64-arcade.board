@@ -61,6 +61,13 @@ BR2_PACKAGE_BATOCERA_ARCADE_SYSTEMS=y
 # ADD-GEOLITH.md.
 BR2_PACKAGE_LIBRETRO_GEOLITH=y
 
+# Optional standalone N64 core (Rust/SDL3/Vulkan, RetroAchievements
+# support): additive alongside mupen64plus, which stays the default n64
+# emulator. Opt-in rather than force-selected via
+# BATOCERA_NINTENDO_SYSTEMS given its newer/heavier Rust+Vulkan build
+# chain. See ADD-GOPHER64.md.
+BR2_PACKAGE_GOPHER64=y
+
 # Phase 2: manufacturer-scoped umbrellas (fork-only Config.in, see
 # package/batocera/custom-arcade/manufacturer-systems/Config.in). Each one
 # select()s every x86-available core/emulator for that manufacturer's
