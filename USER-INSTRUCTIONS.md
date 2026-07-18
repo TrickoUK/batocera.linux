@@ -714,6 +714,171 @@ Always check the *specific* core's upstream Makefile for how it actually
 parses `platform=` (exact match vs. `findstring`) before assuming the
 shared variable is enough, the same way this check turned up for Geolith.
 
+## Adding a standalone (non-libretro) emulator — the gopher64 case study
+
+`ADD-GOPHER64.md` (repo root) documents adding **gopher64**, a Rust/SDL3/
+Vulkan Nintendo 64 emulator, as an extra selectable core for the existing
+`n64` system (implemented 2026-07-17). Where the Geolith case study above
+is about the *libretro* path, this one is the template for the *standalone*
+path — a meaningfully different shape of work, worth understanding
+generally for any future standalone emulator addition.
+
+**1. A standalone emulator is a Buildroot package *plus* a Python
+generator — libretro cores only ever needed the package.** Libretro core
+options flow through RetroArch's own core-options mechanism (a
+`custom_features:` block in the core's `.libretro.core.yml`, translated by
+`libretroOptions.py` only when the mapping isn't 1:1). A standalone
+emulator has no such shared layer — batocera itself has to build the
+command line, write whatever config file format the emulator expects, and
+set up environment variables, every single launch. That's
+`package/batocera/core/batocera-configgen/configgen/configgen/generators/<name>/`,
+new for every standalone emulator: a `<name>Generator.py` (command + env,
+the only required file — must subclass `Generator` and implement
+`generate()`/`getHotkeysContext()`), and as many small support modules as
+needed (`<name>Paths.py` for path constants, `<name>Config.py` for
+config-file writing). No entry in `generators/importer.py`'s
+`_GENERATOR_MAP` is needed if the module/class names follow the default
+convention — `get_generator()` derives `<name>.<name>Generator` /
+`<Name>Generator` automatically (see `importer.py`'s fallback branch).
+
+**2. The XDG env-var trick is how this repo redirects a well-behaved
+Linux app's config/data into `/userdata` without patching the app.** Any
+emulator using a standard directories library (Rust's `dirs` crate,
+Qt's `QStandardPaths`, glib's `g_get_user_config_dir()`, etc.) honors
+`XDG_CONFIG_HOME`/`XDG_DATA_HOME`/`XDG_CACHE_HOME` if set. Rather than
+patching the emulator to accept a custom config path (not always
+possible, and an upstream-sync liability if it were), configgen's
+generator just sets those three env vars before exec, pointed at
+batocera's own `CONFIGS`/`SAVES`/`CACHE` roots
+(`batocera_common.paths`). `ppssppGenerator.py`/`xemuGenerator.py` already
+do this (`"XDG_CONFIG_HOME": CONFIGS, "XDG_DATA_HOME": SAVES`);
+`gopher64Generator.py` follows the identical pattern. One subtlety: if the
+library appends its own app-name subdirectory (gopher64's `dirs::config_dir()`
+does — `.join("gopher64")`), point the env var at the *parent* of where
+you want files to land, not the final directory itself, or you'll get a
+doubled-up path.
+
+**3. RetroAchievements for a standalone emulator is usually a token file,
+not a login call.** batocera stores a RetroAchievements *token* (obtained
+once via ES's own RA login screen), under global config keys
+`retroachievements`, `retroachievements.username`, `retroachievements.token`,
+`retroachievements.hardcore` (same keys regardless of which emulator reads
+them). Several standalone emulators (PPSSPP, DuckStation, gopher64) each
+expect that same information in their *own* on-disk format — PPSSPP wants
+an INI section plus a separate `ppsspp_retroachievements.dat` token file;
+gopher64 wants a single `retroachievements.json`
+(`{"username", "token", "enabled", "hardcore", ...}`). The generator's job
+is just translating batocera's global keys into whatever shape that one
+emulator wants, written to disk *before* the emulator launches — not a
+live username/password login on every boot (gopher64's CLI actually
+exposes `--ra-username`/`--ra-password` flags that would do exactly that,
+but they're deliberately unused here in favor of the token file, both to
+avoid a network round-trip on every game boot and to stay consistent with
+how every other emulator's RA integration in this repo already works).
+
+**4. `configs/batocera-<target>_defconfig` is a generated file — edit the
+`.board` file instead.** Hit directly while adding gopher64's opt-in line:
+editing `configs/batocera-x86_64-arcade_defconfig` by hand appeared to
+work, but the very next `make x86_64-arcade-defconfig` silently
+regenerated it from `configs/batocera-x86_64-arcade.board` (via
+`configs/createDefconfig.sh`, see the `$(TARGET_DEFCONFIG_PATTERN)` rule
+in the top-level `Makefile`) and the hand-edit vanished with no warning.
+The `_defconfig` files are gitignored
+(`/configs/batocera-*_defconfig` in `.gitignore`) precisely because
+they're build artifacts, not source — every persistent Kconfig line for a
+custom target (the `BATOCERA_ARCADE_SYSTEMS`/`LIBRETRO_GEOLITH`/
+`GOPHER64` opt-ins, the `BATOCERA_NINTENDO_SYSTEMS`-etc. umbrellas) lives
+in the `.board` file. After editing the `.board` file, regenerate with
+`make <target>-defconfig`, then actually load it into Buildroot's
+`.config` with `make <target>-config BATCH_MODE=1` (the `-defconfig`
+target only rewrites the text file; `-config` is the separate step that
+runs it through Buildroot's Kconfig machinery) — `BATCH_MODE=1` matters
+here too, since the plain Docker invocation opens an interactive `-it`
+session and fails outright (`cannot attach stdin to a TTY-enabled
+container`) when run from a non-interactive shell/script.
+
+**5. Building a package in isolation surfaces toolchain-version mismatches
+fast, cheaper than discovering them mid full-image build.** `make
+<target>-pkg PKG=gopher64 BATCH_MODE=1` got all the way through git
+submodule checkout and Cargo vendoring (hundreds of crates) before
+failing cleanly with `rustc 1.95.0 is not supported ... requires rustc
+1.97.0` — gopher64's newest tags had bumped their `Cargo.toml`
+`rust-version` past what this buildroot's vendored toolchain provides
+(`RUST_BIN_VERSION` in `buildroot/package/rust-bin/rust-bin.mk`). Rather
+than bumping the shared Rust toolchain (high blast radius — every other
+Rust package in the tree depends on it), the fix was pinning
+`GOPHER64_VERSION` back to the newest upstream tag whose `rust-version`
+still satisfied 1.95.0 (checked by fetching `Cargo.toml` from a handful of
+historical tags directly from GitHub until finding the boundary — v1.1.20
+was the last to require exactly `1.95.0`; v1.1.22 already required
+`1.96.0`). General lesson: when packaging any fast-moving upstream
+project, check its *minimum supported* toolchain/dependency version
+against what this buildroot currently vendors, and pin to a compatible
+tag rather than assuming "latest" will build — this applies just as much
+to a future Rust/Go/Zig package as it did here.
+
+**6. Mixing a clang-family `CC` into an otherwise-GCC cross toolchain has
+sharp edges beyond "does it compile."** Once the rustc-version mismatch
+was fixed, gopher64's own `build.rs` turned out to hardcode `-flto=thin`
+(Clang ThinLTO) when compiling its vendored C/C++ submodules via the
+`cc` crate — a flag GCC (buildroot's default target compiler here)
+rejects outright. Pointing just that C/C++ compilation at buildroot's
+cross-clang (`$(HOST_DIR)/bin/clang`, the same binary `duckstation.mk`
+already uses) fixed the flag-rejection, but needed its own workaround
+first: a **plain `clang --target=<rust-triple>` invocation can't find
+`crtbeginS.o`/`-lgcc`** on this fork's *internal* (non-`BR2_TOOLCHAIN_EXTERNAL`)
+toolchain, because the `--gcc-install-dir` auto-config-file mechanism
+`package/llvm-project/clang/clang.mk` sets up only runs for external
+toolchains. Fixed by reproducing that same `--gcc-install-dir`/`--target`/
+`--sysroot` flag set by hand (`$(TARGET_CC) -print-search-dirs` gives the
+install dir, same as the external-toolchain path computes it).
+
+Even after that, the *archiver* choice mattered independently of the
+compiler: the `cc` crate prefers `llvm-ar` for a clang-family `CC`, and
+since `host-clang` doesn't install one, it silently used something that
+produced an unindexed static archive (`archive has no index; run ranlib
+to add one`). Explicitly pinning `AR`/`RANLIB` to buildroot's own cross
+`ar`/`ranlib` looked like the fix but wasn't — the *actual* cause was
+that `-flto=thin` produces LLVM-bitcode-only `.o` files, which **no**
+GNU-binutils `ar` can index regardless of which one runs. The only real
+fix was dropping `-flto=thin` (via a source patch, since it's hardcoded
+with no env var/feature to disable it) — a reminder that an error message
+naming a specific tool (`ar`) doesn't always mean that tool is the actual
+problem; here it was a symptom of an upstream compiler-file-format
+mismatch one layer up.
+
+**7. `RUSTFLAGS` is global to the whole dependency graph — `cargo:rustc-link-arg`
+from the owning crate's own `build.rs` is the scoped alternative.** The
+last fix needed (extra `-lvulkan`/`--start-group`/`--end-group` linker
+args parallel-rdp and volk's symbols needed) was first tried as a
+`RUSTFLAGS` override in the package `.mk`. It "worked" for gopher64's own
+binary but broke an unrelated dependency crate (`sevenz-rust2`, which
+happens to build its own `cdylib` as part of the workspace) by handing
+*it* link args pointing at libraries only gopher64's own `build.rs`
+`OUT_DIR` has — `RUSTFLAGS` applies to every single `rustc` invocation
+cargo makes for every crate in the graph, not just the final binary.
+`cargo:rustc-link-arg=FLAG` printed from `build.rs` is the correctly
+scoped mechanism (only affects the crate that owns that build script) —
+worth remembering any time a fix looks like "just add a linker flag" for
+a Cargo-based package with more than one crate in its dependency tree.
+
+**8. Hand-assembling unified-diff hunks by counting context/added/removed
+lines is genuinely error-prone — use `diff -u` against real files
+instead.** Every patch needed for gopher64 (`git-describe` removal,
+`-flto=thin` removal + the link-arg additions) went through at least one
+round of `corrupt patch` / `Hunk #1 FAILED` from the *actual* `patch` tool
+inside the build container, **despite** `git apply --check` succeeding
+locally against byte-identical content each time. The root cause was
+always a wrong line count in the hand-typed `@@ -N,old +N,new @@` header
+(off by one from mis-counting how blank lines / removed-then-re-added
+lines factor into the old/new totals) — `git apply` tolerated the wrong
+count silently, the container's `patch` did not. The reliable fix, once
+this pattern repeated a third time: write out full "before" and "after"
+versions of the target region as plain strings/files and run `diff -u
+before after` to generate the hunk mechanically, rather than
+hand-computing header numbers at all. Worth doing this from the start for
+any future patch, rather than after multiple failed round-trips.
+
 ## Debugging note (2026-07-15): RPCS3 link failure — `cannot find -lLLVMIntelJITEvents`
 
 After enabling `BATOCERA_SONY_SYSTEMS` (which pulls in RPCS3), the build

@@ -324,6 +324,23 @@ clean tree to pull upstream changes).
   FBNeo/MAME, and a stale-`batocera-es-system`-build gotcha that initially
   made the new core invisible in ES despite building correctly. See
   `USER-INSTRUCTIONS.md` for the detailed writeup of both mechanics.
+- `ADD-GOPHER64.md` (repo root) — a second case study, this time adding a
+  **standalone (non-libretro)** emulator: `gopher64`, an optional extra
+  core for the existing `n64` system (mupen64plus stays the default).
+  Cargo/Rust package (`package/batocera/emulators/gopher64/`, modeled on
+  `ruffle/`), opt-in via `BR2_PACKAGE_GOPHER64=y` in
+  `configs/batocera-x86_64-arcade.board`, plus a new `configgen` generator
+  module (`generators/gopher64/`) — the piece libretro cores never need,
+  since libretro options flow through core-options instead of a Python
+  generator. RetroAchievements is wired via a token-file
+  (`retroachievements.json`) written from batocera's global RA settings,
+  the same pattern `ppssppConfig.py` already uses for PPSSPP. Verified
+  building (2026-07-17): `make x86_64-arcade-pkg PKG=gopher64` produces a
+  working binary and `batocera-es-system` correctly lists it as an n64
+  core — needed 3 source patches beyond the package skeleton (see
+  `ADD-GOPHER64.md`'s "Build fixes actually needed" for the
+  `-flto=thin`/GNU-`ar`/link-order gotchas of mixing a clang-family `CC`
+  into a GCC cross toolchain).
 - `TRIM-CANDIDATES.md` (repo root) — researched-but-not-implemented list of
   further non-emulation weight to cut (GPU driver vendors, firmware,
   Xorg/desktop bundle, background network services, lightgun drivers).
