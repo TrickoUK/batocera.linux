@@ -53,8 +53,11 @@
 - Rockchip RK3588 devices moved to the mainline linux kernel:
   CoolPi 4B, FriendlyElec CM3588 NAS, GameForce ACE, IndieDroid Nova, Khadas Edge2, Orange Pi 5
   Orange Pi 5 Plus, Orange Pi 5B, QuartzPro64, ROCK 5A, ROCK 5B, ROCK 5B Plus, ROCK 5C
+- Select Qualcomm handheld devices can now install batcoera on the internal drive alongside Android (batocera-install-internal)
 - The Force Engine to capable aarch64 devices
-- TR1X & TR2X have merged into the unified TRX which also now supports Tomb Raider 3.
+- TR1X & TR2X have merged into the unified TRX which also now supports Tomb Raider 3
+  As a result your roms in the traider1 & traider2 folders should be moved to the new combined traider folder
+  Ensure you read the info text file in the traider folder
 - Vita3k added for capable aarch64 devices
 ### Updated
 - Azahar to 2125.1.2
@@ -73,6 +76,7 @@
 - Jazz2 to 3.6.0
 - Ledspicer to 0.7.6
 - Libretro-Arduous to April 21st, 2026 build
+- Libretro-Atari800 to July 15th, 2026 build
 - Libretro-EasyRPG to 0.8.1.1
 - Libretro-Hatari to April 21st, 2026 build
 - Libretro-HatariB to February 14th, 2026 build
@@ -106,6 +110,7 @@
 - Solarus to 2.0.4
 - Sonic3-Air to v26.03.28.0
 - Supermodel to v0.3a-20260528
+- TRX to 1.9.2
 - Tsugaru to v20251206
 - Vita3k to 10th of June build
 - VKQuake to 1.34.1
@@ -113,7 +118,9 @@
 - Winetricks to 20260125
 - X16emu to r49
 - Xemu to v0.8.136
+- Ymir to v0.3.3
 ### System
+- Allwinner H616 device kernel updated to 7.1.4
 - Allwinner H700 device kernel updated to 7.0.11
 - ALSA UCM configuration to v1.2.16
 - Buildroot to 2026.05.x with supporting package & toolchain updates
@@ -122,7 +129,7 @@
 - FAudio to 26.05
 - FFMPEG to 8.1.2
 - Khadas VIM4 kernel updated to vendor 5.15.y
-- LabWC to 0.20.0
+- LabWC to 0.20.1
 - Linux Firmware to 20260622
 - Mesa3D to 26.1.4
 - Nvidia Open Production driver to 610.43.03
@@ -130,10 +137,10 @@
 - QT to 6.11.1
 - Qualcomm SM6115 device kernel updated to 7.0.11
 - Qualcomm SM8550 device kernel updated to 7.0.11
-- Qualcomm SM8750 device kernel updated to 7.1.3
+- Qualcomm SM8750 device kernel updated to 7.1.4
 - Raspberry Pi device kernel updated to 6.18.37
 - Rockchip RK3568 device kernel updated to 7.0.11
-- Rockchip RK3588 mainline device kernel updated to 7.1.3
+- Rockchip RK3588 mainline device kernel updated to 7.1.4
 - Rocknix ABL to 1.1.4 (SM8x50 devices)
 - SwitchRes to 2.2.2
 - RTKit to v0.14
@@ -142,8 +149,8 @@
 - WINE Mono to 11.1.0
 - WINE Proton to proton-exp-11.0
 - WINE TKG to 11.12
-- Wlroots to 0.20.1
-- X86_64 / Zen3 kernel updated to 7.1.3
+- Wlroots to 0.20.2
+- X86_64 / Zen3 kernel updated to 7.1.4
 
 # 2026/05/30 - batocera.linux 43.1
 ### Fixed
