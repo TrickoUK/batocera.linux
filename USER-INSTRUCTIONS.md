@@ -108,7 +108,7 @@ build lean.
 
 ### Option 3 — turn on a whole manufacturer
 
-As of 2026-07-15, there are also seven manufacturer-scoped umbrellas:
+As of 2026-07-15, there are also manufacturer-scoped umbrellas:
 `BATOCERA_NINTENDO_SYSTEMS`, `BATOCERA_SEGA_SYSTEMS`, `BATOCERA_SONY_SYSTEMS`,
 `BATOCERA_COMMODORE_SYSTEMS`, `BATOCERA_AMSTRAD_SYSTEMS`,
 `BATOCERA_NEC_SYSTEMS`, `BATOCERA_ATARI_SYSTEMS`. They work exactly like the
@@ -116,6 +116,19 @@ As of 2026-07-15, there are also seven manufacturer-scoped umbrellas:
 emulator package, with each `select` conditioned on the target architectures
 it's actually buildable for (copied verbatim from wherever that package was
 already selected elsewhere in the file).
+
+**As of 2026-07-19, three of these are further split into a standard
+(non-handheld) umbrella and a separate `_HANDHELD_` umbrella:**
+`BATOCERA_NINTENDO_SYSTEMS` / `BATOCERA_NINTENDO_HANDHELD_SYSTEMS`
+(GB/GBC/GBA/DS/3DS in the handheld half), `BATOCERA_SONY_SYSTEMS` /
+`BATOCERA_SONY_HANDHELD_SYSTEMS` (PSP/PS Vita in the handheld half), and
+`BATOCERA_ATARI_SYSTEMS` / `BATOCERA_ATARI_HANDHELD_SYSTEMS` (Lynx — newly
+added, see below). Sega and NEC were **not** split: Sega's Game Gear
+support is baked into the same libretro cores (`picodrive`,
+`genesisplusgx`, etc.) that provide Genesis/Master System support, so
+there's no separate package to move into a handheld variant, and NEC has no
+handheld package selected either. That gives 10 manufacturer options total,
+not 7.
 
 **Unlike the 11 category umbrellas, these don't live in**
 `package/batocera/core/batocera-system/Config.in` **at all.** That file is
@@ -155,45 +168,59 @@ The difference from Option 1: those umbrellas group by *category*
 turning on "everything Nintendo" or "everything Sega" in one line, without
 pulling in every other maker's systems the way `CONSOLE_SYSTEMS` would.
 
-**As of 2026-07-15, all 7 are `=y` in `configs/batocera-x86_64-arcade.board`**
-(still not selected by `BATOCERA_ALL_SYSTEMS` itself — just this board's
-defconfig). They replaced what used to be a hand-picked "Phase 2a: PS1"
-block there — `SONY_SYSTEMS` covers those same PS1 cores plus PS2/PS3/PSP/
-Vita. Turning one on for a *different* board (or off again here) is the
-same mechanism as Option 1: set/remove the `=y` line in that board's
-defconfig. **Requires `manufacturer-systems.patch` applied first** (see
-"The local `Config.in` patches" below) — without it, these `=y` lines in
-the board file are silently inert, since Kconfig doesn't recognize a symbol
-it never parsed.
+**As of 2026-07-15, all of the standard-variant umbrellas are `=y` in
+`configs/batocera-x86_64-arcade.board`, and (as of 2026-07-19) the 3
+`_HANDHELD_` variants are explicitly `=n` there** (still not selected by
+`BATOCERA_ALL_SYSTEMS` itself — just this board's defconfig). They replaced
+what used to be a hand-picked "Phase 2a: PS1" block there — `SONY_SYSTEMS`
+covers those same PS1 cores plus PS2/PS3, with PSP/Vita split into
+`SONY_HANDHELD_SYSTEMS`. Turning one on for a *different* board (or off
+again here) is the same mechanism as Option 1: set/remove the `=y`/`=n`
+line in that board's defconfig. **Requires `manufacturer-systems.patch`
+applied first** (see "The local `Config.in` patches" below) — without it,
+these lines in the board file are silently inert, since Kconfig doesn't
+recognize a symbol it never parsed.
 
-One deliberate exception: `NINTENDO_SYSTEMS`'s Switch cores (`CITRON`,
-`RYUJINX`) need `BR2_PACKAGE_BATOCERA_CORES_STILL_COMMERCIALIZED=y` as well
-(their own `select` condition on top of `NINTENDO_SYSTEMS`), which is *not*
-set in the arcade board — so Switch stays off there even with
-`NINTENDO_SYSTEMS=y`; everything else under it (NES/SNES/N64/GameCube/Wii/
-Wii U/handhelds) still builds.
-
-What's in each:
+What's in each (standard variants; handheld variants listed separately
+below):
 
 | Manufacturer | What it covers |
 |---|---|
-| `NINTENDO_SYSTEMS` | NES, SNES, N64, GameCube/Wii, Wii U, Switch, Game Boy/Color, GBA, DS, 3DS, Virtual Boy, Game & Watch, Pokémon Mini |
+| `NINTENDO_SYSTEMS` | NES, SNES, N64, GameCube/Wii, Wii U |
 | `SEGA_SYSTEMS` | Master System/Game Gear, Genesis/Mega Drive/32X, Saturn, Dreamcast/Naomi/Atomiswave, Model 2/3 arcade, Demul, Lindbergh |
-| `SONY_SYSTEMS` | PS1, PS2, PS3, PSP, PS Vita |
+| `SONY_SYSTEMS` | PS1, PS2, PS3 |
 | `COMMODORE_SYSTEMS` | C64/128/VIC-20/PET/Plus4/16, Amiga |
 | `AMSTRAD_SYSTEMS` | Amstrad CPC and GX4000 |
 | `NEC_SYSTEMS` | PC Engine, PC Engine CD, TurboGrafx-16, SuperGrafx |
 | `ATARI_SYSTEMS` | Atari 2600, 7800, Jaguar |
 
+**As of 2026-07-19, three of the manufacturers above have a matching
+`_HANDHELD_` umbrella**, off by default in the arcade board:
+
+| Manufacturer (handheld) | What it covers |
+|---|---|
+| `NINTENDO_HANDHELD_SYSTEMS` | Game Boy/Color, GBA, DS, 3DS |
+| `SONY_HANDHELD_SYSTEMS` | PSP, PS Vita (both still commented-out `select`s, same as before the split — see the scoping note below) |
+| `ATARI_HANDHELD_SYSTEMS` | Lynx — newly added by the split; wasn't selected anywhere in this fork before |
+
+Sega and NEC were **not** given a `_HANDHELD_` counterpart: Sega's Game
+Gear support is baked into the same libretro cores (`picodrive`,
+`genesisplusgx`, `smsplus_gx`, `gearsystem`) that also provide Genesis/
+Master System support, so there's no separate package to split out, and
+NEC has no handheld-specific package either.
+
 A few scoping choices worth knowing, if you go looking for something and
 don't find it:
 
-- `SONY_SYSTEMS` deliberately includes the PSP and PS Vita handhelds
-  alongside PS1–3, even though the original ask was just "PS1, PS2, PS3" —
-  they're Sony too, and both have working x86_64 emulators.
+- `SONY_HANDHELD_SYSTEMS`'s PSP and PS Vita `select` lines are still
+  commented out, exactly as they were inside `SONY_SYSTEMS` before the
+  split — turning the option `=y` doesn't build anything yet (PPSSPP has a
+  known audio-corruption issue on one target, RPCS3/Vita3K were never
+  turned on). The split only reorganizes where they live, it doesn't
+  change what's actually enabled.
 - `ATARI_SYSTEMS` and `NEC_SYSTEMS` are deliberately narrower than
-  "everything that manufacturer made". Atari's Lynx (handheld) and
-  800/5200/ST computers, and NEC's PC-FX console and PC-88/98 computers,
+  "everything that manufacturer made". Atari's 800/5200/ST computers, and
+  NEC's PC-FX console and PC-88/98 computers,
   are *not* included. If you want those, they'd need adding by hand
   (Option 2) or a follow-up expansion of these umbrellas.
 - Two items live in the source `Config.in` under a manufacturer's comment
@@ -1243,3 +1270,19 @@ applied. For the manufacturer-systems patch: if the `grep` finds the
 `source` line, it's applied. Note `git apply` itself refuses to
 double-apply — running it again when it's already applied just errors out
 safely, it won't corrupt the file.
+
+## Adding/reorganizing per-game emulator options in EmulationStation
+
+If you want to add a new option to a core's in-game options menu (e.g. the
+beetle-psx PSX core's renderer/MSAA/PGXP settings added in this fork), or
+remove/reorganize existing ones, see `CUSTOM-OPTIONS.md` at the repo root —
+a full walkthrough of both halves of the pipeline: the `*.core.yml`/
+`*.emulator.yml` files that make EmulationStation show a control at all, and
+the separate `configgen` Python code that turns the value the user picked
+into the actual file the emulator reads at launch. It also covers what
+"dynamic" options mean in this codebase (mostly build-time Kconfig gating
+and Python branching on other `system.config` values at launch time — there
+is no live "hide this if that's selected" mechanism), and ends with a
+step-by-step checklist. This is generic batocera mechanics, not specific to
+this fork's customizations, so it lives as its own top-level doc rather than
+folded into this file.

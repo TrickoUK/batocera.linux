@@ -180,6 +180,24 @@ Two non-obvious mechanics worth knowing about this pipeline:
    doesn't seem to take effect, verify what the generator code actually
    reads before assuming the field name itself is wrong.
 
+## How the per-game options menu gets built
+
+Related to, but distinct from, the system list above: the per-game/per-system
+*options* menu in EmulationStation (aspect ratio, shaders, and per-core
+options like a specific PSX core's renderer/filtering settings) is built by
+the same `.core.yml`/`.emulator.yml` metadata files and the same
+`batocera_es_system` registry/build tooling, but produces a different output
+(`es_features.cfg` rather than the system list), and has an entirely separate
+downstream half — the "configgen" pipeline that turns the user's picked value
+into the actual config file an emulator reads at launch. This is generic
+mechanics, not specific to this fork, so it's documented in full in
+`CUSTOM-OPTIONS.md` at the repo root rather than here — see that file for the
+complete YAML-declaration-to-emulator-config pipeline, including how
+per-core vs. shared/global options differ, how multiple cores per system
+coexist, what "dynamic" options actually means in this codebase (mostly
+build-time Kconfig gating, not runtime conditionals), and a checklist for
+adding/removing/reorganizing an option.
+
 ## Build mechanics & useful make targets
 
 The top-level `Makefile` exposes a family of per-target make targets

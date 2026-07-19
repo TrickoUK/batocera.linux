@@ -127,6 +127,14 @@ config BR2_PACKAGE_BATOCERA_NINTENDO_SYSTEMS
 						   BR2_PACKAGE_BATOCERA_TARGET_SM8550     || \
 						   BR2_PACKAGE_BATOCERA_TARGET_SM8750
 
+	help
+	  Nintendo systems/emulators (this fork's manufacturer-scoped grouping,
+	  standard/non-handheld variant — see BATOCERA_NINTENDO_HANDHELD_SYSTEMS
+	  for GB/GBC/GBA/DS/3DS)
+
+config BR2_PACKAGE_BATOCERA_NINTENDO_HANDHELD_SYSTEMS
+	bool "batocera.linux Nintendo handheld systems/emulators"
+
 	# Game Boy / Game Boy Color
 	select BR2_PACKAGE_LIBRETRO_GAMBATTE		# ALL
 	select BR2_PACKAGE_LIBRETRO_TGBDUAL		# ALL
@@ -167,9 +175,9 @@ config BR2_PACKAGE_BATOCERA_NINTENDO_SYSTEMS
 											 BR2_PACKAGE_BATOCERA_TARGET_SM8550	 || \
 											 BR2_PACKAGE_BATOCERA_TARGET_SM8750
 
-
 	help
-	  Nintendo systems/emulators (this fork's manufacturer-scoped grouping)
+	  Nintendo handheld systems/emulators (Game Boy/Color, GBA, DS, 3DS —
+	  this fork's manufacturer-scoped grouping)
 
 config BR2_PACKAGE_BATOCERA_SEGA_SYSTEMS
 	bool "batocera.linux Sega systems/emulators"
@@ -276,11 +284,19 @@ config BR2_PACKAGE_BATOCERA_SONY_SYSTEMS
 	                                       BR2_PACKAGE_BATOCERA_TARGET_SM8550     || \
 										   BR2_PACKAGE_BATOCERA_TARGET_SM8750
 	select BR2_PACKAGE_LIBRETRO_PS2     if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY
-	select BR2_PACKAGE_PLAY				if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY
-	select BR2_PACKAGE_LIBRETRO_PLAY	if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY
+#	select BR2_PACKAGE_PLAY				if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY
+#	select BR2_PACKAGE_LIBRETRO_PLAY	if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY
 
 	# PS3
-	select BR2_PACKAGE_RPCS3			if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY
+#	select BR2_PACKAGE_RPCS3			if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY
+
+	help
+	  Sony systems/emulators (this fork's manufacturer-scoped grouping,
+	  standard/non-handheld variant — see BATOCERA_SONY_HANDHELD_SYSTEMS for
+	  PSP/PS Vita)
+
+config BR2_PACKAGE_BATOCERA_SONY_HANDHELD_SYSTEMS
+	bool "batocera.linux Sony handheld systems/emulators"
 
 	# PSP
 	select BR2_PACKAGE_PPSSPP			if !BR2_PACKAGE_BATOCERA_TARGET_BCM2835 && \
@@ -293,7 +309,8 @@ config BR2_PACKAGE_BATOCERA_SONY_SYSTEMS
 										   BR2_PACKAGE_BATOCERA_TARGET_SM8550
 
 	help
-	  Sony systems/emulators (this fork's manufacturer-scoped grouping)
+	  Sony handheld systems/emulators (PSP, PS Vita — this fork's
+	  manufacturer-scoped grouping)
 
 config BR2_PACKAGE_BATOCERA_COMMODORE_SYSTEMS
 	bool "batocera.linux Commodore systems/emulators"
@@ -361,4 +378,18 @@ config BR2_PACKAGE_BATOCERA_ATARI_SYSTEMS
 									 BR2_PACKAGE_BATOCERA_TARGET_SM8550
 
 	help
-	  Atari systems/emulators (this fork's manufacturer-scoped grouping)
+	  Atari systems/emulators (this fork's manufacturer-scoped grouping,
+	  standard/non-handheld variant — see BATOCERA_ATARI_HANDHELD_SYSTEMS
+	  for the Lynx)
+
+config BR2_PACKAGE_BATOCERA_ATARI_HANDHELD_SYSTEMS
+	bool "batocera.linux Atari handheld systems/emulators"
+
+	# Atari Lynx
+	select BR2_PACKAGE_LIBRETRO_BEETLE_LYNX	# ALL
+	select BR2_PACKAGE_LIBRETRO_HANDY		# ALL
+	select BR2_PACKAGE_LIBRETRO_HOLANI		# ALL
+
+	help
+	  Atari handheld systems/emulators (Lynx — this fork's
+	  manufacturer-scoped grouping)

@@ -179,20 +179,29 @@ board as of 2026-07-15):** seven parallel options —
 `BATOCERA_COMMODORE_SYSTEMS`, `BATOCERA_AMSTRAD_SYSTEMS`,
 `BATOCERA_NEC_SYSTEMS`, `BATOCERA_ATARI_SYSTEMS` — `select` the same
 underlying packages as the category umbrellas above, just regrouped by
-manufacturer instead of by category (e.g. `NINTENDO_SYSTEMS` pulls in
-NES/SNES/N64/GameCube-Wii/WiiU *and* GB/GBA/DS/3DS in one option, spanning
-what would otherwise be split across `CONSOLE_SYSTEMS` and
-`HANDHELD_SYSTEMS`). Each `select` line was copied verbatim including its
-original condition, so these stay valid for any board, not just x86_64.
+manufacturer instead of by category. Each `select` line was copied verbatim
+including its original condition, so these stay valid for any board, not
+just x86_64.
 
-All 7 are now `=y` in `configs/batocera-x86_64-arcade.board`, replacing what
-used to be the hand-picked "Phase 2a: PS1" lines there (now redundant —
-`SONY_SYSTEMS` covers PS1 plus PS2/PS3/PSP/Vita). Not selected:
-`BR2_PACKAGE_BATOCERA_CORES_STILL_COMMERCIALIZED`, deliberately left off —
-without it, `NINTENDO_SYSTEMS`' `select BR2_PACKAGE_CITRON`/`RYUJINX`
-conditions never fire, so Switch emulation stays off while everything else
-under `NINTENDO_SYSTEMS` is unaffected. **Still not selected by
-`ALL_SYSTEMS`** — only this board's defconfig opts into them.
+**As of 2026-07-19, three of these are further split into a standard
+(non-handheld) umbrella and a separate `_HANDHELD_` umbrella:**
+`NINTENDO_SYSTEMS` (NES/SNES/N64/GameCube-Wii/WiiU) now has a
+`NINTENDO_HANDHELD_SYSTEMS` counterpart (GB/GBA/DS/3DS); `SONY_SYSTEMS`
+(PS1/PS2/PS3) has `SONY_HANDHELD_SYSTEMS` (PSP/PS Vita — both still
+commented-out `select`s, unchanged from before the split, just relocated);
+`ATARI_SYSTEMS` (2600/7800/Jaguar) has `ATARI_HANDHELD_SYSTEMS` (Lynx —
+newly wired up as part of this split; wasn't selected anywhere in this fork
+before). Sega and NEC were left as single umbrellas — Sega's Game Gear
+support is baked into the same libretro cores as its Genesis/Master System
+support, so there's no separate package to split out, and NEC has no
+handheld-specific package. That's 10 manufacturer options total.
+
+All standard-variant umbrellas are `=y` in
+`configs/batocera-x86_64-arcade.board`, and the 3 `_HANDHELD_` variants are
+explicitly `=n` there, replacing what used to be the hand-picked "Phase 2a:
+PS1" lines (now redundant — `SONY_SYSTEMS`/`SONY_HANDHELD_SYSTEMS` together
+cover PS1/PS2/PS3/PSP/Vita). **Still not selected by `ALL_SYSTEMS`** — only
+this board's defconfig opts into them.
 
 **Deliberately not in `package/batocera/core/batocera-system/Config.in`.**
 That file is shared/upstream-touched constantly, so these live instead in a
@@ -204,13 +213,14 @@ exist in the tree, so one line is needed in the shared top-level
 `board/batocera/x86/local-patches/manufacturer-systems.patch`, applied the
 same way and same lifecycle as `no-nvidia.patch` (see
 "The local `Config.in` patches" in `USER-INSTRUCTIONS.md`). Without the
-patch applied, `Config.in` is byte-for-byte upstream-clean and the seven
-options don't exist in the Kconfig tree.
+patch applied, `Config.in` is byte-for-byte upstream-clean and none of these
+options exist in the Kconfig tree.
 
 Full package-by-package breakdown and the deliberate scope exclusions (Sony
-handhelds included; Atari/NEC deliberately narrower than "everything that
-manufacturer made"; a mislabeled Sinclair core and the non-official
-Commander X16 left out of Amstrad/Commodore) are in `USER-INSTRUCTIONS.md`.
+handhelds split out but preserved; Atari/NEC deliberately narrower than
+"everything that manufacturer made"; a mislabeled Sinclair core and the
+non-official Commander X16 left out of Amstrad/Commodore) are in
+`USER-INSTRUCTIONS.md`.
 
 The EmulationStation UI system list (`es_systems.cfg`) is **generated at
 build time**, not hand-maintained: each emulator package's `.mk` registers

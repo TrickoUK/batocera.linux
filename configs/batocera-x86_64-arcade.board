@@ -12,7 +12,7 @@ BR2_ROOTFS_OVERLAY="$(BR2_EXTERNAL_BATOCERA_PATH)/board/batocera/fsoverlay $(BR2
 # Kernel
 BR2_LINUX_KERNEL=y
 BR2_LINUX_KERNEL_CUSTOM_VERSION=y
-BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE="7.1.3"
+BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE="7.1.4"
 BR2_KERNEL_HEADERS_7_1=y
 BR2_LINUX_KERNEL_PATCH="$(BR2_EXTERNAL_BATOCERA_PATH)/board/batocera/x86/linux_patches"
 BR2_LINUX_KERNEL_USE_CUSTOM_CONFIG=y
@@ -66,16 +66,26 @@ BR2_PACKAGE_LIBRETRO_GEOLITH=y
 # select()s every x86-available core/emulator for that manufacturer's
 # systems, replacing what used to be hand-picked PS1-only lines here.
 # Requires board/batocera/x86/local-patches/manufacturer-systems.patch to be
-# applied *before* generating the defconfig, or these 7 lines are silently
+# applied *before* generating the defconfig, or these 10 lines are silently
 # inert — see USER-INSTRUCTIONS.md, "The local Config.in patches".
 #
+# Nintendo, Sony, and Atari are each split into a standard (non-handheld)
+# umbrella and a separate _HANDHELD_ umbrella (GB/GBA/DS/3DS; PSP/Vita;
+# Lynx). This arcade board only enables the standard variants and leaves
+# the handheld ones off. Sega and NEC have no separable handheld packages
+# (e.g. Sega Game Gear support is bundled into the same cores as Genesis/
+# Master System) so they're left as single umbrellas, unchanged.
+#
 BR2_PACKAGE_BATOCERA_NINTENDO_SYSTEMS=y
+BR2_PACKAGE_BATOCERA_NINTENDO_HANDHELD_SYSTEMS=n
 BR2_PACKAGE_BATOCERA_SEGA_SYSTEMS=y
 BR2_PACKAGE_BATOCERA_SONY_SYSTEMS=y
-BR2_PACKAGE_BATOCERA_COMMODORE_SYSTEMS=y
-BR2_PACKAGE_BATOCERA_AMSTRAD_SYSTEMS=y
+BR2_PACKAGE_BATOCERA_SONY_HANDHELD_SYSTEMS=n
+BR2_PACKAGE_BATOCERA_COMMODORE_SYSTEMS=n
+BR2_PACKAGE_BATOCERA_AMSTRAD_SYSTEMS=n
 BR2_PACKAGE_BATOCERA_NEC_SYSTEMS=y
-BR2_PACKAGE_BATOCERA_ATARI_SYSTEMS=y
+BR2_PACKAGE_BATOCERA_ATARI_SYSTEMS=n
+BR2_PACKAGE_BATOCERA_ATARI_HANDHELD_SYSTEMS=n
 
 # Required by SEGA_SYSTEMS: lindbergh-loader hard-depends on wine-x86 at the
 # Buildroot Makefile level (LINDBERGH_LOADER_DEPENDENCIES), but its own
