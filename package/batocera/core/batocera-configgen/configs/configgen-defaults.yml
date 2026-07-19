@@ -216,8 +216,8 @@ electron:
   emulator: libretro
   core:     mame
 enterprise:
-  emulator: clk
-  core:     clk
+  emulator: libretro
+  core:     ep128emu-core
 etlegacy:
   emulator: etlegacy
   core:     etlegacy
@@ -616,10 +616,10 @@ reminiscence:
   core:     reminiscence
 rott:
   emulator: taradino
+  core:     taradino
 rtcw:
   emulator: iortcw
   core:     iortcw
-  core:     taradino
 rx78:
   emulator: libretro
   core:     mame
@@ -749,13 +749,7 @@ ti99:
 tic80:
   emulator: libretro
   core:     tic80
-traider1:
-  emulator: trx
-  core:     trx
-traider2:
-  emulator: trx
-  core:     trx
-traider3:
+traider:
   emulator: trx
   core:     trx
 triforce:
@@ -767,6 +761,9 @@ trs80:
 tutor:
   emulator: libretro
   core:     mame
+tvc:
+  emulator: libretro
+  core:     ep128emu-core
 tvgames:
   emulator: libretro
   core:     mame
