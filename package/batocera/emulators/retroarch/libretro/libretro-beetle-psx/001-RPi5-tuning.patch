@@ -1,8 +1,6 @@
-diff --git a/Makefile b/Makefile
-index fca49a2667..2adea5c353 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -361,6 +361,22 @@ else ifeq ($(platform), rpi4_64)
+@@ -398,6 +398,22 @@
     GL_LIB := -lGLESv2
     HAVE_CDROM = 0
  
@@ -12,7 +10,7 @@ index fca49a2667..2adea5c353 100644
 +   fpic   := -fPIC
 +   GREP = grep
 +   SHARED := -shared -Wl,--no-undefined -Wl,--version-script=link.T
-+   CFLAGS   += -O3 -DNDEBUG -mcpu=cortex-a76 -mtune=cortex-a76 -fsigned-char 
++   CFLAGS   += -O3 -DNDEBUG -mcpu=cortex-a76 -mtune=cortex-a76 -fsigned-char
 +   CXXFLAGS += -O3 -DNDEBUG -mcpu=cortex-a76 -mtune=cortex-a76 -fsigned-char
 +   LDFLAGS += $(PTHREAD_FLAGS) -ldl -lrt
 +   HAVE_LIGHTREC = 1

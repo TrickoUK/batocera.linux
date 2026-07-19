@@ -2127,6 +2127,99 @@ def _mednafen_psx_options(
     # Analog Stick self calibration
     _set(coreSettings, 'beetle_psx_hw_analog_calibration', 'enabled')
 
+    # Core Aspect Ratio
+    _set_from_system(coreSettings, 'beetle_psx_hw_aspect_ratio', system, 'beetle_psx_hw_aspect_ratio', default='corrected')
+
+    # Deinterlace Method
+    _set_from_system(coreSettings, 'beetle_psx_hw_deinterlacer', system, 'beetle_psx_hw_deinterlacer', default='weave')
+
+    # HD Texture Packs
+    if system.config.get_bool('beetle_psx_hw_hd_textures_enable'):
+        _set(coreSettings, 'beetle_psx_hw_replace_textures', 'enabled')
+    else:
+        _set(coreSettings, 'beetle_psx_hw_replace_textures', 'disabled')
+
+    # Renderer
+    _set_from_system(coreSettings, 'beetle_psx_hw_renderer', system, 'beetle_psx_hw_renderer', default='hardware')
+
+    # Software Framebuffer
+    _set_from_system(coreSettings, 'beetle_psx_hw_renderer_software_fb', system, 'beetle_psx_hw_renderer_software_fb', default='enabled')
+
+    # Internal Color Depth
+    _set_from_system(coreSettings, 'beetle_psx_hw_depth', system, 'beetle_psx_hw_depth', default='16bpp(native)')
+
+    # Dithering Pattern
+    _set_from_system(coreSettings, 'beetle_psx_hw_dither_mode', system, 'beetle_psx_hw_dither_mode', default='1x(native)')
+
+    # Texture Filtering
+    _set_from_system(coreSettings, 'beetle_psx_hw_filter', system, 'beetle_psx_hw_filter', default='nearest')
+
+    # Exclude Sprites from Filtering (Vulkan)
+    _set_from_system(coreSettings, 'beetle_psx_hw_filter_exclude_sprite', system, 'beetle_psx_hw_filter_exclude_sprite', default='disabled')
+
+    # Exclude 2D Polygons from Filtering (Vulkan)
+    _set_from_system(coreSettings, 'beetle_psx_hw_filter_exclude_2d_polygon', system, 'beetle_psx_hw_filter_exclude_2d_polygon', default='disabled')
+
+    # Texture UV Offset (Vulkan)
+    _set_from_system(coreSettings, 'beetle_psx_hw_scaled_uv_offset', system, 'beetle_psx_hw_scaled_uv_offset', default='enabled')
+
+    # Adaptive Smoothing (Vulkan)
+    _set_from_system(coreSettings, 'beetle_psx_hw_adaptive_smoothing', system, 'beetle_psx_hw_adaptive_smoothing', default='disabled')
+
+    # Supersampling (Vulkan)
+    _set_from_system(coreSettings, 'beetle_psx_hw_super_sampling', system, 'beetle_psx_hw_super_sampling', default='disabled')
+
+    # Multi-Sampled Anti Aliasing (Vulkan)
+    _set_from_system(coreSettings, 'beetle_psx_hw_msaa', system, 'beetle_psx_hw_msaa', default='1x')
+
+    # MDEC YUV Chroma Filter (Vulkan)
+    _set_from_system(coreSettings, 'beetle_psx_hw_mdec_yuv', system, 'beetle_psx_hw_mdec_yuv', default='disabled')
+
+    # PGXP Operation Mode
+    _set_from_system(coreSettings, 'beetle_psx_hw_pgxp_mode', system, 'beetle_psx_hw_pgxp_mode', default='disabled')
+
+    # PGXP 2D Geometry Tolerance
+    _set_from_system(coreSettings, 'beetle_psx_hw_pgxp_2d_tol', system, 'beetle_psx_hw_pgxp_2d_tol', default='disabled')
+
+    # PGXP Primitive Culling
+    _set_from_system(coreSettings, 'beetle_psx_hw_pgxp_nclip', system, 'beetle_psx_hw_pgxp_nclip', default='disabled')
+
+    # PGXP Vertex Cache
+    _set_from_system(coreSettings, 'beetle_psx_hw_pgxp_vertex', system, 'beetle_psx_hw_pgxp_vertex', default='disabled')
+
+    # PGXP Perspective Correct Texturing
+    _set_from_system(coreSettings, 'beetle_psx_hw_pgxp_texture', system, 'beetle_psx_hw_pgxp_texture', default='disabled')
+
+    # Line-to-Quad Hack
+    _set_from_system(coreSettings, 'beetle_psx_hw_line_render', system, 'beetle_psx_hw_line_render', default='default')
+
+    # Widescreen Hack Aspect Ratio
+    _set_from_system(coreSettings, 'beetle_psx_hw_widescreen_hack_aspect_ratio', system, 'beetle_psx_hw_widescreen_hack_aspect_ratio', default='16:9')
+
+    # GPU Rasterizer Overclock
+    _set_from_system(coreSettings, 'beetle_psx_hw_gpu_overclock', system, 'beetle_psx_hw_gpu_overclock', default='1x(native)')
+
+    # GTE Overclock
+    _set_from_system(coreSettings, 'beetle_psx_hw_gte_overclock', system, 'beetle_psx_hw_gte_overclock', default='disabled')
+
+    # CD Access Method
+    _set_from_system(coreSettings, 'beetle_psx_hw_cd_access_method', system, 'beetle_psx_hw_cd_access_method', default='sync')
+
+    # CD Loading Speed
+    _set_from_system(coreSettings, 'beetle_psx_hw_cd_fastload', system, 'beetle_psx_hw_cd_fastload', default='2x(native)')
+
+    # Dynarec Cycles Per Instruction
+    _set_from_system(coreSettings, 'beetle_psx_hw_dynarec_op_cycles', system, 'beetle_psx_hw_dynarec_op_cycles', default='2')
+
+    # Dynarec DMA/GPU/MDEC/Timer Event Cycles
+    _set_from_system(coreSettings, 'beetle_psx_hw_dynarec_eventcycles', system, 'beetle_psx_hw_dynarec_eventcycles', default='128')
+
+    # Dynarec SPU Samples
+    _set_from_system(coreSettings, 'beetle_psx_hw_dynarec_spu_samples', system, 'beetle_psx_hw_dynarec_spu_samples', default='1')
+
+    # Dynarec SP GP Hit RAM Optimization
+    _set_from_system(coreSettings, 'beetle_psx_hw_dynarec_spgp_opt', system, 'beetle_psx_hw_dynarec_spgp_opt', default='disabled')
+
     # Multitap
     match system.config.get('multitap_mednafen'):
         case 'port1':
