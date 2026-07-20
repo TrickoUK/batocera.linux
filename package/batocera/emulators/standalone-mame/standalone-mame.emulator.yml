@@ -1,0 +1,175 @@
+# standalone-mame is a fully independent emulator identity (NOT a second
+# "core" of the existing "mame" emulator), even though it plugs into the
+# same "mame" system/neogeo system. This is load-bearing, not stylistic:
+# registry.py's Registry._iter_system_emulator_cores() only synthesizes
+# an implicit single core (named after the emulator) for an emulator that
+# has a systems: list but NO explicitly-registered cores. mame.emulator.yml
+# (package/batocera/emulators/mame/) relies on exactly that implicit
+# synthesis for its own "mame" core - it has never had a *.mame.core.yml
+# file. Registering a real core under the "mame" emulator name (an earlier
+# version of this package did that) flips that branch to a cartesian
+# product over *only the explicitly registered cores*, which silently
+# drops the implicit groovy-mame core for every single system it's used
+# on. Confirmed by an actual build: es_systems.cfg lost the "mame" core
+# entirely, replaced everywhere by "standalone-mame". See
+# ADD-STANDALONE-MAME.md, "Real build results" for the full story.
+#
+# Being independent also means this schema is NOT inherited from
+# mame.emulator.yml (registry.py's core-extension merge is additive-only
+# and only applies within one emulator's own cores) - deliberately: this
+# lets us omit switchres (GroovyMAME/Switchres-only, stock MAME doesn't
+# have it) and the light-gun-related options (guns aren't wired up in v1,
+# see ADD-STANDALONE-MAME.md) instead of showing them as inert toggles.
+features:
+  - padtokeyboard
+shared_features:
+  - powermode
+  - tdp
+  - videomode
+  - bezel
+  - bezel_stretch
+  - hud
+  - hud_corner
+  - bezel.tattoo
+  - bezel.tattoo_corner
+  - bezel.tattoo_file
+  - bezel.resize_tattoo
+  - use_wheels
+  - wheel_rotation
+  - wheel_deadzone
+  - wheel_midzone
+custom_features:
+  video:
+    prompt: VIDEO MODE
+    description: BGFX for post-processing, accel/opengl for raw image.
+    choices:
+      BGFX: bgfx
+      Accel: accel
+      OpenGL: opengl
+  vsync:
+    prompt: VSYNC
+    description: Fix screen tearing, but may drop frames.
+    choices:
+      Off (Default): 0
+      "On": 1
+  bgfxshaders:
+    group: ADVANCED OPTIONS
+    prompt: BGFX VIDEO FILTER
+    description: Apply a post-processing effect.
+    choices:
+      "Off": null
+      Bilinear: default
+      CRT Geom: crt-geom
+      Super Eagle: eagle
+      HLSL: hlsl
+      HQ2X: hq2x
+      HQ3X: hq3x
+      HQ4X: hq4x
+  multiscreens:
+    group: ADVANCED OPTIONS
+    prompt: MULTISCREENS
+    description: Play this game on several screens (if available)
+    choices:
+      "Off": 0
+      "On": 1
+  rotation:
+    prompt: VERTICAL ROTATION (TATE)
+    description: Rotates screen by 90 degrees. Intended for rotating displays.
+    choices:
+      "Off": null
+      Rotate 90: autoror
+      Rotate 270: autorol
+  artworkcrop:
+    group: ADVANCED OPTIONS
+    prompt: ARTWORK CROP
+    description: Crop artwork to only unused space, keeping the game as large as possible.
+    choices:
+      Off (Default): 0
+      "On": 1
+  customcfg:
+    group: ADVANCED OPTIONS
+    prompt: CUSTOM MAME CONFIG
+    description: Set system-wide controls via MAME menu
+    choices:
+      "On": 1
+      "Off": 0
+  dataplugin:
+    group: ADVANCED OPTIONS
+    prompt: DATA PLUGIN
+    description: Make game history, setup instructions, and special moves viewable in the menu
+    choices:
+      Enabled: 1
+      Disabled (Default): 0
+systems:
+  - name: mame
+    custom_features:
+      altlayout:
+        prompt: SPECIAL CONTROL LAYOUTS
+        description: Controls for 5/6 button games and other unique controls
+        choices:
+          Default Only: default
+          SNES Style: snes
+          Genesis/Megadrive Style: megadrive
+          Modern Fightstick Style: fightstick
+          Neo Geo Mini Pad: neomini
+          Neo Geo CD Pad: neocd
+          Twin Stick with Triggers: twinstick
+          Rotated 4-Way Stick (Q*Bert): qbert
+      hiscoreplugin:
+        group: ADVANCED OPTIONS
+        prompt: HIGH SCORE PLUGIN
+        description: Enable or disable high score saving
+        choices:
+          Enabled (Default): 1
+          Disabled: 0
+      coindropplugin:
+        group: ADVANCED OPTIONS
+        prompt: COIN SOUND PLUGIN
+        description: Play a coin drop sound effect when an insert coin button is pressed
+        choices:
+          Enabled: 1
+          Disabled (Default): 0
+      use_mouse:
+        group: ADVANCED OPTIONS
+        prompt: ENABLE MOUSE
+        description: Enable mouse input for trackballs, spinners, and similar controls
+        choices:
+          Enabled: 1
+          Disabled (Default): 0
+  - name: neogeo
+    exclude_extensions:
+      - neo
+    custom_features:
+      altlayout:
+        prompt: SPECIAL CONTROL LAYOUTS
+        description: Controls for 5/6 button games and other unique controls
+        choices:
+          Default Only: default
+          SNES Style: snes
+          Genesis/Megadrive Style: megadrive
+          Modern Fightstick Style: fightstick
+          Neo Geo Mini Pad: neomini
+          Neo Geo CD Pad: neocd
+          Twin Stick with Triggers: twinstick
+          Rotated 4-Way Stick (Q*Bert): qbert
+      hiscoreplugin:
+        group: ADVANCED OPTIONS
+        prompt: HIGH SCORE PLUGIN
+        description: Enable or disable high score saving
+        choices:
+          Enabled (Default): 1
+          Disabled: 0
+      coindropplugin:
+        group: ADVANCED OPTIONS
+        prompt: COIN SOUND PLUGIN
+        description: Play a coin drop sound effect when an insert coin button is pressed
+        choices:
+          Enabled: 1
+          Disabled (Default): 0
+      use_mouse:
+        group: ADVANCED OPTIONS
+        prompt: ENABLE MOUSE
+        description: Enable mouse input for trackballs, spinners, and similar controls
+        choices:
+          Enabled: 1
+          Disabled (Default): 0

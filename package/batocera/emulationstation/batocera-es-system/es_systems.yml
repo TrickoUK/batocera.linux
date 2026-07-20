@@ -969,6 +969,8 @@ mame:
       mame:         { requireAnyOf: [BR2_PACKAGE_LIBRETRO_MAME]           }
     mame:
       mame:         { requireAnyOf: [BR2_PACKAGE_MAME]                    }
+    standalone-mame:
+      standalone-mame: { requireAnyOf: [BR2_PACKAGE_STANDALONE_MAME]      }
 
   comment_en: |
     The system uses libretro mame2003+ as default core: compatible ROMs must come from set 0.78+
@@ -1021,6 +1023,8 @@ neogeo:
       geolith:      { requireAnyOf: [BR2_PACKAGE_LIBRETRO_GEOLITH],       incompatible_extensions: [7z, zip] }
     mame:
       mame:         { requireAnyOf: [BR2_PACKAGE_MAME],                  incompatible_extensions: [neo] }
+    standalone-mame:
+      standalone-mame: { requireAnyOf: [BR2_PACKAGE_STANDALONE_MAME],    incompatible_extensions: [neo] }
     fba2x:
       fba2x:        { requireAnyOf: [BR2_PACKAGE_PIFBA],                 incompatible_extensions: [neo] }
 

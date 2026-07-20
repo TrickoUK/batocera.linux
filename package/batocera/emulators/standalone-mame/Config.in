@@ -1,0 +1,29 @@
+config BR2_PACKAGE_STANDALONE_MAME
+	bool "standalone-mame (upstream MAME)"
+	depends on BR2_INSTALL_LIBSTDCPP
+	select BR2_PACKAGE_EXPAT
+	select BR2_PACKAGE_FONTCONFIG
+	select BR2_PACKAGE_GLM
+	select BR2_PACKAGE_JPEG
+	select BR2_PACKAGE_LIBPNG
+	select BR2_PACKAGE_PUGIXML
+	select BR2_PACKAGE_PULSEAUDIO
+	select BR2_PACKAGE_RAPIDJSON
+	select BR2_PACKAGE_SDL2
+	select BR2_PACKAGE_SDL2_TTF
+	select BR2_PACKAGE_SQLITE
+	select BR2_PACKAGE_UTF8PROC
+	select BR2_PACKAGE_ZLIB
+	select BR2_PACKAGE_ZSTD
+	help
+	  standalone-mame: the real, current upstream mamedev/mame release,
+	  built as a second standalone (non-libretro) MAME binary alongside
+	  this fork's existing "mame" package (which is actually a
+	  GroovyMAME build, not stock MAME - see
+	  package/batocera/emulators/mame/mame.mk). Opt-in alternate core
+	  for the arcade `mame` and `neogeo` ES systems only - no MESS/
+	  computer system support, no Switchres/CRT support, and gun
+	  support is degraded versus groovy-mame's out-of-tree patches.
+	  See ADD-STANDALONE-MAME.md.
+
+	  https://mamedev.org

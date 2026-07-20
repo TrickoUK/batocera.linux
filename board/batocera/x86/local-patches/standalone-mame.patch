@@ -1,0 +1,12 @@
+diff --git a/Config.in b/Config.in
+index d9d088dbad..fb6eb6669c 100644
+--- a/Config.in
++++ b/Config.in
+@@ -366,6 +366,7 @@ menu "Emulators"
+     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/supermodel-es/Config.in"
+     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/model2emu/Config.in"
+     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/mame/Config.in"
++    source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/standalone-mame/Config.in"
+     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/melonds/Config.in"
+     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/citron/Config.in"
+     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/ryujinx/Config.in"

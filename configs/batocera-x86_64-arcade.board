@@ -61,6 +61,11 @@ BR2_PACKAGE_BATOCERA_ARCADE_SYSTEMS=y
 # ADD-GEOLITH.md.
 BR2_PACKAGE_LIBRETRO_GEOLITH=y
 
+# standalone-mame: real upstream mamedev/mame, opt-in alternate core for
+# the mame/neogeo ES systems (this fork's existing "mame" package above is
+# GroovyMAME under the hood, not stock MAME). See ADD-STANDALONE-MAME.md.
+BR2_PACKAGE_STANDALONE_MAME=y
+
 # Phase 2: manufacturer-scoped umbrellas (fork-only Config.in, see
 # package/batocera/custom-arcade/manufacturer-systems/Config.in). Each one
 # select()s every x86-available core/emulator for that manufacturer's
