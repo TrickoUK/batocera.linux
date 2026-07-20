@@ -61,7 +61,6 @@ _GENERATOR_MAP: Final[dict[str, tuple[str, str]]] = {
     'sonic2013': ('sonicretro.sonicretroGenerator', 'SonicRetroGenerator'),
     'sonic3-air': ('sonic3_air.sonic3_airGenerator', 'Sonic3AIRGenerator'),
     'soniccd': ('sonicretro.sonicretroGenerator', 'SonicRetroGenerator'),
-    'standalone-mame': ('mame_standalone.mameStandaloneGenerator', 'MameStandaloneGenerator'),
     'theforceengine': ('theforceengine.theforceengineGenerator', 'TheForceEngineGenerator'),
     'thextech': ('thextech.thextechGenerator', 'TheXTechGenerator'),
     'trx': ('trx.trxGenerator', 'TRXGenerator'),

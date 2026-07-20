@@ -10,3 +10,15 @@ index d9d088dbad..fb6eb6669c 100644
      source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/melonds/Config.in"
      source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/citron/Config.in"
      source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/ryujinx/Config.in"
+diff --git a/package/batocera/core/batocera-configgen/configgen/configgen/generators/importer.py b/package/batocera/core/batocera-configgen/configgen/configgen/generators/importer.py
+index 731d399e3a..efdc6dae92 100644
+--- a/package/batocera/core/batocera-configgen/configgen/configgen/generators/importer.py
++++ b/package/batocera/core/batocera-configgen/configgen/configgen/generators/importer.py
+@@ -61,6 +61,7 @@ _GENERATOR_MAP: Final[dict[str, tuple[str, str]]] = {
+     'sonic2013': ('sonicretro.sonicretroGenerator', 'SonicRetroGenerator'),
+     'sonic3-air': ('sonic3_air.sonic3_airGenerator', 'Sonic3AIRGenerator'),
+     'soniccd': ('sonicretro.sonicretroGenerator', 'SonicRetroGenerator'),
++    'standalone-mame': ('mame_standalone.mameStandaloneGenerator', 'MameStandaloneGenerator'),
+     'theforceengine': ('theforceengine.theforceengineGenerator', 'TheForceEngineGenerator'),
+     'thextech': ('thextech.thextechGenerator', 'TheXTechGenerator'),
+     'trx': ('trx.trxGenerator', 'TRXGenerator'),
