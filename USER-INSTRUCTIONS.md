@@ -1060,6 +1060,37 @@ already-running first build, it's usually better to just let it finish and
 use `PARALLEL_BUILD=y` on the next one (adding PS1/PS2, adding Geolith,
 etc.) rather than restart.
 
+**The flag has to be on *every* command in a multi-step sequence, not just
+the last one.** Each `make x86_64-arcade-*` invocation independently
+regenerates the defconfig/`.config` from only the variables passed to *that*
+command (the defconfig target's input file is rewritten fresh on every
+single `make` call). So a sequence like:
+```
+make x86_64-arcade-defconfig
+make x86_64-arcade-config BATCH_MODE=1
+make x86_64-arcade-build CMD="batocera-es-system-dirclean batocera-es-system" BATCH_MODE=1
+make x86_64-arcade-build PARALLEL_BUILD=y
+```
+only turns per-package directories on for the *final* command — the
+`es-system` rebuild step three lines up would run with it off, then the
+last command flips it back on, which is the exact "toggled mid-build"
+situation warned about above, just triggered across separate commands
+instead of by editing a running build. `PARALLEL_BUILD=y` needs to be on
+every one of those commands to stay consistent.
+
+**As of 2026-07-19, this checkout has it on by default**, via a
+`batocera.mk` file at the repo root (gitignored, personal/local settings
+only) containing just:
+```
+PARALLEL_BUILD=y
+```
+The top-level `Makefile` silently `-include`s this file (via the `LOCAL_MK`
+variable) if it exists, so every `make x86_64-arcade-*` command already
+behaves as if `PARALLEL_BUILD=y` were passed explicitly — no need to add it
+by hand anymore, and no risk of the inconsistent-flag problem above. This
+only affects *this* checkout; a fresh clone won't have `batocera.mk` and
+needs it recreated (or the flag passed by hand) to get the same behavior.
+
 **Watching progress:** every build writes a running log to
 `output/x86_64-arcade/build/build-time.log` (one line per package as it
 starts/finishes). Tail it live with:

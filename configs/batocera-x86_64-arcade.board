@@ -98,6 +98,17 @@ BR2_PACKAGE_BATOCERA_ATARI_HANDHELD_SYSTEMS=n
 # emulators that were silently excluded for the same reason until now.
 BR2_PACKAGE_BATOCERA_WINE_SYSTEMS=y
 
+# Required by NINTENDO_SYSTEMS: libretro-dolphin hard-depends on libenet at
+# the Buildroot Makefile level (LIBRETRO_DOLPHIN_DEPENDENCIES), but its own
+# Config.in select never pulls libenet in — that only "works" in the stock
+# full build because BATOCERA_ALL_SYSTEMS also enables COMPUTER_SYSTEMS
+# (amiberry) and/or GAMESTREAM_SYSTEMS (moonlight-embedded), both of which
+# select libenet as a side effect. Without this, `make x86_64-arcade-build`
+# fails with: "libenet is in the dependency chain of libretro-dolphin that
+# has added it to its _DEPENDENCIES variable without selecting it or
+# depending on it from Config.in."
+BR2_PACKAGE_LIBENET=y
+
 # Note: Nvidia is force-selected via a Kconfig `select` for every x86_64
 # build (package/batocera/core/batocera-system/Config.in) and cannot be
 # disabled from this defconfig alone - apply

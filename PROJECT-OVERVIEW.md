@@ -303,6 +303,29 @@ next build, rather than restart mid-build (ccache still speeds up anything
 already compiled once, so restarting isn't a full time cost, but it isn't
 free either).
 
+**A make flag like `PARALLEL_BUILD` only applies to the specific `make`
+invocation it's passed on** — it is not persisted anywhere between separate
+commands. Because every make target that resolves configuration
+(`<target>-defconfig`, `<target>-config`, `<target>-build`, etc.) re-derives
+the defconfig from scratch on each invocation, a flag has to be present on
+*every* command in a multi-step sequence (e.g. running `-defconfig`, then
+`-config`, then a targeted `-build CMD=...`, then a final `-build`) — adding
+it only to the last command in that sequence means earlier steps silently
+ran without it. If a build has already produced output under a different
+setting for a toggle like `PARALLEL_BUILD` and a later step in the same
+sequence flips it, that's the same "toggled mid-build" situation described
+above, just triggered by an inconsistent flag across separate commands
+rather than by editing a running build directly.
+
+To set a flag permanently for every invocation without retyping it, the
+top-level `Makefile` silently includes a local override file
+(`-include batocera.mk`, controlled by the `LOCAL_MK` variable) if one
+exists at the repo root — this file is a normal Makefile-syntax fragment,
+already covered by `.gitignore` since it's meant for personal/local
+settings, not something to commit. Putting `PARALLEL_BUILD=y` there is
+enough to make every subsequent `make <target>-*` command behave as if the
+flag were passed explicitly, without needing to remember it per command.
+
 Other relevant levers:
 - ccache is on by default for every board and persists across builds in a
   dedicated cache directory, so rebuilding after a source change is
