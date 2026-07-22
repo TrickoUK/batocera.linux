@@ -114,6 +114,12 @@ BR2_PACKAGE_BATOCERA_WINE_SYSTEMS=y
 # depending on it from Config.in."
 BR2_PACKAGE_LIBENET=y
 
+# Microsoft Xbox (OG): xemu, hand-picked (Option 2) rather than via a
+# manufacturer umbrella — CONSOLE_SYSTEMS normally selects this but pulls
+# in N64/GameCube/PlayStation too, and this fork has no Microsoft-scoped
+# umbrella in manufacturer-systems/Config.in (Xbox 360/xenia not requested).
+BR2_PACKAGE_XEMU=y
+
 # Note: Nvidia is force-selected via a Kconfig `select` for every x86_64
 # build (package/batocera/core/batocera-system/Config.in) and cannot be
 # disabled from this defconfig alone - apply
