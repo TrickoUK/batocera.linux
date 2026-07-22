@@ -66,6 +66,13 @@ BR2_PACKAGE_LIBRETRO_GEOLITH=y
 # GroovyMAME under the hood, not stock MAME). See ADD-STANDALONE-MAME.md.
 BR2_PACKAGE_STANDALONE_MAME=y
 
+# ares: multi-system emulator (higan/bsnes descendant), opt-in alternate
+# emulator for nes, snes, mastersystem, the Mega Drive family (megadrive,
+# megacd, sega32x), the PC Engine family (pcengine, pcenginecd, supergrafx)
+# and n64 - each of those systems keeps its existing default emulator from
+# NINTENDO_SYSTEMS/SEGA_SYSTEMS/NEC_SYSTEMS below. See ADD-ARES.md.
+BR2_PACKAGE_ARES=y
+
 # Phase 2: manufacturer-scoped umbrellas (fork-only Config.in, see
 # package/batocera/custom-arcade/manufacturer-systems/Config.in). Each one
 # select()s every x86-available core/emulator for that manufacturer's

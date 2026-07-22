@@ -1,0 +1,46 @@
+# ares is registered here as a fully independent, top-level emulator
+# identity - not as a second "core" of any of these systems' existing
+# default emulator (mesen/fceumm for nes, snes9x for snes, genesisplusgx for
+# megadrive/megacd/sega32x, etc). This is load-bearing, not stylistic: see
+# ADD-STANDALONE-MAME.md's "Independent emulator, not a core of mame" for the
+# concrete failure mode (registry.py's Registry._iter_system_emulator_cores()
+# only synthesizes an implicit single core for an emulator with a systems:
+# list and NO explicitly-registered cores - adding a real core under an
+# existing emulator name that already relies on that implicit synthesis
+# silently drops it everywhere). Since this file has no cores: key, Registry
+# synthesizes one implicit "ares" core on every system listed below,
+# alongside each system's existing emulator(s) - no cross-talk with any of
+# them.
+#
+# custom_features deliberately omitted for v1: ares' CLI (per its wiki) only
+# exposes --system/--fullscreen/--shader/--no-file-prompt, and this package's
+# generator (aresGenerator.py) doesn't yet do any deeper settings.bml
+# configuration - see standalone-mame.emulator.yml's own history (an earlier
+# version showed switchres/gun toggles that silently did nothing) for why an
+# inert ES toggle is worse than no toggle at all. Add custom_features here
+# only once a real CLI flag or config-file key backs it.
+features:
+  - padtokeyboard
+shared_features:
+  - powermode
+  - tdp
+  - videomode
+  - bezel
+  - bezel_stretch
+  - hud
+  - hud_corner
+  - bezel.tattoo
+  - bezel.tattoo_corner
+  - bezel.tattoo_file
+  - bezel.resize_tattoo
+systems:
+  - nes
+  - snes
+  - mastersystem
+  - megadrive
+  - megacd
+  - sega32x
+  - pcengine
+  - pcenginecd
+  - supergrafx
+  - n64

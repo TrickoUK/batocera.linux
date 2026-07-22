@@ -1,0 +1,13 @@
+config BR2_PACKAGE_ARES
+	bool "ares"
+	depends on BR2_INSTALL_LIBSTDCPP
+	select BR2_PACKAGE_BATOCERA_QT6
+	select BR2_PACKAGE_SDL2
+	help
+	  ares: a multi-system emulator (higan/bsnes descendant) prioritizing
+	  accuracy and preservation. Added as an extra, opt-in emulator choice
+	  for NES/Famicom, SNES/Super Famicom, Master System, the Mega Drive
+	  family (Mega Drive, Mega CD, 32X), the PC Engine family (PC Engine,
+	  PC Engine CD, SuperGrafx) and Nintendo 64 - see ADD-ARES.md.
+
+	  https://ares-emu.net

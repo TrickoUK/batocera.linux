@@ -1,0 +1,12 @@
+diff --git a/Config.in b/Config.in
+index d9d088dbad..3ff9cc2559 100644
+--- a/Config.in
++++ b/Config.in
+@@ -384,6 +384,7 @@ menu "Emulators"
+     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/pcsx2/Config.in"
+     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/rpcs3/Config.in"
+     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/ppsspp/Config.in"
++    source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/ares/Config.in"
+     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/flycast/Config.in"
+     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/scummvm/Config.in"
+     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/vice/Config.in"
