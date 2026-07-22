@@ -15,6 +15,7 @@ custom_features:
       Show: disabled
       Skip: enabled
   beetle_psx_hw_cpu_freq_scale:
+    group: Beetle Specific
     submenu: ADVANCED OPTIONS
     prompt: OVERCLOCK (UNSTABLE)
     description: Enhancement. Reduces system slowdown. Causes issues in some games.
@@ -62,6 +63,7 @@ custom_features:
       'Off': disabled
       'On': enabled
   beetle_psx_hw_aspect_ratio:
+    group: Beetle Specific
     submenu: ADVANCED OPTIONS
     prompt: CORE ASPECT RATIO
     description: Ignored when Widescreen Hack is enabled.
@@ -72,9 +74,10 @@ custom_features:
       Force NTSC: ntsc
       Force 16:9: 16:9
   beetle_psx_hw_deinterlacer:
+    group: Beetle Specific
     submenu: ADVANCED OPTIONS
     prompt: DEINTERLACE METHOD
-    description: How interlaced video is displayed. Weave keeps full resolution on still images, Bob/FastMAD trade resolution for smoother motion, Off matches the hardware renderer's behaviour.
+    description: How interlaced video is GRAPHICSed. Weave keeps full resolution on still images, Bob/FastMAD trade resolution for smoother motion, Off matches the hardware renderer's behaviour.
     choices:
       Weave: weave
       Bob: bob
@@ -82,6 +85,7 @@ custom_features:
       FastMAD (Motion Adaptive): fastmad
       'Off': off
   beetle_psx_hw_hd_textures_enable:
+    group: Beetle Specific
     submenu: ADVANCED OPTIONS
     prompt: HD TEXTURE PACKS
     description: Replace textures with HD versions from a texture pack placed next to the game image. No effect without a pack installed.
@@ -89,7 +93,8 @@ custom_features:
       'Off': disabled
       'On': enabled
   beetle_psx_hw_renderer:
-    submenu: DISPLAY
+    group: Beetle Specific
+    submenu: GRAPHICS
     prompt: RENDERER
     description: Hardware (Auto) picks Vulkan or OpenGL based on the video driver. Software is the most accurate but slowest at higher internal resolutions. Restart required.
     choices:
@@ -98,21 +103,24 @@ custom_features:
       Hardware (Vulkan): hardware_vk
       Software: software
   beetle_psx_hw_renderer_software_fb:
-    submenu: DISPLAY
+    group: Beetle Specific
+    submenu: GRAPHICS
     prompt: SOFTWARE FRAMEBUFFER
     description: Accurately emulates framebuffer effects (motion blur, FF7 battle swirl) on hardware renderers. Disabling can improve performance but may cause graphical errors.
     choices:
       'Off': disabled
       'On': enabled
   beetle_psx_hw_depth:
-    submenu: DISPLAY
+    group: Beetle Specific
+    submenu: GRAPHICS
     prompt: INTERNAL COLOR DEPTH
     description: Higher color depth reduces banding without dithering. Recommended to disable Dithering Pattern when set to 32 bpp.
     choices:
       16 bpp (Native): 16bpp(native)
       32 bpp: 32bpp
   beetle_psx_hw_dither_mode:
-    submenu: DISPLAY
+    group: Beetle Specific
+    submenu: GRAPHICS
     prompt: DITHERING PATTERN
     description: Internal Resolution scales dithering to the rendering resolution. Recommended to disable when running at 32 bpp.
     choices:
@@ -120,7 +128,8 @@ custom_features:
       Internal Resolution: internal resolution
       'Off': disabled
   beetle_psx_hw_filter:
-    submenu: DISPLAY
+    group: Beetle Specific
+    submenu: GRAPHICS
     prompt: TEXTURE FILTERING
     description: Nearest emulates original hardware. Bilinear/3-Point smooth via blurring. SABR/xBR/JINC2 are upscaling filters. Hardware renderers only.
     choices:
@@ -131,7 +140,8 @@ custom_features:
       3-Point: 3-point
       JINC2: JINC2
   beetle_psx_hw_filter_exclude_sprite:
-    submenu: DISPLAY
+    group: Beetle Specific
+    submenu: GRAPHICS
     prompt: EXCLUDE SPRITES FROM FILTERING (VULKAN)
     description: Prevents seams in 2D sprite-rendered backgrounds. Vulkan renderer only.
     choices:
@@ -139,7 +149,8 @@ custom_features:
       Opaque Only: opaque
       Opaque and Semi-Transparent: all
   beetle_psx_hw_filter_exclude_2d_polygon:
-    submenu: DISPLAY
+    group: Beetle Specific
+    submenu: GRAPHICS
     prompt: EXCLUDE 2D POLYGONS FROM FILTERING (VULKAN)
     description: 2D polygons are detected with a heuristic and there may be glitches. Vulkan renderer only.
     choices:
@@ -147,28 +158,32 @@ custom_features:
       Opaque Only: opaque
       Opaque and Semi-Transparent: all
   beetle_psx_hw_scaled_uv_offset:
-    submenu: DISPLAY
+    group: Beetle Specific
+    submenu: GRAPHICS
     prompt: TEXTURE UV OFFSET (VULKAN)
     description: Reduces texture seams at higher internal resolutions but may cause glitches. Vulkan renderer only.
     choices:
       'Off': disabled
       'On': enabled
   beetle_psx_hw_adaptive_smoothing:
-    submenu: DISPLAY
+    group: Beetle Specific
+    submenu: GRAPHICS
     prompt: ADAPTIVE SMOOTHING (VULKAN)
     description: Smooths 2D artwork and UI without blurring 3D objects. Vulkan renderer only.
     choices:
       'Off': disabled
       'On': enabled
   beetle_psx_hw_super_sampling:
-    submenu: DISPLAY
+    group: Beetle Specific
+    submenu: GRAPHICS
     prompt: SUPERSAMPLING (VULKAN)
     description: Downsamples upscaled internal resolution back to native, anti-aliasing 3D objects. Vulkan renderer only.
     choices:
       'Off': disabled
       'On': enabled
   beetle_psx_hw_msaa:
-    submenu: DISPLAY
+    group: Beetle Specific
+    submenu: GRAPHICS
     prompt: MULTI-SAMPLED ANTI ALIASING (VULKAN)
     description: Improves the appearance of 3D objects. Vulkan renderer only.
     choices:
@@ -178,13 +193,15 @@ custom_features:
       8x: 8x
       16x: 16x
   beetle_psx_hw_mdec_yuv:
-    submenu: DISPLAY
+    group: Beetle Specific
+    submenu: GRAPHICS
     prompt: MDEC YUV CHROMA FILTER (VULKAN)
     description: Reduces macroblocking artifacts in FMV playback. Vulkan renderer only.
     choices:
       'Off': disabled
       'On': enabled
   beetle_psx_hw_pgxp_mode:
+    group: Beetle Specific
     submenu: PGXP OPTIONS
     prompt: PGXP OPERATION MODE
     description: Subpixel-precise 3D rendering, reducing jitter/distortion. Memory Only is recommended; Memory + CPU can cause geometry errors.
@@ -193,6 +210,7 @@ custom_features:
       Memory Only: memory only
       Memory + CPU (Buggy): memory + CPU
   beetle_psx_hw_pgxp_2d_tol:
+    group: Beetle Specific
     submenu: PGXP OPTIONS
     prompt: PGXP 2D GEOMETRY TOLERANCE
     description: Tolerance for keeping PGXP values on geometries without proper depth information.
@@ -208,6 +226,7 @@ custom_features:
       7px: 7px
       8px: 8px
   beetle_psx_hw_pgxp_nclip:
+    group: Beetle Specific
     submenu: PGXP OPTIONS
     prompt: PGXP PRIMITIVE CULLING
     description: Reduces holes in PGXP geometries. Known to cause lock-ups in some games.
@@ -215,6 +234,7 @@ custom_features:
       'Off': disabled
       'On': enabled
   beetle_psx_hw_pgxp_vertex:
+    group: Beetle Specific
     submenu: PGXP OPTIONS
     prompt: PGXP VERTEX CACHE
     description: Caches PGXP-enhanced vertex positions. May cause glitches from false cache hits. Only applies when PGXP Operation Mode is enabled, hardware renderers only.
@@ -222,6 +242,7 @@ custom_features:
       'Off': disabled
       'On': enabled
   beetle_psx_hw_pgxp_texture:
+    group: Beetle Specific
     submenu: PGXP OPTIONS
     prompt: PGXP PERSPECTIVE CORRECT TEXTURING
     description: Fixes affine texture warping/distortion. Only applies when PGXP Operation Mode is enabled.
@@ -229,6 +250,7 @@ custom_features:
       'Off': disabled
       'On': enabled
   beetle_psx_hw_line_render:
+    group: Beetle Specific
     submenu: ADVANCED OPTIONS
     prompt: LINE-TO-QUAD HACK
     description: Fixes horizontal-line rendering (e.g. Doom, Hexen) on hardware renderers and upscaled resolutions. Aggressive is needed for some titles (Dark Forces, Duke Nukem) but may glitch others.
@@ -237,6 +259,7 @@ custom_features:
       Aggressive: aggressive
       'Off': disabled
   beetle_psx_hw_widescreen_hack_aspect_ratio:
+    group: Beetle Specific
     submenu: ADVANCED OPTIONS
     prompt: WIDESCREEN HACK ASPECT RATIO
     description: Aspect ratio used by the Widescreen Hack.
@@ -249,6 +272,7 @@ custom_features:
       21:9: 21:9
       32:9: 32:9
   beetle_psx_hw_gpu_overclock:
+    group: Beetle Specific
     submenu: PERFORMANCE
     prompt: GPU RASTERIZER OVERCLOCK
     description: Overclocks the 2D rasterizer in the emulated GPU. Does not improve 3D rendering, little effect in general.
@@ -260,6 +284,7 @@ custom_features:
       16x: 16x
       32x: 32x
   beetle_psx_hw_gte_overclock:
+    group: Beetle Specific
     submenu: PERFORMANCE
     prompt: GTE OVERCLOCK
     description: Lowers all emulated GTE (3D coprocessor) operations to one-cycle latency. Improves frame rate/stability in GTE-heavy games.
@@ -267,6 +292,7 @@ custom_features:
       'Off': disabled
       'On': enabled
   beetle_psx_hw_cd_access_method:
+    group: Beetle Specific
     submenu: PERFORMANCE
     prompt: CD ACCESS METHOD
     description: Asynchronous can reduce stuttering on slow storage. Pre-Cache loads the whole disk image at launch (needs enough RAM, falls back to Synchronous for physical media). Restart required.
@@ -275,6 +301,7 @@ custom_features:
       Asynchronous: async
       Pre-Cache: precache
   beetle_psx_hw_cd_fastload:
+    group: Beetle Specific
     submenu: PERFORMANCE
     prompt: CD LOADING SPEED
     description: Above 2x (Native) can greatly reduce loading times but may introduce timing errors; some games may misbehave above a certain value.
@@ -287,6 +314,7 @@ custom_features:
       12x: 12x
       14x: 14x
   beetle_psx_hw_dynarec_op_cycles:
+    group: Beetle Specific
     submenu: PERFORMANCE
     prompt: DYNAREC CYCLES PER INSTRUCTION (LIGHTREC)
     description: '2 is faster. Set 1 for games whose CD streaming stalls/hangs under the dynarec (e.g. Parasite Eve 2).'
@@ -294,6 +322,7 @@ custom_features:
       2 (Default): '2'
       1 (Accurate, Fixes Parasite Eve 2 etc.): '1'
   beetle_psx_hw_dynarec_eventcycles:
+    group: Beetle Specific
     submenu: PERFORMANCE
     prompt: DYNAREC DMA/GPU/MDEC/TIMER EVENT CYCLES (LIGHTREC)
     description: Max CPU cycles run before a GPU/DMA/MDEC/Timer update is checked. Higher is faster, has much less impact on the interpreter than the dynarec.
@@ -314,29 +343,8 @@ custom_features:
       '1792': '1792'
       '1920': '1920'
       '2048': '2048'
-  beetle_psx_hw_dynarec_spu_samples:
-    submenu: PERFORMANCE
-    prompt: DYNAREC SPU SAMPLES (LIGHTREC)
-    description: Max SPU samples run before an SPU update is checked. Higher is faster but can cause sound glitches in some games at anything other than 1.
-    choices:
-      1 (Default): '1'
-      '4': '4'
-      '16': '16'
-  beetle_psx_hw_dynarec_spgp_opt:
-    submenu: PERFORMANCE
-    prompt: DYNAREC SP GP HIT RAM OPTIMIZATION (LIGHTREC)
-    description: Faster code by assuming SP/GP registers always point to RAM. May crash in some games; disabled is more compatible.
-    choices:
-      'Off': disabled
-      'On': enabled
-  beetle_psx_hw_frame_duping:
-    submenu: ADVANCED OPTIONS
-    prompt: FRAME DUPING (SPEED UP)
-    description: Small performance increase (may drop frames).
-    choices:
-      'Off': disabled
-      'On': enabled
   beetle_psx_hw_cpu_dynarec:
+    group: Beetle Specific
     submenu: ADVANCED OPTIONS
     prompt: CPU DYNAREC (SPEED UP)
     description: Much faster than interpreter (but may have issues).
@@ -345,12 +353,6 @@ custom_features:
       Max Performance: execute
       Cycle Timing Check: execute_once
       Lightrec Interpreter: run_interpreter
-  beetle_psx_hw_dynarec_invalidate:
-    submenu: ADVANCED OPTIONS
-    prompt: DYNAREC CODE INVALIDATION
-    choices:
-      Full (more compatible): full
-      DMA Only (Slightly Faster): dma
   multitap_mednafen:
     prompt: MULTITAP
     description: Allows up to 5 or 8 controllers in supported games.
