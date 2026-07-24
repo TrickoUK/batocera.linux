@@ -61,10 +61,15 @@ BR2_PACKAGE_BATOCERA_ARCADE_SYSTEMS=y
 # ADD-GEOLITH.md.
 BR2_PACKAGE_LIBRETRO_GEOLITH=y
 
+# Neo Geo CD core: plays Neo Geo CD .cue/.bin/.chd images directly,
+# opt-in like Geolith since it's a separate ES system (neogeocd) rather
+# than part of BATOCERA_ARCADE_SYSTEMS.
+BR2_PACKAGE_LIBRETRO_NEOCD=y
+
 # standalone-mame: real upstream mamedev/mame, opt-in alternate core for
 # the mame/neogeo ES systems (this fork's existing "mame" package above is
 # GroovyMAME under the hood, not stock MAME). See ADD-STANDALONE-MAME.md.
-BR2_PACKAGE_STANDALONE_MAME=y
+BR2_PACKAGE_STANDALONE_MAME=n
 
 # Phase 2: manufacturer-scoped umbrellas (fork-only Config.in, see
 # package/batocera/custom-arcade/manufacturer-systems/Config.in). Each one
@@ -86,10 +91,10 @@ BR2_PACKAGE_BATOCERA_NINTENDO_HANDHELD_SYSTEMS=n
 BR2_PACKAGE_BATOCERA_SEGA_SYSTEMS=y
 BR2_PACKAGE_BATOCERA_SONY_SYSTEMS=y
 BR2_PACKAGE_BATOCERA_SONY_HANDHELD_SYSTEMS=n
-BR2_PACKAGE_BATOCERA_COMMODORE_SYSTEMS=n
-BR2_PACKAGE_BATOCERA_AMSTRAD_SYSTEMS=n
+BR2_PACKAGE_BATOCERA_COMMODORE_SYSTEMS=y
+BR2_PACKAGE_BATOCERA_AMSTRAD_SYSTEMS=y
 BR2_PACKAGE_BATOCERA_NEC_SYSTEMS=y
-BR2_PACKAGE_BATOCERA_ATARI_SYSTEMS=n
+BR2_PACKAGE_BATOCERA_ATARI_SYSTEMS=y
 BR2_PACKAGE_BATOCERA_ATARI_HANDHELD_SYSTEMS=n
 
 # Required by SEGA_SYSTEMS: lindbergh-loader hard-depends on wine-x86 at the
