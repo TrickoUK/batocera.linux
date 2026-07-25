@@ -1,0 +1,675 @@
+diff --git a/libretro/USB.cpp b/libretro/USB.cpp
+index 7c8a906..6469c31 100644
+--- a/libretro/USB.cpp
++++ b/libretro/USB.cpp
+@@ -17,6 +17,7 @@
+ 
+ #include "../pcsx2/USB/USB.h"
+ #include "../pcsx2/USB/libretro-usb/USBinternal.h"
++#include "../pcsx2/USB/libretro-usb/usb-guncon2.h"
+ #include "../pcsx2/USB/libretro-usb/usb-hid.h"
+ #include "../pcsx2/SaveState.h"
+ 
+@@ -40,19 +41,32 @@ static int        s_port_device[USB::NUM_PORTS] = { USB_DEV_NONE, USB_DEV_NONE }
+ static unsigned   s_input_port[USB::NUM_PORTS]  = { 0, 1 };
+ static USBDevice* s_usb_device[USB::NUM_PORTS]  = { nullptr, nullptr };
+ 
++/* Set by USBSetPortDevice() (frontend thread) whenever a port's device
++ * selection changes; consumed by USBasync() (cpu_thread) so a selection
++ * applied after USBopen() has already run - see the race note there - still
++ * gets attached, instead of silently waiting for an explicit USBreset(). */
++static bool       s_port_device_dirty[USB::NUM_PORTS] = { false, false };
++
+ /* From PAD.cpp - the libretro input_state callback the frontend installed. */
+ extern retro_input_state_t PADGetInputStateCallback(void);
+ 
+ /* Set the device type for a USB port and which frontend controller port it
+- * reads input from. Takes effect on the next USBopen()/USBreset(). For most
+- * cases input_port == port; the combined keyboard+mouse selection routes both
+- * USB ports to the same frontend port. */
++ * reads input from. retro_load_game() starts VM boot (and thus USBopen(),
++ * which attaches devices per the *current* s_port_device[]) on a separate
++ * thread and returns immediately, racing the frontend's call to this
++ * function - so a device selected here can arrive either before or after
++ * USBopen() already ran with the USB_DEV_NONE default. Marking the port
++ * dirty lets USBasync() reconcile it on cpu_thread either way, typically
++ * within one emulated USB frame of boot. For most cases input_port == port;
++ * the combined keyboard+mouse selection routes both USB ports to the same
++ * frontend port. */
+ void USBSetPortDevice(unsigned port, int device, unsigned input_port)
+ {
+ 	if (port < USB::NUM_PORTS)
+ 	{
+ 		s_port_device[port] = device;
+ 		s_input_port[port]  = input_port;
++		s_port_device_dirty[port] = true;
+ 	}
+ }
+ 
+@@ -73,6 +87,9 @@ static void USBCreateDevice(u32 port)
+ 		case USB_DEV_MOUSE:
+ 			dev = usb_hid::usb_hid_create_mouse(port);
+ 			break;
++		case USB_DEV_GUNCON2:
++			dev = usb_guncon2::usb_guncon2_create(port);
++			break;
+ 		default:
+ 			return;
+ 	}
+@@ -166,6 +183,20 @@ void USBasync(u32 cycles)
+ 	if (!s_qemu_ohci)
+ 		return;
+ 
++	/* Apply any port-device selection that arrived after USBopen() already
++	 * ran (see the race note on USBSetPortDevice()), before pumping input. */
++	{
++		u32 port;
++		for (port = 0; port < USB::NUM_PORTS; port++)
++		{
++			if (!s_port_device_dirty[port])
++				continue;
++			s_port_device_dirty[port] = false;
++			USBDestroyDevice(port);
++			USBCreateDevice(port);
++		}
++	}
++
+ 	/* Pump one frame of frontend keyboard/mouse input into attached HID
+ 	 * devices before advancing the controller. */
+ 	{
+@@ -173,8 +204,20 @@ void USBasync(u32 cycles)
+ 		u32 port;
+ 		for (port = 0; port < USB::NUM_PORTS; port++)
+ 		{
+-			if (s_usb_device[port])
+-				usb_hid::usb_hid_update(s_usb_device[port], input_cb, s_input_port[port]);
++			if (!s_usb_device[port])
++				continue;
++			switch (s_port_device[port])
++			{
++				case USB_DEV_KEYBOARD:
++				case USB_DEV_MOUSE:
++					usb_hid::usb_hid_update(s_usb_device[port], input_cb, s_input_port[port]);
++					break;
++				case USB_DEV_GUNCON2:
++					usb_guncon2::usb_guncon2_update(s_usb_device[port], input_cb, s_input_port[port]);
++					break;
++				default:
++					break;
++			}
+ 		}
+ 	}
+ 
+diff --git a/pcsx2/CMakeLists.txt b/pcsx2/CMakeLists.txt
+index b750590..b40d1cc 100644
+--- a/pcsx2/CMakeLists.txt
++++ b/pcsx2/CMakeLists.txt
+@@ -725,6 +725,7 @@ set(pcsx2USBSources
+ 	USB/libretro-usb/desc.cpp
+ 	USB/libretro-usb/hid.cpp
+ 	USB/libretro-usb/input-keymap-qcode-to-qnum.cpp
++	USB/libretro-usb/usb-guncon2.cpp
+ 	USB/libretro-usb/usb-hid.cpp
+ 	USB/libretro-usb/usb-ohci.cpp
+ 	USB/shared/ringbuffer.cpp
+@@ -737,6 +738,7 @@ set(pcsx2USBHeaders
+ 	USB/libretro-usb/input-keymap.h
+ 	USB/libretro-usb/qusb.h
+ 	USB/libretro-usb/queue.h
++	USB/libretro-usb/usb-guncon2.h
+ 	USB/libretro-usb/usb-hid.h
+ 	USB/shared/ringbuffer.h
+ )
+diff --git a/pcsx2/PAD/PAD.cpp b/pcsx2/PAD/PAD.cpp
+index 1d617f0..c4fbaa2 100644
+--- a/pcsx2/PAD/PAD.cpp
++++ b/pcsx2/PAD/PAD.cpp
+@@ -327,6 +327,7 @@ namespace Input
+ 			{ "USB Keyboard", RETRO_DEVICE_KEYBOARD },
+ 			{ "USB Mouse", RETRO_DEVICE_MOUSE },
+ 			{ "USB Keyboard + Mouse", RETRO_DEVICE_KEYBOARD_AND_MOUSE },
++			{ "GunCon2", RETRO_DEVICE_LIGHTGUN },
+ 			{},
+ 		};
+ 
+@@ -451,6 +452,13 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
+ 				USBSetPortDevice(0, USB_DEV_KEYBOARD, port);
+ 				USBSetPortDevice(1, USB_DEV_MOUSE, port);
+ 				break;
++			case RETRO_DEVICE_LIGHTGUN:
++				/* USB GunCon2 coexists with the DualShock on this slot, as on
++				 * real hardware - the pad stays available for menu/pause
++				 * navigation while the gun drives gameplay. */
++				si->SetStringValue(section, "Type", "DualShock2");
++				USBSetPortDevice(port, USB_DEV_GUNCON2, port);
++				break;
+ 			default:
+ 				si->SetStringValue(section, "Type", "None");
+ 				USBSetPortDevice(port, USB_DEV_NONE, port);
+diff --git a/pcsx2/USB/USB.h b/pcsx2/USB/USB.h
+index f16c574..9c44930 100644
+--- a/pcsx2/USB/USB.h
++++ b/pcsx2/USB/USB.h
+@@ -87,6 +87,7 @@ enum UsbPortDevice
+ 	USB_DEV_NONE = 0,
+ 	USB_DEV_KEYBOARD,
+ 	USB_DEV_MOUSE,
++	USB_DEV_GUNCON2,
+ };
+ 
+ void USBSetPortDevice(unsigned port, int device, unsigned input_port);
+diff --git a/pcsx2/USB/libretro-usb/usb-guncon2.cpp b/pcsx2/USB/libretro-usb/usb-guncon2.cpp
+new file mode 100644
+index 0000000..4165d94
+--- /dev/null
++++ b/pcsx2/USB/libretro-usb/usb-guncon2.cpp
+@@ -0,0 +1,474 @@
++/*  PCSX2 - PS2 Emulator for PCs
++ *  Copyright (C) 2002-2021  PCSX2 Dev Team
++ *
++ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
++ *  of the GNU Lesser General Public License as published by the Free Software Found-
++ *  ation, either version 3 of the License, or (at your option) any later version.
++ *
++ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
++ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
++ *  PURPOSE.  See the GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License along with PCSX2.
++ *  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++/* USB GunCon2 device model, sourced directly from the libretro
++ * RETRO_DEVICE_LIGHTGUN input callbacks. The device/report protocol below
++ * (descriptors, button bit positions, calibration control request, and the
++ * per-game position scale/center table) matches upstream PCSX2's
++ * USB/usb-lightgun/guncon2.cpp byte-for-byte, since games decode this over
++ * the emulated USB wire - only the host-input binding layer differs:
++ * upstream drives this from InputManager pointer/binding values and an
++ * ImGui software cursor, here it is pumped from the frontend's lightgun
++ * device each frame with no cursor overlay. */
++
++#include <cmath>
++#include <cstdint>
++#include <cstring>
++#include <tuple>
++
++#include "USB/libretro-usb/USBinternal.h"
++#include "USB/libretro-usb/desc.h"
++#include "USB/libretro-usb/usb-guncon2.h"
++
++#include "VMManager.h"
++#include "libretro.h"
++
++namespace usb_guncon2
++{
++	enum : u32
++	{
++		GUNCON2_FLAG_PROGRESSIVE = 0x0100,
++
++		GUNCON2_CALIBRATION_DELAY = 12,
++		GUNCON2_CALIBRATION_REPORT_DELAY = 5,
++	};
++
++	enum : u32
++	{
++		BID_C = 1,
++		BID_B = 2,
++		BID_A = 3,
++		BID_DPAD_UP = 4,
++		BID_DPAD_RIGHT = 5,
++		BID_DPAD_DOWN = 6,
++		BID_DPAD_LEFT = 7,
++		BID_TRIGGER = 13,
++		BID_SELECT = 14,
++		BID_START = 15,
++		BID_SHOOT_OFFSCREEN = 16,
++		BID_RECALIBRATE = 17,
++	};
++
++	/* Right pain in the arse. Different games seem to have different scales..
++	 * Not worth putting these in the gamedb for such few games.
++	 * Values are from the old nuvee plugin (same table as upstream PCSX2). */
++	struct GameConfig
++	{
++		const char* serial;
++		float scale_x, scale_y;
++		u32 center_x, center_y;
++		u32 screen_width, screen_height;
++	};
++
++	static constexpr const GameConfig s_game_config[] = {
++		{"SLES-50930", 90.25f, 94.5f, 390, 132, 640, 256}, // Dino Stalker (E, English)
++		{"SLES-51095", 90.25f, 94.5f, 390, 132, 640, 256}, // Dino Stalker (E, French)
++		{"SLES-51096", 90.25f, 94.5f, 390, 132, 640, 256}, // Dino Stalker (E, German)
++		{"SLUS-20485", 90.25f, 92.5f, 390, 132, 640, 240}, // Dino Stalker (U)
++		{"SLUS-20389", 89.25f, 93.5f, 422, 141, 640, 240}, // Endgame (U)
++		{"SLES-50936", 112.0f, 100.0f, 320, 120, 512, 256}, // Endgame (E) (Guncon2 needs to be connected to USB port 2)
++		{"SLPM-65139", 90.0f, 91.5f, 320, 120, 640, 240}, // Gun Survivor 3: Dino Crisis (J)
++		{"SLES-52620", 89.5f, 112.3f, 390, 147, 640, 256}, // Guncom 2 (E)
++		{"SLES-51289", 84.5f, 89.0f, 456, 164, 640, 256}, // Gunfighter 2 - Jesse James (E)
++		{"SLPS-25165", 90.25f, 98.0f, 390, 138, 640, 240}, // Gunvari Collection (J) (480i)
++		{"SCES-50889", 90.25f, 94.5f, 390, 169, 640, 256}, // Ninja Assault (E)
++		{"SLPS-20218", 90.0f, 92.0f, 320, 134, 640, 240}, // Ninja Assault (J)
++		{"SLUS-20492", 90.25f, 92.5f, 390, 132, 640, 240}, // Ninja Assault (U)
++		{"SLES-50650", 84.75f, 96.0f, 454, 164, 640, 240}, // Resident Evil Survivor 2 (E)
++		{"SLES-51448", 90.25f, 95.0f, 420, 132, 640, 240}, // Resident Evil - Dead Aim (E)
++		{"SLUS-20669", 90.25f, 93.5f, 420, 132, 640, 240}, // Resident Evil - Dead Aim (U)
++		{"SLUS-20619", 90.25f, 91.75f, 453, 154, 640, 256}, // Starsky & Hutch (U)
++		{"SCES-50300", 90.25f, 102.75f, 390, 138, 640, 256}, // Time Crisis II (E)
++		{"SLUS-20219", 90.25f, 97.5f, 390, 154, 640, 240}, // Time Crisis 2 (U)
++		{"SCES-51844", 90.25f, 102.75f, 390, 138, 640, 256}, // Time Crisis 3 (E)
++		{"SLUS-20645", 90.25f, 97.5f, 390, 154, 640, 240}, // Time Crisis 3 (U)
++		{"SCES-52530", 90.25f, 99.0f, 390, 153, 640, 256}, // Crisis Zone (E)
++		{"SLUS-20927", 90.25f, 99.0f, 390, 153, 640, 240}, // Time Crisis - Crisis Zone (U) (480i)
++		{"SCES-50411", 89.8f, 99.9f, 421, 138, 640, 256}, // Vampire Night (E)
++		{"SLPS-25077", 90.0f, 97.5f, 422, 118, 640, 240}, // Vampire Night (J)
++		{"SLUS-20221", 89.8f, 102.5f, 422, 124, 640, 228}, // Vampire Night (U)
++		{"SLES-51229", 110.15f, 100.0f, 433, 159, 512, 256}, // Virtua Cop - Elite Edition (E,J) (480i)
++	};
++
++	static constexpr s32 DEFAULT_SCREEN_WIDTH = 640;
++	static constexpr s32 DEFAULT_SCREEN_HEIGHT = 240;
++	static constexpr float DEFAULT_CENTER_X = 320.0f;
++	static constexpr float DEFAULT_CENTER_Y = 120.0f;
++	static constexpr float DEFAULT_SCALE_X = 1.0f;
++	static constexpr float DEFAULT_SCALE_Y = 1.0f;
++
++#pragma pack(push, 1)
++	union GunCon2Out
++	{
++		u8 bits[6];
++
++		struct
++		{
++			u16 buttons;
++			s16 pos_x;
++			s16 pos_y;
++		};
++	};
++	static_assert(sizeof(GunCon2Out) == 6);
++#pragma pack(pop)
++
++	struct GunCon2State
++	{
++		explicit GunCon2State(u32 port_) : port(port_) {}
++
++		USBDevice dev{};
++		USBDesc desc{};
++		USBDescDevice desc_dev{};
++
++		u32 port = 0;
++
++		//////////////////////////////////////////////////////////////////////////
++		// Screen calibration (auto-detected from the disc serial, like upstream)
++		//////////////////////////////////////////////////////////////////////////
++		u32 screen_width = DEFAULT_SCREEN_WIDTH;
++		u32 screen_height = DEFAULT_SCREEN_HEIGHT;
++		float center_x = DEFAULT_CENTER_X;
++		float center_y = DEFAULT_CENTER_Y;
++		float scale_x = DEFAULT_SCALE_X;
++		float scale_y = DEFAULT_SCALE_Y;
++		bool auto_config_done = false;
++
++		//////////////////////////////////////////////////////////////////////////
++		// Host state, refreshed once per frame from the frontend
++		//////////////////////////////////////////////////////////////////////////
++		u32 button_state = 0;
++		s16 raw_screen_x = 0;
++		s16 raw_screen_y = 0;
++		bool offscreen = true;
++
++		//////////////////////////////////////////////////////////////////////////
++		// Device state (game-configured offset)
++		//////////////////////////////////////////////////////////////////////////
++		s16 param_x = 0;
++		s16 param_y = 0;
++		u16 param_mode = 0;
++
++		u16 calibration_timer = 0;
++		s16 calibration_pos_x = 0;
++		s16 calibration_pos_y = 0;
++
++		void AutoConfigure();
++		std::tuple<s16, s16> CalculatePosition() const;
++	};
++
++	static const USBDescStrings desc_strings = {
++		"Namco GunCon2",
++	};
++
++	/* mostly the same values as the Bochs USB Keyboard device */
++	static const uint8_t guncon2_dev_desc[] = {
++		/* bLength             */ 0x12,
++		/* bDescriptorType     */ 0x01,
++		/* bcdUSB              */ WBVAL(0x0100),
++		/* bDeviceClass        */ 0x00,
++		/* bDeviceSubClass     */ 0x00,
++		/* bDeviceProtocol     */ 0x00,
++		/* bMaxPacketSize0     */ 0x08,
++		/* idVendor            */ WBVAL(0x0b9a),
++		/* idProduct           */ WBVAL(0x016a),
++		/* bcdDevice           */ WBVAL(0x0100),
++		/* iManufacturer       */ 0x00,
++		/* iProduct            */ 0x00,
++		/* iSerialNumber       */ 0x00,
++		/* bNumConfigurations  */ 0x01,
++	};
++
++	static const uint8_t guncon2_config_desc[] = {
++		0x09, // Length
++		0x02, // Type (Config)
++		0x19, 0x00, // Total size
++
++		0x01, // # interfaces
++		0x01, // Configuration #
++		0x00, // index of string descriptor
++		0x80, // Attributes (bus powered)
++		0x19, // Max power in mA
++
++		// Interface
++		0x09, // Length
++		0x04, // Type (Interface)
++
++		0x00, // Interface #
++		0x00, // Alternative #
++		0x01, // # endpoints
++
++		0xff, // Class
++		0x6a, // Subclass
++		0x00, // Protocol
++		0x00, // index of string descriptor
++
++		// Endpoint
++		0x07, // Length
++		0x05, // Type (Endpoint)
++
++		0x81, // Address
++		0x03, // Attributes (interrupt transfers)
++		0x08, 0x00, // Max packet size
++
++		0x08, // Polling interval (frame counts)
++	};
++
++	static void updateState(GunCon2State* us, u32 bid, bool pressed)
++	{
++		const u32 bit = 1u << bid;
++		if (pressed)
++			us->button_state |= bit;
++		else
++			us->button_state &= ~bit;
++	}
++
++	static void guncon2_handle_control(
++		USBDevice* dev, USBPacket* p, int request, int value, int index, int length, uint8_t* data)
++	{
++		GunCon2State* const us = USB_CONTAINER_OF(dev, GunCon2State, dev);
++
++		// Apply configuration on the first control packet.
++		// The ELF should be well and truely loaded by then.
++		if (!us->auto_config_done)
++		{
++			us->AutoConfigure();
++			us->auto_config_done = true;
++		}
++
++		if (usb_desc_handle_control(dev, p, request, value, index, length, data) >= 0)
++			return;
++
++		if (request == (ClassInterfaceOutRequest | 0x09))
++		{
++			us->param_x = static_cast<u16>(data[0]) | (static_cast<u16>(data[1]) << 8);
++			us->param_y = static_cast<u16>(data[2]) | (static_cast<u16>(data[3]) << 8);
++			us->param_mode = static_cast<u16>(data[4]) | (static_cast<u16>(data[5]) << 8);
++			return;
++		}
++
++		p->status = USB_RET_STALL;
++	}
++
++	static void guncon2_handle_data(USBDevice* dev, USBPacket* p)
++	{
++		GunCon2State* const us = USB_CONTAINER_OF(dev, GunCon2State, dev);
++
++		switch (p->pid)
++		{
++			case USB_TOKEN_IN:
++			{
++				if (p->ep->nr == 1)
++				{
++					const auto [pos_x, pos_y] = us->CalculatePosition();
++
++					// Time Crisis games do a "calibration" by displaying a black frame for a single frame,
++					// waiting for the gun to report (0, 0), and then computing an offset on the first non-zero
++					// value. So, after the trigger is pulled, we wait for a few frames, then send the (0, 0)
++					// report, then go back to normal values.
++					if (us->button_state & (1u << BID_RECALIBRATE) && us->calibration_timer == 0)
++					{
++						us->calibration_timer = GUNCON2_CALIBRATION_DELAY;
++						us->calibration_pos_x = pos_x;
++						us->calibration_pos_y = pos_y;
++					}
++
++					// Buttons are active low.
++					GunCon2Out out;
++					out.buttons = static_cast<u16>(~us->button_state) | (us->param_mode & GUNCON2_FLAG_PROGRESSIVE);
++					out.pos_x = pos_x;
++					out.pos_y = pos_y;
++
++					if (us->calibration_timer > 0)
++					{
++						// Force trigger down while calibrating.
++						out.buttons &= ~(1u << BID_TRIGGER);
++						out.pos_x = us->calibration_pos_x;
++						out.pos_y = us->calibration_pos_y;
++						us->calibration_timer--;
++
++						if (us->calibration_timer < GUNCON2_CALIBRATION_REPORT_DELAY)
++						{
++							out.pos_x = 0;
++							out.pos_y = 0;
++						}
++					}
++					else if (us->button_state & (1u << BID_SHOOT_OFFSCREEN))
++					{
++						// Offscreen shot - use 0,0.
++						out.buttons &= ~(1u << BID_TRIGGER);
++						out.pos_x = 0;
++						out.pos_y = 0;
++					}
++
++					usb_packet_copy(p, &out, sizeof(out));
++					break;
++				}
++			}
++				[[fallthrough]];
++
++			case USB_TOKEN_OUT:
++			default:
++			{
++				p->status = USB_RET_STALL;
++			}
++			break;
++		}
++	}
++
++	static void guncon2_unrealize(USBDevice* dev)
++	{
++		GunCon2State* us = USB_CONTAINER_OF(dev, GunCon2State, dev);
++		delete us;
++	}
++
++	void GunCon2State::AutoConfigure()
++	{
++		const std::string serial = VMManager::GetDiscSerial();
++		for (const GameConfig& gc : s_game_config)
++		{
++			if (serial != gc.serial)
++				continue;
++
++			scale_x = gc.scale_x / 100.0f;
++			scale_y = gc.scale_y / 100.0f;
++			center_x = static_cast<float>(gc.center_x);
++			center_y = static_cast<float>(gc.center_y);
++			screen_width = gc.screen_width;
++			screen_height = gc.screen_height;
++			return;
++		}
++	}
++
++	std::tuple<s16, s16> GunCon2State::CalculatePosition() const
++	{
++		s16 pos_x, pos_y;
++
++		if (offscreen)
++		{
++			// off-screen
++			pos_x = 0;
++			pos_y = 0;
++		}
++		else
++		{
++			// raw_screen_{x,y} are -0x8000..0x7fff across the visible display,
++			// per the libretro RETRO_DEVICE_ID_LIGHTGUN_SCREEN_{X,Y} contract.
++			const float x_norm = (static_cast<float>(raw_screen_x) + 32768.0f) / 65535.0f;
++			const float y_norm = (static_cast<float>(raw_screen_y) + 32768.0f) / 65535.0f;
++
++			// scale to internal coordinate system and center
++			float fx = (x_norm * static_cast<float>(screen_width)) - static_cast<float>(screen_width / 2u);
++			float fy = (y_norm * static_cast<float>(screen_height)) - static_cast<float>(screen_height / 2u);
++
++			// apply curvature scale
++			fx *= scale_x;
++			fy *= scale_y;
++
++			// and re-center based on game center
++			s32 x = static_cast<s32>(std::round(fx + center_x));
++			s32 y = static_cast<s32>(std::round(fy + center_y));
++
++			// apply game-configured offset
++			if (param_mode & GUNCON2_FLAG_PROGRESSIVE)
++			{
++				x -= param_x / 2;
++				y -= param_y / 2;
++			}
++			else
++			{
++				x -= param_x;
++				y -= param_y;
++			}
++
++			// 0,0 is reserved for offscreen, so ensure we don't send that
++			pos_x = static_cast<s16>(std::max(x, 1));
++			pos_y = static_cast<s16>(std::max(y, 1));
++		}
++
++		return std::tie(pos_x, pos_y);
++	}
++
++	USBDevice* usb_guncon2_create(u32 port)
++	{
++		GunCon2State* s = new GunCon2State(port);
++		s->desc.full = &s->desc_dev;
++		s->desc.str = desc_strings;
++
++		if (usb_desc_parse_dev(guncon2_dev_desc, sizeof(guncon2_dev_desc), s->desc, s->desc_dev) < 0)
++			goto fail;
++		if (usb_desc_parse_config(guncon2_config_desc, sizeof(guncon2_config_desc), s->desc_dev) < 0)
++			goto fail;
++
++		s->dev.speed = USB_SPEED_FULL;
++		s->dev.klass.handle_attach = usb_desc_attach;
++		s->dev.klass.handle_control = guncon2_handle_control;
++		s->dev.klass.handle_data = guncon2_handle_data;
++		s->dev.klass.unrealize = guncon2_unrealize;
++		s->dev.klass.usb_desc = &s->desc;
++		s->dev.klass.product_desc = s->desc.str[0];
++
++		usb_desc_init(&s->dev);
++		usb_ep_init(&s->dev);
++
++		return &s->dev;
++	fail:
++		guncon2_unrealize(&s->dev);
++		return nullptr;
++	}
++
++	void usb_guncon2_update(USBDevice* dev, retro_input_state_t input_cb, unsigned port)
++	{
++		GunCon2State* us = USB_CONTAINER_OF(dev, GunCon2State, dev);
++		if (!input_cb)
++			return;
++
++		us->offscreen = input_cb(port, RETRO_DEVICE_LIGHTGUN, 0, RETRO_DEVICE_ID_LIGHTGUN_IS_OFFSCREEN) != 0;
++		us->raw_screen_x = static_cast<s16>(input_cb(port, RETRO_DEVICE_LIGHTGUN, 0, RETRO_DEVICE_ID_LIGHTGUN_SCREEN_X));
++		us->raw_screen_y = static_cast<s16>(input_cb(port, RETRO_DEVICE_LIGHTGUN, 0, RETRO_DEVICE_ID_LIGHTGUN_SCREEN_Y));
++
++		const auto poll = [&](u32 bid, unsigned id)
++		{
++			updateState(us, bid, input_cb(port, RETRO_DEVICE_LIGHTGUN, 0, id) != 0);
++		};
++
++		// This mirrors standalone PCSX2's own per-button assignment for a
++		// real detected gun (package/batocera/emulators/pcsx2/005-lightguns.patch's
++		// udev_handle_event(): BTN_LEFT/RIGHT/MIDDLE/1/2/3/4 -> TRIGGER/C/
++		// START/B/RECALIBRATE/A/SELECT), not a name-for-name match against
++		// libretro's own AUX_A/AUX_B/AUX_C/RELOAD/SELECT labels - those
++		// don't line up 1:1 with GunCon2's buttons. configgen/gun.py's
++		// identically-ordered mouse_buttons_to_code map (left, right,
++		// middle, 1, 2, 3, 4, ...) confirms batocera's generic RetroArch
++		// "gun_*_mbtn" roles (trigger/offscreen_shot/start/select/aux_a/
++		// aux_b/aux_c) are assigned to that exact same physical-button
++		// ordinal sequence, so matching PCSX2 means following the ordinal,
++		// not the libretro role name: ordinal 2 ("offscreen_shot"/RELOAD)
++		// is PCSX2's C button, not a "shoot offscreen" gesture; ordinal 4
++		// ("select") is PCSX2's B button; ordinal 5 ("aux_a") is PCSX2's
++		// Recalibrate; ordinal 6 ("aux_b") is PCSX2's A button; ordinal 7
++		// ("aux_c") is PCSX2's Select button.
++		poll(BID_TRIGGER,     RETRO_DEVICE_ID_LIGHTGUN_TRIGGER); // ordinal 1 (BTN_LEFT)
++		poll(BID_C,           RETRO_DEVICE_ID_LIGHTGUN_RELOAD);  // ordinal 2 (BTN_RIGHT)
++		poll(BID_START,       RETRO_DEVICE_ID_LIGHTGUN_START);   // ordinal 3 (BTN_MIDDLE)
++		poll(BID_B,           RETRO_DEVICE_ID_LIGHTGUN_SELECT);  // ordinal 4 (BTN_1)
++		poll(BID_RECALIBRATE, RETRO_DEVICE_ID_LIGHTGUN_AUX_A);   // ordinal 5 (BTN_2)
++		poll(BID_A,           RETRO_DEVICE_ID_LIGHTGUN_AUX_B);   // ordinal 6 (BTN_3)
++		poll(BID_SELECT,      RETRO_DEVICE_ID_LIGHTGUN_AUX_C);   // ordinal 7 (BTN_4)
++		poll(BID_DPAD_UP,     RETRO_DEVICE_ID_LIGHTGUN_DPAD_UP);    // ordinal 8  (BTN_5)
++		poll(BID_DPAD_DOWN,   RETRO_DEVICE_ID_LIGHTGUN_DPAD_DOWN);  // ordinal 9  (BTN_6)
++		poll(BID_DPAD_LEFT,   RETRO_DEVICE_ID_LIGHTGUN_DPAD_LEFT);  // ordinal 10 (BTN_7)
++		poll(BID_DPAD_RIGHT,  RETRO_DEVICE_ID_LIGHTGUN_DPAD_RIGHT); // ordinal 11 (BTN_8)
++	}
++} // namespace usb_guncon2
+diff --git a/pcsx2/USB/libretro-usb/usb-guncon2.h b/pcsx2/USB/libretro-usb/usb-guncon2.h
+new file mode 100644
+index 0000000..3bff4b9
+--- /dev/null
++++ b/pcsx2/USB/libretro-usb/usb-guncon2.h
+@@ -0,0 +1,29 @@
++/*  PCSX2 - PS2 Emulator for PCs
++ *  Copyright (C) 2002-2021  PCSX2 Dev Team
++ *
++ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
++ *  of the GNU Lesser General Public License as published by the Free Software Found-
++ *  ation, either version 3 of the License, or (at your option) any later version.
++ *
++ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
++ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
++ *  PURPOSE.  See the GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License along with PCSX2.
++ *  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#pragma once
++
++#include "USB/libretro-usb/USBinternal.h"
++#include "libretro.h"
++
++namespace usb_guncon2
++{
++	/* Plain factory - no DeviceProxy / SettingsInterface. Build a GunCon2 on
++	 * the given OHCI port and return the USBDevice to attach. */
++	USBDevice* usb_guncon2_create(u32 port);
++
++	/* Pump one frame of libretro RETRO_DEVICE_LIGHTGUN input into the device. */
++	void usb_guncon2_update(USBDevice* dev, retro_input_state_t input_cb, unsigned port);
++} // namespace usb_guncon2

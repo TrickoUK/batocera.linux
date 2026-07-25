@@ -794,6 +794,7 @@ def createLibretroConfig(
         "pcsx_rearmed"  : { "default" : { "device": 260, "p1": 0, "p2": 1,
                                           "gameDependant": [ { "key": "type", "value": "justifier", "mapkey": "device", "mapvalue": "516" } ]} },
         "swanstation"   : { "default" : { "device": 260, "p1": 0, "p2": 1 } },
+        "pcsx2"         : { "default" : { "device":   4, "p1": 0, "p2": 1 } },
         "beetle-saturn" : { "default" : { "device": 260, "p1": 0, "p2": 1 } },
         "opera"         : { "default" : { "device": 260, "p1": 0, "p2": 1 } },
         "stella"        : { "default" : { "device":   4, "p1": 0, "p2": 1 } },
