@@ -101,6 +101,27 @@ BR2_PACKAGE_BATOCERA_WINE_SYSTEMS=y
 # depending on it from Config.in."
 BR2_PACKAGE_LIBENET=y
 
+# Microsoft Xbox (OG): xemu, hand-picked rather than via a manufacturer
+# umbrella — CONSOLE_SYSTEMS normally selects this but pulls in N64/
+# GameCube/PlayStation too, and this fork has no Microsoft-scoped umbrella
+# in manufacturer-systems/Config.in (Xbox 360/xenia not requested).
+BR2_PACKAGE_XEMU=y
+
+# Steam (Flatpak): batocera-steam provides the "steam" ES system and the
+# batocera-steam/batocera-steam-update launcher scripts. It's only pulled in
+# by BATOCERA_ALL_SYSTEMS (same gap as WINE_SYSTEMS above), so it needs to be
+# explicit here. Flatpak itself is unconditionally selected for any x86_64
+# target already (batocera-system/Config.in), so this is the only piece
+# missing; the actual Steam client + Proton are installed at runtime via
+# `flatpak install com.valvesoftware.Steam`, independent of the system Wine
+# pulled in for lindbergh-loader above.
+BR2_PACKAGE_BATOCERA_STEAM=y
+
+# Neo Geo CD core: plays Neo Geo CD .cue/.bin/.chd images directly,
+# opt-in since it's a separate ES system (neogeocd) rather than part of
+# BATOCERA_ARCADE_SYSTEMS.
+BR2_PACKAGE_LIBRETRO_NEOCD=y
+
 # Note: Nvidia is force-selected via a Kconfig `select` for every x86_64
 # build (package/batocera/core/batocera-system/Config.in) and cannot be
 # disabled from this defconfig alone - apply
