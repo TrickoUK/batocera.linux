@@ -34,3 +34,16 @@ batocera-mok.key
 typescript
 .ruff_cache
 .coverage
+
+# Personal fork-only notes/tooling - never meant to go upstream, managed
+# outside git long-term. Safety net so a broad `git add` can't sweep these
+# into a commit by accident.
+/my-docs/
+/keys.txt
+/full-order.txt
+/apply-patches.sh
+/refresh-and-build.sh
+/refresh-board-es.sh
+/refresh-board.sh
+/refresh-es.sh
+/update-usb.sh
