@@ -3,8 +3,8 @@
 # libretro-same-cdi
 #
 ################################################################################
-# Version: Commits on Mar 1, 2023
-LIBRETRO_SAME_CDI_VERSION = 54cf493c2dee4c46666059c452f8aaaa0bd7c8e0
+# Version: Commits on Mar 31, 2026
+LIBRETRO_SAME_CDI_VERSION = 2184aa6d87a31fb6c64534b9b7b2d26e36bae757
 LIBRETRO_SAME_CDI_SITE = $(call github,libretro,same_cdi,$(LIBRETRO_SAME_CDI_VERSION))
 LIBRETRO_SAME_CDI_LICENSE = GPL
 LIBRETRO_SAME_CDI_DEPENDENCIES += retroarch
