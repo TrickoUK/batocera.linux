@@ -1,0 +1,14 @@
+diff --git a/package/batocera/core/batocera-system/Config.in b/package/batocera/core/batocera-system/Config.in
+index a0324b0876..63776e46fc 100644
+--- a/package/batocera/core/batocera-system/Config.in
++++ b/package/batocera/core/batocera-system/Config.in
+@@ -2368,7 +2368,8 @@ config BR2_PACKAGE_BATOCERA_GPU_X86
+ 	bool "batocera.linux GPU support for x86 platform"
+ 
+ 	# nvidia
+-	select BR2_PACKAGE_BATOCERA_NVIDIA			if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY
++	# Disabled for this fork: AMD-only x86_64 build, no Nvidia drivers.
++	# select BR2_PACKAGE_BATOCERA_NVIDIA			if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY
+ 
+ 	# mesa
+ 	select BR2_PACKAGE_MESA3D
