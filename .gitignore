@@ -39,6 +39,7 @@ typescript
 # outside git long-term. Safety net so a broad `git add` can't sweep these
 # into a commit by accident.
 /my-docs/
+/CLAUDE.md
 /keys.txt
 /full-order.txt
 /apply-patches.sh
