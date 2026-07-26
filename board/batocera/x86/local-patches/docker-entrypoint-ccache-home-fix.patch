@@ -1,0 +1,24 @@
+diff --git a/docker/entry-point.sh b/docker/entry-point.sh
+index f221d5d391..da0147d3bc 100644
+--- a/docker/entry-point.sh
++++ b/docker/entry-point.sh
+@@ -18,8 +18,17 @@ if [ ! -z "$HOST_UID" ] && [ ! -z "$HOST_GID" ]; then
+ 
+     export HOME=/home/batocera
+ 
+-    # Set $@ to run the docker command as the "batocera" user and group
+-    set -- gosu "$HOST_UID":"$HOST_GID" "$@"
++    # Set $@ to run the docker command as the "batocera" user and group.
++    # NOTE: gosu resolves HOME/USER/LOGNAME from the target UID's /etc/passwd
++    # entry itself (like su), overriding the HOME just exported above. The
++    # base image already ships a user at this same UID (e.g. Ubuntu's default
++    # "ubuntu" account), and since "useradd -o" only adds a second passwd
++    # entry for the same UID rather than replacing it, gosu's uid->passwd
++    # lookup can resolve to that pre-existing account instead of "batocera" -
++    # silently pointing HOME (and ccache's cache_dir default, which is
++    # HOME-relative) at an unmounted, ephemeral path. Re-asserting HOME
++    # explicitly after gosu sidesteps that lookup instead of depending on it.
++    set -- gosu "$HOST_UID":"$HOST_GID" env HOME=/home/batocera "$@"
+ fi
+ 
+ exec "$@"
