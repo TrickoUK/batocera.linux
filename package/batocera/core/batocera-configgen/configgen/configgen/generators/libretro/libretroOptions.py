@@ -2089,22 +2089,13 @@ def _mednafen_psx_options(
     _set_from_system(coreSettings, 'beetle_psx_hw_skip_bios', system, 'beetle_psx_hw_skip_bios', default='disabled')
 
     # CPU Frequency Scaling (Overclock)
-    _set_from_system(coreSettings, 'beetle_psx_hw_cpu_freq_scale', system, 'beetle_psx_hw_cpu_freq_scale', default='110%') # If not 110% NO options are working!
-
-    # GPU Rasterizer Overclock
-    _set_from_system(coreSettings, 'beetle_psx_hw_gpu_overclock', system, 'beetle_psx_hw_gpu_overclock', default='1x(native)')
-
-    # GTE Overclock
-    _set_from_system(coreSettings, 'beetle_psx_hw_gte_overclock', system, 'beetle_psx_hw_gte_overclock', default='disabled')
+    _set_from_system(coreSettings, 'beetle_psx_hw_cpu_freq_scale', system, 'beetle_psx_hw_cpu_freq_scale', default='100%')
 
     # CD Access Method
     _set_from_system(coreSettings, 'beetle_psx_hw_cd_access_method', system, 'beetle_psx_hw_cd_access_method', default='sync')
 
     # CD Loading Speed
     _set_from_system(coreSettings, 'beetle_psx_hw_cd_fastload', system, 'beetle_psx_hw_cd_fastload', default='2x(native)')
-
-    # Override BIOS
-    _set_from_system(coreSettings, 'beetle_psx_hw_override_bios', system, 'beetle_psx_hw_override_bios', default='disabled')
 
     # System Region
     _set_from_system(coreSettings, 'beetle_psx_hw_region', system, 'beetle_psx_hw_region', default='auto')
@@ -2144,9 +2135,6 @@ def _mednafen_psx_options(
     # Exclude 2D Polygons from Filtering (Vulkan)
     _set_from_system(coreSettings, 'beetle_psx_hw_filter_exclude_2d_polygon', system, 'beetle_psx_hw_filter_exclude_2d_polygon', default='disabled')
 
-    # Texture UV Offset (Vulkan)
-    _set_from_system(coreSettings, 'beetle_psx_hw_scaled_uv_offset', system, 'beetle_psx_hw_scaled_uv_offset', default='enabled')
-
     # Adaptive Smoothing (Vulkan)
     _set_from_system(coreSettings, 'beetle_psx_hw_adaptive_smoothing', system, 'beetle_psx_hw_adaptive_smoothing', default='disabled')
 
@@ -2159,65 +2147,8 @@ def _mednafen_psx_options(
     # MDEC YUV Chroma Filter (Vulkan)
     _set_from_system(coreSettings, 'beetle_psx_hw_mdec_yuv', system, 'beetle_psx_hw_mdec_yuv', default='disabled')
 
-    # Track Textures
-    _set_from_system(coreSettings, 'beetle_psx_hw_track_textures', system, 'beetle_psx_hw_track_textures', default='disabled')
-
-    # Dump Textures
-    _set_from_system(coreSettings, 'beetle_psx_hw_dump_textures', system, 'beetle_psx_hw_dump_textures', default='disabled')
-
-    # HD Dump Mode
-    _set_from_system(coreSettings, 'beetle_psx_hw_hd_dump_mode', system, 'beetle_psx_hw_hd_dump_mode', default='upload_rect')
-
-    # Replace Textures
-    _set_from_system(coreSettings, 'beetle_psx_hw_replace_textures', system, 'beetle_psx_hw_replace_textures', default='disabled')
-
-    # HD Texture Folder Location
-    _set_from_system(coreSettings, 'beetle_psx_hw_texture_directory', system, 'beetle_psx_hw_texture_directory', default='content')
-
-    # HD Replacement Mode
-    _set_from_system(coreSettings, 'beetle_psx_hw_hd_replacement_mode', system, 'beetle_psx_hw_hd_replacement_mode', default='upload_rect')
-
-    # HD Replacement Cross-Mode Fallback
-    _set_from_system(coreSettings, 'beetle_psx_hw_hd_replacement_fallback', system, 'beetle_psx_hw_hd_replacement_fallback', default='disabled')
-
-    # HD Reduce Palette Range
-    _set_from_system(coreSettings, 'beetle_psx_hw_reduce_palette_range', system, 'beetle_psx_hw_reduce_palette_range', default='disabled')
-
-    # HD Texture Caching Method
-    _set_from_system(coreSettings, 'beetle_psx_hw_hd_caching_method', system, 'beetle_psx_hw_hd_caching_method', default='eager')
-
-    # HD Texture VRAM Cache Budget
-    _set_from_system(coreSettings, 'beetle_psx_hw_hd_cache_vram_budget', system, 'beetle_psx_hw_hd_cache_vram_budget', default='3072')
-
-    # HD Texture RAM Cache Budget
-    _set_from_system(coreSettings, 'beetle_psx_hw_hd_cache_ram_budget', system, 'beetle_psx_hw_hd_cache_ram_budget', default='2048')
-
-    # Core-Reported FPS Timing
-    _set_from_system(coreSettings, 'beetle_psx_hw_core_timing_fps', system, 'beetle_psx_hw_core_timing_fps', default='auto_toggle')
-
-    # Frame Duping (Speedup)
-    _set_from_system(coreSettings, 'beetle_psx_hw_frame_duping', system, 'beetle_psx_hw_frame_duping', default='disabled')
-
     # PAL Video Timing Override
     _set_from_system(coreSettings, 'beetle_psx_hw_pal_video_timing_override', system, 'beetle_psx_hw_pal_video_timing_override', default='disabled')
-
-    # Crop Overscan
-    _set_from_system(coreSettings, 'beetle_psx_hw_crop_overscan', system, 'beetle_psx_hw_crop_overscan', default='smart')
-
-    # Additional Cropping
-    _set_from_system(coreSettings, 'beetle_psx_hw_image_crop', system, 'beetle_psx_hw_image_crop', default='disabled')
-
-    # Offset Cropped Image (Software Renderer)
-    _set_from_system(coreSettings, 'beetle_psx_hw_image_offset', system, 'beetle_psx_hw_image_offset', default='disabled')
-
-    # Horizontal Image Offset (Hardware Renderers)
-    _set_from_system(coreSettings, 'beetle_psx_hw_image_offset_cycles', system, 'beetle_psx_hw_image_offset_cycles', default='0')
-
-    # Initial/Last Scan Line (NTSC/PAL)
-    _set_from_system(coreSettings, 'beetle_psx_hw_initial_scanline', system, 'beetle_psx_hw_initial_scanline', default='0')
-    _set_from_system(coreSettings, 'beetle_psx_hw_last_scanline', system, 'beetle_psx_hw_last_scanline', default='239')
-    _set_from_system(coreSettings, 'beetle_psx_hw_initial_scanline_pal', system, 'beetle_psx_hw_initial_scanline_pal', default='0')
-    _set_from_system(coreSettings, 'beetle_psx_hw_last_scanline_pal', system, 'beetle_psx_hw_last_scanline_pal', default='287')
 
     # --- PGXP (Precision Geometry Transform Pipeline) ---
 
@@ -2250,26 +2181,11 @@ def _mednafen_psx_options(
     # Widescreen Hack Aspect Ratio
     _set_from_system(coreSettings, 'beetle_psx_hw_widescreen_hack_aspect_ratio', system, 'beetle_psx_hw_widescreen_hack_aspect_ratio', default='16:9')
 
-    # SPU Silent Voice Optimization
-    _set_from_system(coreSettings, 'beetle_psx_hw_spu_silent_voice', system, 'beetle_psx_hw_spu_silent_voice', default='enabled')
-
-    # CPU Dynarec (Speedup)
-    _set_from_system(coreSettings, 'beetle_psx_hw_cpu_dynarec', system, 'beetle_psx_hw_cpu_dynarec', default='disabled')
-
     # Dynarec Code Invalidation
     _set_from_system(coreSettings, 'beetle_psx_hw_dynarec_invalidate', system, 'beetle_psx_hw_dynarec_invalidate', default='full')
 
     # Dynarec Cycles Per Instruction
     _set_from_system(coreSettings, 'beetle_psx_hw_dynarec_op_cycles', system, 'beetle_psx_hw_dynarec_op_cycles', default='2')
-
-    # Dynarec DMA/GPU/MDEC/Timer Event Cycles
-    _set_from_system(coreSettings, 'beetle_psx_hw_dynarec_eventcycles', system, 'beetle_psx_hw_dynarec_eventcycles', default='128')
-
-    # Dynarec SPU Samples
-    _set_from_system(coreSettings, 'beetle_psx_hw_dynarec_spu_samples', system, 'beetle_psx_hw_dynarec_spu_samples', default='1')
-
-    # Dynarec SP/GP Hit RAM Optimization
-    _set_from_system(coreSettings, 'beetle_psx_hw_dynarec_spgp_opt', system, 'beetle_psx_hw_dynarec_spgp_opt', default='disabled')
 
     # Multitap
     match system.config.get('multitap_mednafen'):
