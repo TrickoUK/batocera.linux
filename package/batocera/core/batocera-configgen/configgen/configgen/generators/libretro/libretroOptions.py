@@ -2083,44 +2083,45 @@ def _ppsspp_options(
 def _mednafen_psx_options(
     coreSettings: UnixSettings, system: Emulator, rom: Path, guns: Guns, wheels: DeviceInfoMapping, /,
 ) -> None:
-    # CPU Frequency Scaling (Overclock)
-    _set_from_system(coreSettings, 'beetle_psx_hw_cpu_freq_scale', system, 'beetle_psx_hw_cpu_freq_scale', default='110%') # If not 110% NO options are working!
+    # --- System ---
 
     # Show official Bootlogo
     _set_from_system(coreSettings, 'beetle_psx_hw_skip_bios', system, 'beetle_psx_hw_skip_bios', default='disabled')
 
-    # Video Resolution
-    _set_from_system(coreSettings, 'beetle_psx_hw_internal_resolution', system, 'beetle_psx_hw_internal_resolution', default='1x(native)')
+    # CPU Frequency Scaling (Overclock)
+    _set_from_system(coreSettings, 'beetle_psx_hw_cpu_freq_scale', system, 'beetle_psx_hw_cpu_freq_scale', default='110%') # If not 110% NO options are working!
 
-    # Widescreen Hack
-    if system.config.get('beetle_psx_hw_widescreen_hack') == 'enabled' and system.config.get('ratio') == "16/9" and system.config.get('bezel') == "none":
-        _set(coreSettings, 'beetle_psx_hw_widescreen_hack', 'enabled')
-    else:
-        _set(coreSettings, 'beetle_psx_hw_widescreen_hack', 'disabled')
+    # GPU Rasterizer Overclock
+    _set_from_system(coreSettings, 'beetle_psx_hw_gpu_overclock', system, 'beetle_psx_hw_gpu_overclock', default='1x(native)')
 
-    # Frame Duping (Speedup)
-    _set_from_system(coreSettings, 'beetle_psx_hw_frame_duping', system, 'beetle_psx_hw_frame_duping', default='disabled')
+    # GTE Overclock
+    _set_from_system(coreSettings, 'beetle_psx_hw_gte_overclock', system, 'beetle_psx_hw_gte_overclock', default='disabled')
 
-    # CPU Dynarec (Speedup)
-    _set_from_system(coreSettings, 'beetle_psx_hw_cpu_dynarec', system, 'beetle_psx_hw_cpu_dynarec', default='disabled')
+    # CD Access Method
+    _set_from_system(coreSettings, 'beetle_psx_hw_cd_access_method', system, 'beetle_psx_hw_cd_access_method', default='sync')
 
-    # Dynarec Code Invalidation
-    _set_from_system(coreSettings, 'beetle_psx_hw_dynarec_invalidate', system, 'beetle_psx_hw_dynarec_invalidate', default='full')
+    # CD Loading Speed
+    _set_from_system(coreSettings, 'beetle_psx_hw_cd_fastload', system, 'beetle_psx_hw_cd_fastload', default='2x(native)')
+
+    # Override BIOS
+    _set_from_system(coreSettings, 'beetle_psx_hw_override_bios', system, 'beetle_psx_hw_override_bios', default='disabled')
+
+    # System Region
+    _set_from_system(coreSettings, 'beetle_psx_hw_region', system, 'beetle_psx_hw_region', default='auto')
 
     # Analog Stick self calibration
     _set(coreSettings, 'beetle_psx_hw_analog_calibration', 'enabled')
+
+    # --- Video ---
+
+    # Video Resolution
+    _set_from_system(coreSettings, 'beetle_psx_hw_internal_resolution', system, 'beetle_psx_hw_internal_resolution', default='1x(native)')
 
     # Core Aspect Ratio
     _set_from_system(coreSettings, 'beetle_psx_hw_aspect_ratio', system, 'beetle_psx_hw_aspect_ratio', default='corrected')
 
     # Deinterlace Method
     _set_from_system(coreSettings, 'beetle_psx_hw_deinterlacer', system, 'beetle_psx_hw_deinterlacer', default='weave')
-
-    # HD Texture Packs
-    if system.config.get_bool('beetle_psx_hw_hd_textures_enable'):
-        _set(coreSettings, 'beetle_psx_hw_replace_textures', 'enabled')
-    else:
-        _set(coreSettings, 'beetle_psx_hw_replace_textures', 'disabled')
 
     # Renderer
     _set_from_system(coreSettings, 'beetle_psx_hw_renderer', system, 'beetle_psx_hw_renderer', default='hardware')
@@ -2158,6 +2159,68 @@ def _mednafen_psx_options(
     # MDEC YUV Chroma Filter (Vulkan)
     _set_from_system(coreSettings, 'beetle_psx_hw_mdec_yuv', system, 'beetle_psx_hw_mdec_yuv', default='disabled')
 
+    # Track Textures
+    _set_from_system(coreSettings, 'beetle_psx_hw_track_textures', system, 'beetle_psx_hw_track_textures', default='disabled')
+
+    # Dump Textures
+    _set_from_system(coreSettings, 'beetle_psx_hw_dump_textures', system, 'beetle_psx_hw_dump_textures', default='disabled')
+
+    # HD Dump Mode
+    _set_from_system(coreSettings, 'beetle_psx_hw_hd_dump_mode', system, 'beetle_psx_hw_hd_dump_mode', default='upload_rect')
+
+    # Replace Textures
+    _set_from_system(coreSettings, 'beetle_psx_hw_replace_textures', system, 'beetle_psx_hw_replace_textures', default='disabled')
+
+    # HD Texture Folder Location
+    _set_from_system(coreSettings, 'beetle_psx_hw_texture_directory', system, 'beetle_psx_hw_texture_directory', default='content')
+
+    # HD Replacement Mode
+    _set_from_system(coreSettings, 'beetle_psx_hw_hd_replacement_mode', system, 'beetle_psx_hw_hd_replacement_mode', default='upload_rect')
+
+    # HD Replacement Cross-Mode Fallback
+    _set_from_system(coreSettings, 'beetle_psx_hw_hd_replacement_fallback', system, 'beetle_psx_hw_hd_replacement_fallback', default='disabled')
+
+    # HD Reduce Palette Range
+    _set_from_system(coreSettings, 'beetle_psx_hw_reduce_palette_range', system, 'beetle_psx_hw_reduce_palette_range', default='disabled')
+
+    # HD Texture Caching Method
+    _set_from_system(coreSettings, 'beetle_psx_hw_hd_caching_method', system, 'beetle_psx_hw_hd_caching_method', default='eager')
+
+    # HD Texture VRAM Cache Budget
+    _set_from_system(coreSettings, 'beetle_psx_hw_hd_cache_vram_budget', system, 'beetle_psx_hw_hd_cache_vram_budget', default='3072')
+
+    # HD Texture RAM Cache Budget
+    _set_from_system(coreSettings, 'beetle_psx_hw_hd_cache_ram_budget', system, 'beetle_psx_hw_hd_cache_ram_budget', default='2048')
+
+    # Core-Reported FPS Timing
+    _set_from_system(coreSettings, 'beetle_psx_hw_core_timing_fps', system, 'beetle_psx_hw_core_timing_fps', default='auto_toggle')
+
+    # Frame Duping (Speedup)
+    _set_from_system(coreSettings, 'beetle_psx_hw_frame_duping', system, 'beetle_psx_hw_frame_duping', default='disabled')
+
+    # PAL Video Timing Override
+    _set_from_system(coreSettings, 'beetle_psx_hw_pal_video_timing_override', system, 'beetle_psx_hw_pal_video_timing_override', default='disabled')
+
+    # Crop Overscan
+    _set_from_system(coreSettings, 'beetle_psx_hw_crop_overscan', system, 'beetle_psx_hw_crop_overscan', default='smart')
+
+    # Additional Cropping
+    _set_from_system(coreSettings, 'beetle_psx_hw_image_crop', system, 'beetle_psx_hw_image_crop', default='disabled')
+
+    # Offset Cropped Image (Software Renderer)
+    _set_from_system(coreSettings, 'beetle_psx_hw_image_offset', system, 'beetle_psx_hw_image_offset', default='disabled')
+
+    # Horizontal Image Offset (Hardware Renderers)
+    _set_from_system(coreSettings, 'beetle_psx_hw_image_offset_cycles', system, 'beetle_psx_hw_image_offset_cycles', default='0')
+
+    # Initial/Last Scan Line (NTSC/PAL)
+    _set_from_system(coreSettings, 'beetle_psx_hw_initial_scanline', system, 'beetle_psx_hw_initial_scanline', default='0')
+    _set_from_system(coreSettings, 'beetle_psx_hw_last_scanline', system, 'beetle_psx_hw_last_scanline', default='239')
+    _set_from_system(coreSettings, 'beetle_psx_hw_initial_scanline_pal', system, 'beetle_psx_hw_initial_scanline_pal', default='0')
+    _set_from_system(coreSettings, 'beetle_psx_hw_last_scanline_pal', system, 'beetle_psx_hw_last_scanline_pal', default='287')
+
+    # --- PGXP (Precision Geometry Transform Pipeline) ---
+
     # PGXP Operation Mode
     _set_from_system(coreSettings, 'beetle_psx_hw_pgxp_mode', system, 'beetle_psx_hw_pgxp_mode', default='disabled')
 
@@ -2173,23 +2236,28 @@ def _mednafen_psx_options(
     # PGXP Perspective Correct Texturing
     _set_from_system(coreSettings, 'beetle_psx_hw_pgxp_texture', system, 'beetle_psx_hw_pgxp_texture', default='disabled')
 
+    # --- Emulation Hacks ---
+
     # Line-to-Quad Hack
     _set_from_system(coreSettings, 'beetle_psx_hw_line_render', system, 'beetle_psx_hw_line_render', default='default')
+
+    # Widescreen Hack
+    if system.config.get('beetle_psx_hw_widescreen_hack') == 'enabled' and system.config.get('ratio') == "16/9" and system.config.get('bezel') == "none":
+        _set(coreSettings, 'beetle_psx_hw_widescreen_hack', 'enabled')
+    else:
+        _set(coreSettings, 'beetle_psx_hw_widescreen_hack', 'disabled')
 
     # Widescreen Hack Aspect Ratio
     _set_from_system(coreSettings, 'beetle_psx_hw_widescreen_hack_aspect_ratio', system, 'beetle_psx_hw_widescreen_hack_aspect_ratio', default='16:9')
 
-    # GPU Rasterizer Overclock
-    _set_from_system(coreSettings, 'beetle_psx_hw_gpu_overclock', system, 'beetle_psx_hw_gpu_overclock', default='1x(native)')
+    # SPU Silent Voice Optimization
+    _set_from_system(coreSettings, 'beetle_psx_hw_spu_silent_voice', system, 'beetle_psx_hw_spu_silent_voice', default='enabled')
 
-    # GTE Overclock
-    _set_from_system(coreSettings, 'beetle_psx_hw_gte_overclock', system, 'beetle_psx_hw_gte_overclock', default='disabled')
+    # CPU Dynarec (Speedup)
+    _set_from_system(coreSettings, 'beetle_psx_hw_cpu_dynarec', system, 'beetle_psx_hw_cpu_dynarec', default='disabled')
 
-    # CD Access Method
-    _set_from_system(coreSettings, 'beetle_psx_hw_cd_access_method', system, 'beetle_psx_hw_cd_access_method', default='sync')
-
-    # CD Loading Speed
-    _set_from_system(coreSettings, 'beetle_psx_hw_cd_fastload', system, 'beetle_psx_hw_cd_fastload', default='2x(native)')
+    # Dynarec Code Invalidation
+    _set_from_system(coreSettings, 'beetle_psx_hw_dynarec_invalidate', system, 'beetle_psx_hw_dynarec_invalidate', default='full')
 
     # Dynarec Cycles Per Instruction
     _set_from_system(coreSettings, 'beetle_psx_hw_dynarec_op_cycles', system, 'beetle_psx_hw_dynarec_op_cycles', default='2')
@@ -2200,7 +2268,7 @@ def _mednafen_psx_options(
     # Dynarec SPU Samples
     _set_from_system(coreSettings, 'beetle_psx_hw_dynarec_spu_samples', system, 'beetle_psx_hw_dynarec_spu_samples', default='1')
 
-    # Dynarec SP GP Hit RAM Optimization
+    # Dynarec SP/GP Hit RAM Optimization
     _set_from_system(coreSettings, 'beetle_psx_hw_dynarec_spgp_opt', system, 'beetle_psx_hw_dynarec_spgp_opt', default='disabled')
 
     # Multitap
@@ -2217,6 +2285,18 @@ def _mednafen_psx_options(
         case _:
             _set(coreSettings, 'beetle_psx_hw_enable_multitap_port1', 'disabled')
             _set(coreSettings, 'beetle_psx_hw_enable_multitap_port2', 'disabled')
+
+    # Gun Input Mode (Namco GunCon / Justifier)
+    _set_from_system(coreSettings, 'beetle_psx_hw_gun_input_mode', system, 'beetle_psx_hw_gun_input_mode', default='lightgun')
+
+    # Gun Cursor / Crosshair Colors
+    need_crosses = guns_need_crosses(guns)
+    _set_from_system(coreSettings, 'beetle_psx_hw_gun_cursor', system, 'beetle_psx_hw_gun_cursor', default='cross' if need_crosses else 'off')
+    for player, color in enumerate(["red", "blue"], start=1):
+        _set_from_system(coreSettings, f'beetle_psx_hw_crosshair_color_p{player}', system, f'beetle_psx_hw_crosshair_color_p{player}', default=color)
+
+    # Mouse Sensitivity (PlayStation Mouse)
+    _set_from_system(coreSettings, 'beetle_psx_hw_mouse_sensitivity', system, 'beetle_psx_hw_mouse_sensitivity', default='100%')
 
 
 def _duckstation_options(
