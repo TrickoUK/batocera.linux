@@ -2098,7 +2098,7 @@ def _mednafen_psx_options(
     _set_from_system(coreSettings, 'beetle_psx_hw_cd_fastload', system, 'beetle_psx_hw_cd_fastload', default='2x(native)')
 
     # Analog Stick self calibration
-    _set(coreSettings, 'beetle_psx_hw_analog_calibration', 'enabled')
+    _set_from_system(coreSettings, 'beetle_psx_hw_analog_calibration', system, 'beetle_psx_hw_analog_calibration', default='disabled')
 
     # --- Video ---
 
@@ -2144,6 +2144,9 @@ def _mednafen_psx_options(
     # PAL Video Timing Override
     _set_from_system(coreSettings, 'beetle_psx_hw_pal_video_timing_override', system, 'beetle_psx_hw_pal_video_timing_override', default='disabled')
 
+    # Frame Duping (Speedup)
+    _set_from_system(coreSettings, 'beetle_psx_hw_frame_duping', system, 'beetle_psx_hw_frame_duping', default='disabled')
+
     # --- PGXP (Precision Geometry Transform Pipeline) ---
 
     # PGXP Operation Mode
@@ -2174,6 +2177,9 @@ def _mednafen_psx_options(
 
     # Widescreen Hack Aspect Ratio
     _set_from_system(coreSettings, 'beetle_psx_hw_widescreen_hack_aspect_ratio', system, 'beetle_psx_hw_widescreen_hack_aspect_ratio', default='16:9')
+
+    # CPU Dynarec (Speedup)
+    _set_from_system(coreSettings, 'beetle_psx_hw_cpu_dynarec', system, 'beetle_psx_hw_cpu_dynarec', default='disabled')
 
     # Dynarec Code Invalidation
     _set_from_system(coreSettings, 'beetle_psx_hw_dynarec_invalidate', system, 'beetle_psx_hw_dynarec_invalidate', default='full')

@@ -244,6 +244,14 @@ custom_features:
     choices:
       'Off': disabled
       'On': enabled
+  beetle_psx_hw_frame_duping:
+    group: BEETLE SPECIFIC
+    submenu: Video
+    prompt: FRAME DUPING (SPEEDUP)
+    description: Small performance increase by repeating the previous frame if the core has nothing new to display.
+    choices:
+      'Off': disabled
+      'On': enabled
   beetle_psx_hw_pgxp_mode:
     group: BEETLE SPECIFIC
     submenu: PGXP (Precision Geometry Transform Pipeline)
@@ -323,6 +331,16 @@ custom_features:
       '20:9': '20:9'
       '21:9': '21:9'
       '32:9': '32:9'
+  beetle_psx_hw_cpu_dynarec:
+    group: BEETLE SPECIFIC
+    submenu: Emulation Hacks
+    prompt: CPU DYNAREC (SPEED UP)
+    description: Dynamically recompile CPU instructions to native instructions. Much faster than interpreter, but CPU timing is less accurate, and may have bugs.
+    choices:
+      Disabled (Beetle Interpreter): disabled
+      Max Performance: execute
+      Cycle Timing Check: execute_one
+      Lightrec Interpreter: run_interpreter
   beetle_psx_hw_dynarec_invalidate:
     group: BEETLE SPECIFIC
     submenu: Emulation Hacks
@@ -365,5 +383,11 @@ custom_features:
       NeGcon (Rumble): 1285
       Justifier: 516
       PlayStation Mouse: 258
+  beetle_psx_hw_analog_calibration:
+    prompt: ANALOG SELF-CALIBRATION
+    description: For DualShock, Analog Controller, Analog Joystick or neGcon, dynamically calibrates analog input range. Useful for games (e.g. Mega Man Legends 2) expecting larger values than modern controllers provide.
+    choices:
+      'Off': disabled
+      'On': enabled
 systems:
   - psx
