@@ -2089,16 +2089,13 @@ def _mednafen_psx_options(
     _set_from_system(coreSettings, 'beetle_psx_hw_skip_bios', system, 'beetle_psx_hw_skip_bios', default='disabled')
 
     # CPU Frequency Scaling (Overclock)
-    _set_from_system(coreSettings, 'beetle_psx_hw_cpu_freq_scale', system, 'beetle_psx_hw_cpu_freq_scale', default='100%')
+    _set_from_system(coreSettings, 'beetle_psx_hw_cpu_freq_scale', system, 'beetle_psx_hw_cpu_freq_scale', default='110%') # If not 110% NO options are working!
 
     # CD Access Method
     _set_from_system(coreSettings, 'beetle_psx_hw_cd_access_method', system, 'beetle_psx_hw_cd_access_method', default='sync')
 
     # CD Loading Speed
     _set_from_system(coreSettings, 'beetle_psx_hw_cd_fastload', system, 'beetle_psx_hw_cd_fastload', default='2x(native)')
-
-    # System Region
-    _set_from_system(coreSettings, 'beetle_psx_hw_region', system, 'beetle_psx_hw_region', default='auto')
 
     # Analog Stick self calibration
     _set(coreSettings, 'beetle_psx_hw_analog_calibration', 'enabled')
@@ -2110,9 +2107,6 @@ def _mednafen_psx_options(
 
     # Core Aspect Ratio
     _set_from_system(coreSettings, 'beetle_psx_hw_aspect_ratio', system, 'beetle_psx_hw_aspect_ratio', default='corrected')
-
-    # Deinterlace Method
-    _set_from_system(coreSettings, 'beetle_psx_hw_deinterlacer', system, 'beetle_psx_hw_deinterlacer', default='weave')
 
     # Renderer
     _set_from_system(coreSettings, 'beetle_psx_hw_renderer', system, 'beetle_psx_hw_renderer', default='hardware')
@@ -2183,9 +2177,6 @@ def _mednafen_psx_options(
 
     # Dynarec Code Invalidation
     _set_from_system(coreSettings, 'beetle_psx_hw_dynarec_invalidate', system, 'beetle_psx_hw_dynarec_invalidate', default='full')
-
-    # Dynarec Cycles Per Instruction
-    _set_from_system(coreSettings, 'beetle_psx_hw_dynarec_op_cycles', system, 'beetle_psx_hw_dynarec_op_cycles', default='2')
 
     # Multitap
     match system.config.get('multitap_mednafen'):
