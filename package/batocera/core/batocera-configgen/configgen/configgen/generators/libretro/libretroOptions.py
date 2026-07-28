@@ -2193,18 +2193,6 @@ def _mednafen_psx_options(
             _set(coreSettings, 'beetle_psx_hw_enable_multitap_port1', 'disabled')
             _set(coreSettings, 'beetle_psx_hw_enable_multitap_port2', 'disabled')
 
-    # Gun Input Mode (Namco GunCon / Justifier)
-    _set_from_system(coreSettings, 'beetle_psx_hw_gun_input_mode', system, 'beetle_psx_hw_gun_input_mode', default='lightgun')
-
-    # Gun Cursor / Crosshair Colors
-    need_crosses = guns_need_crosses(guns)
-    _set_from_system(coreSettings, 'beetle_psx_hw_gun_cursor', system, 'beetle_psx_hw_gun_cursor', default='cross' if need_crosses else 'off')
-    for player, color in enumerate(["red", "blue"], start=1):
-        _set_from_system(coreSettings, f'beetle_psx_hw_crosshair_color_p{player}', system, f'beetle_psx_hw_crosshair_color_p{player}', default=color)
-
-    # Mouse Sensitivity (PlayStation Mouse)
-    _set_from_system(coreSettings, 'beetle_psx_hw_mouse_sensitivity', system, 'beetle_psx_hw_mouse_sensitivity', default='100%')
-
 
 def _duckstation_options(
     coreSettings: UnixSettings, system: Emulator, rom: Path, guns: Guns, wheels: DeviceInfoMapping, /,
