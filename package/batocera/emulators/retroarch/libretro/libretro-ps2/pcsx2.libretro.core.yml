@@ -196,6 +196,15 @@ custom_features:
     choices:
       Disabled: disabled
       Enabled: enabled
+  lr_pcsx2_widescreen_hint:
+    submenu: VIDEO
+    prompt: WIDESCREEN HINT
+    description: Applies a widescreen patch if a patch for the game can be found inside the internal database.
+    choices:
+      Disabled: disabled
+      Enabled (16:9): enabled (16:9)
+      Enabled (16:10): enabled (16:10)
+      Enabled (21:9): enabled (21:9)
   lr_pcsx2_pcrtc_antiblur:
     submenu: VIDEO
     prompt: PCRTC ANTI-BLUR

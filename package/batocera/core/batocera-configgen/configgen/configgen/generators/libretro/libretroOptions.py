@@ -2316,17 +2316,7 @@ def _pcsx2_options(
     _set_from_system(coreSettings, 'pcsx2_analog_mode1', system, 'lr_pcsx2_analog_mode1', default='disabled')
     _set_from_system(coreSettings, 'pcsx2_analog_mode2', system, 'lr_pcsx2_analog_mode2', default='disabled')
     # Widescreen hint
-    widescreenhint = system.config.get("ratio")
-    if widescreenhint == "16/9" or widescreenhint == "full":
-        _set(coreSettings, 'pcsx2_widescreen_hint', 'enabled (16:9)')
-    elif widescreenhint == "16/10":
-        _set(coreSettings, 'pcsx2_widescreen_hint', 'enabled (16:10)')
-    elif widescreenhint == "21/9":
-        _set(coreSettings, 'pcsx2_widescreen_hint', 'enabled (21:9)')
-    elif widescreenhint == "32/9":
-        _set(coreSettings, 'pcsx2_widescreen_hint', 'enabled (32:9)')
-    else:
-        _set(coreSettings, 'pcsx2_widescreen_hint', 'disabled')
+    _set_from_system(coreSettings, 'pcsx2_widescreen_hint', system, 'lr_pcsx2_widescreen_hint', default='disabled')
 
 
 def _pcsx_rearmed_options(
