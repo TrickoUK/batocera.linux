@@ -192,6 +192,17 @@ custom_features:
     choices:
       'Off': disabled
       'On': enabled
+  beetle_psx_hw_deinterlacer:
+    group: BEETLE SPECIFIC
+    submenu: Video
+    prompt: DEINTERLACE METHOD
+    description: Weave shows both fields on the same frame for full resolution still images. Bob halves resolution for motion clarity. Bob (Offset) is Bob without losing output resolution. FastMAD blends still and moving pixels for full resolution without combing or halved resolution. Off matches hardware renderer behavior, eliminating comb artifacts but may show stale rows/ghosting in some games.
+    choices:
+      Weave: weave
+      Bob: bob
+      Bob (Offset): bob_offset
+      FastMAD (Motion Adaptive): fastmad
+      'Off': 'off'
   beetle_psx_hw_pal_video_timing_override:
     group: BEETLE SPECIFIC
     submenu: Video

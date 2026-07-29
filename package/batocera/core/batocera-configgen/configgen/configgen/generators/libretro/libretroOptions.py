@@ -2141,6 +2141,9 @@ def _mednafen_psx_options(
     # MDEC YUV Chroma Filter (Vulkan)
     _set_from_system(coreSettings, 'beetle_psx_hw_mdec_yuv', system, 'beetle_psx_hw_mdec_yuv', default='disabled')
 
+    # Deinterlace Method
+    _set_from_system(coreSettings, 'beetle_psx_hw_deinterlacer', system, 'beetle_psx_hw_deinterlacer', default='weave')
+
     # PAL Video Timing Override
     _set_from_system(coreSettings, 'beetle_psx_hw_pal_video_timing_override', system, 'beetle_psx_hw_pal_video_timing_override', default='disabled')
 
