@@ -1,0 +1,134 @@
+include batocera-board.common
+
+# Target definition
+BR2_x86_64=y
+BR2_x86_x86_64_v3=y
+BR2_PACKAGE_BATOCERA_TARGET_ZEN3=y
+BR2_TARGET_OPTIMIZATION="-pipe -fsigned-char"
+#BR2_TARGET_GENERIC_GETTY_PORT="tty1"
+BR2_TARGET_GENERIC_GETTY_BAUDRATE_115200=y
+BR2_GLOBAL_PATCH_DIR="$(BR2_EXTERNAL_BATOCERA_PATH)/board/batocera/patches $(BR2_EXTERNAL_BATOCERA_PATH)/board/batocera/x86/patches"
+BR2_ROOTFS_OVERLAY="$(BR2_EXTERNAL_BATOCERA_PATH)/board/batocera/fsoverlay $(BR2_EXTERNAL_BATOCERA_PATH)/board/batocera/x86/fsoverlay"
+
+# Kernel
+BR2_LINUX_KERNEL=y
+BR2_LINUX_KERNEL_CUSTOM_VERSION=y
+BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE="7.1.4"
+BR2_KERNEL_HEADERS_7_1=y
+BR2_LINUX_KERNEL_PATCH="$(BR2_EXTERNAL_BATOCERA_PATH)/board/batocera/x86/linux_patches"
+BR2_LINUX_KERNEL_USE_CUSTOM_CONFIG=y
+BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE="$(BR2_EXTERNAL_BATOCERA_PATH)/board/batocera/x86/linux_x86_64-defconfig.config"
+BR2_LINUX_KERNEL_NEEDS_HOST_LIBELF=y
+
+# System
+BR2_PACKAGE_TSLIB=y
+BR2_TARGET_ROOTFS_SQUASHFS4_ZSTD=y
+BR2_PACKAGE_SQUASHFS_ZSTD=y
+BR2_PACKAGE_BATOCERA_SYSLINUX_EFI=y
+BR2_TARGET_SYSLINUX=y
+BR2_TARGET_SYSLINUX_MBR=y
+BR2_TARGET_SYSLINUX_C32="menu.c32 libutil.c32"
+BR2_PACKAGE_SDL_X11=y
+BR2_PACKAGE_EFIBOOTMGR=y
+BR2_PACKAGE_BATOCERA_SHIM_SIGNED_EFI_X64=y
+BR2_PACKAGE_BATOCERA_SHIM_SIGNED_EFI_IA32=y
+BR2_PACKAGE_BATOCERA_SHIM_SIGNED_EFI_HELPERS_IA32=y
+BR2_TARGET_SHIM=y
+
+BR2_PACKAGE_BATOCERA_SPLASH_MPV=y
+
+# required for ia32 uefi mixed mode 64 bit kernel loading
+BR2_TARGET_GRUB2=y
+BR2_TARGET_GRUB2_I386_EFI=y
+BR2_TARGET_GRUB2_BUILTIN_MODULES_EFI="boot linux ext2 fat squash4 part_msdos part_gpt normal efi_gop echo"
+
+# Enable Wayland & XWayland
+BR2_PACKAGE_BATOCERA_WAYLAND_LABWC=y
+BR2_PACKAGE_BATOCERA_XWAYLAND=y
+
+# --- Stripped-down systems selection (this fork) ---
+# batocera-board.common turns on BR2_PACKAGE_BATOCERA_ALL_SYSTEMS=y; override
+# it here and select only the system categories/packages we actually want,
+# instead of every emulator for every platform.
+BR2_PACKAGE_BATOCERA_ALL_SYSTEMS=n
+
+# RetroArch itself is normally pulled in by BATOCERA_ALL_SYSTEMS, not by the
+# category umbrellas below, so it needs to be selected explicitly.
+BR2_PACKAGE_BATOCERA_RETROARCH=y
+
+# Arcade systems: MAME, FBNeo, MAME2003-Plus, laserdisc, Model 2/3, etc.
+BR2_PACKAGE_BATOCERA_ARCADE_SYSTEMS=y
+
+# Manufacturer-scoped umbrellas (fork-only Config.in, see
+# package/batocera/custom-arcade/manufacturer-systems/Config.in). Each one
+# select()s every x86-available core/emulator for that manufacturer's
+# systems. Requires board/batocera/x86/local-patches/manufacturer-systems.patch
+# to be applied *before* generating the defconfig, or these lines are
+# silently inert.
+#
+# Nintendo, Sony, and Atari are each split into a standard (non-handheld)
+# umbrella and a separate _HANDHELD_ umbrella (GB/GBA/DS/3DS; PSP/Vita;
+# Lynx). This board only enables the standard variants and leaves the
+# handheld ones off. Sega and NEC have no separable handheld packages
+# (e.g. Sega Game Gear support is bundled into the same cores as Genesis/
+# Master System) so they're left as single umbrellas, unchanged.
+#
+BR2_PACKAGE_BATOCERA_NINTENDO_SYSTEMS=y
+BR2_PACKAGE_BATOCERA_NINTENDO_HANDHELD_SYSTEMS=n
+BR2_PACKAGE_BATOCERA_SEGA_SYSTEMS=y
+BR2_PACKAGE_BATOCERA_SONY_SYSTEMS=y
+BR2_PACKAGE_BATOCERA_SONY_HANDHELD_SYSTEMS=n
+BR2_PACKAGE_BATOCERA_COMMODORE_SYSTEMS=y
+BR2_PACKAGE_BATOCERA_AMSTRAD_SYSTEMS=y
+BR2_PACKAGE_BATOCERA_NEC_SYSTEMS=y
+BR2_PACKAGE_BATOCERA_ATARI_SYSTEMS=y
+BR2_PACKAGE_BATOCERA_ATARI_HANDHELD_SYSTEMS=n
+
+# Required by SEGA_SYSTEMS: lindbergh-loader hard-depends on wine-x86 at the
+# Buildroot Makefile level (LINDBERGH_LOADER_DEPENDENCIES), but its own
+# Config.in select never pulls Wine in — that only "works" in the stock
+# full build because BATOCERA_ALL_SYSTEMS enables WINE_SYSTEMS alongside
+# CONSOLE_SYSTEMS. Without this, `make zen3-focused-build` fails with:
+# "wine-x86 is in the dependency chain of lindbergh-loader that has added
+# it to its _DEPENDENCIES variable without selecting it or depending on it
+# from Config.in." Also unlocks Model2EMU and Demul, two more SEGA_SYSTEMS
+# emulators that were silently excluded for the same reason until now.
+BR2_PACKAGE_BATOCERA_WINE_SYSTEMS=y
+
+# Required by NINTENDO_SYSTEMS: libretro-dolphin hard-depends on libenet at
+# the Buildroot Makefile level (LIBRETRO_DOLPHIN_DEPENDENCIES), but its own
+# Config.in select never pulls libenet in — that only "works" in the stock
+# full build because BATOCERA_ALL_SYSTEMS also enables COMPUTER_SYSTEMS
+# (amiberry) and/or GAMESTREAM_SYSTEMS (moonlight-embedded), both of which
+# select libenet as a side effect. Without this, `make zen3-focused-build`
+# fails with: "libenet is in the dependency chain of libretro-dolphin that
+# has added it to its _DEPENDENCIES variable without selecting it or
+# depending on it from Config.in."
+BR2_PACKAGE_LIBENET=y
+
+# Microsoft Xbox (OG): xemu, hand-picked rather than via a manufacturer
+# umbrella — CONSOLE_SYSTEMS normally selects this but pulls in N64/
+# GameCube/PlayStation too, and this fork has no Microsoft-scoped umbrella
+# in manufacturer-systems/Config.in (Xbox 360/xenia not requested).
+BR2_PACKAGE_XEMU=y
+
+# Steam (Flatpak): batocera-steam provides the "steam" ES system and the
+# batocera-steam/batocera-steam-update launcher scripts. It's only pulled in
+# by BATOCERA_ALL_SYSTEMS (same gap as WINE_SYSTEMS above), so it needs to be
+# explicit here. Flatpak itself is unconditionally selected for any x86_64
+# target already (batocera-system/Config.in), so this is the only piece
+# missing; the actual Steam client + Proton are installed at runtime via
+# `flatpak install com.valvesoftware.Steam`, independent of the system Wine
+# pulled in for lindbergh-loader above.
+BR2_PACKAGE_BATOCERA_STEAM=y
+
+# Neo Geo CD core: plays Neo Geo CD .cue/.bin/.chd images directly,
+# opt-in since it's a separate ES system (neogeocd) rather than part of
+# BATOCERA_ARCADE_SYSTEMS.
+BR2_PACKAGE_LIBRETRO_NEOCD=y
+
+# Note: Nvidia is force-selected via a Kconfig `select` for every x86_64
+# build (package/batocera/core/batocera-system/Config.in) and cannot be
+# disabled from this defconfig alone - apply
+# board/batocera/x86/local-patches/no-nvidia.patch before generating the
+# defconfig. AMD/Intel mesa drivers are unaffected by that patch.
