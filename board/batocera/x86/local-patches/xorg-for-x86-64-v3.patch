@@ -1,0 +1,17 @@
+diff --git a/package/batocera/core/batocera-system/Config.in b/package/batocera/core/batocera-system/Config.in
+index 3ef42ba98b..276c34eb7d 100644
+--- a/package/batocera/core/batocera-system/Config.in
++++ b/package/batocera/core/batocera-system/Config.in
+@@ -481,11 +481,11 @@ config BR2_PACKAGE_BATOCERA_SYSTEM
+ 						(BR2_PACKAGE_HAS_LIBGBM && \
+ 						BR2_PACKAGE_HAS_LIBEGL && \
+ 						BR2_PACKAGE_HAS_LIBGLES)
+ 
+ 	# xorg
+-	select BR2_PACKAGE_BATOCERA_XORG	if BR2_PACKAGE_BATOCERA_TARGET_X86_64
++	select BR2_PACKAGE_BATOCERA_XORG	if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY
+ 
+ 	# compression tools
+ 	select BR2_PACKAGE_UNZIP	# for /userdata/system/upgrade/share.zip
+ 	select BR2_PACKAGE_XZ		# for updates
+ 	select BR2_PACKAGE_ZSTD		# for btrfs compression
