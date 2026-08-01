@@ -63,8 +63,8 @@
     </context>
   </mouse>
   <windowRules>
-  <windowRule identifier="*" serverDecoration="no" />
   <windowRule identifier="*">
+    <action name="serverDecoration" decoration="no" />
     <action name="MoveToOutput"><output></output></action>
     <action name="FocusOutput"><output></output></action>
   </windowRule>
