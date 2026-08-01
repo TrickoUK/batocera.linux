@@ -48,3 +48,5 @@ typescript
 /refresh-board.sh
 /refresh-es.sh
 /update-usb.sh
+topic.env
+
