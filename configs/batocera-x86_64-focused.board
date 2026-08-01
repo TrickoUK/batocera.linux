@@ -55,6 +55,14 @@ BR2_PACKAGE_BATOCERA_RETROARCH=y
 # Arcade systems: MAME, FBNeo, MAME2003-Plus, laserdisc, Model 2/3, etc.
 BR2_PACKAGE_BATOCERA_ARCADE_SYSTEMS=y
 
+# Standalone MAME (GroovyMAME), as an extra selectable core alongside
+# libretro-mame. board/batocera/x86/local-patches/no-mame.patch comments out
+# ARCADE_SYSTEMS' own `select BR2_PACKAGE_MAME` fork-wide (it's a shared
+# Config.in file, applied identically to every x86 board), so it has to be
+# opted back into per-board here instead. Deliberately x86_64-focused only —
+# not added to batocera-zen3-focused.board.
+BR2_PACKAGE_MAME=y
+
 # Manufacturer-scoped umbrellas (fork-only Config.in, see
 # package/batocera/custom-arcade/manufacturer-systems/Config.in). Each one
 # select()s every x86-available core/emulator for that manufacturer's
