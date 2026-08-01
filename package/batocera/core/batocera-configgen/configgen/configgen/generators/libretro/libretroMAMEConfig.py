@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 from xml.dom import minidom
 
 from ...batoceraPaths import BIOS, CONFIGS, DEFAULTS_DIR, ROMS, SAVES, USER_DECORATIONS, mkdir_if_not_exists
+from ...gun import guns_need_crosses
 from ..mame.mameCommon import is_atom_floppy
 
 if TYPE_CHECKING:
@@ -775,6 +776,49 @@ def generateMAMEPadConfig(
         with codecs.open(str(configFile_alt), "w", "utf-8") as mameXml_alt:
             dom_string_alt = os.linesep.join([s for s in config_alt.toprettyxml().splitlines() if s.strip()]) # remove ugly empty lines while minicom adds them...
             mameXml_alt.write(dom_string_alt)
+
+    # Light gun crosshair visibility - MAME only honors this from the driver-specific
+    # (system-level) cfg file, not from default.cfg, so it needs its own file per driver.
+    # Done last so it merges with (rather than races) any alt config written above.
+    driverName = messSysName if messSysName else rom.stem
+    generateMAMECrosshairConfig(cfgPath, system, driverName, customCfg, guns)
+
+def generateMAMECrosshairConfig(cfgPath: Path, system: Emulator, driverName: str, customCfg: bool, guns: Guns) -> None:
+    # MAME only loads <crosshairs> from the per-driver (SYSTEM level) cfg file, unlike
+    # controls which are also read from default.cfg. So each driver needs its own file.
+    configFile = cfgPath / f"{driverName}.cfg"
+
+    # Don't overwrite if using custom configs
+    if configFile.exists() and customCfg:
+        return
+
+    config = minidom.Document()
+    if configFile.exists():
+        try:
+            config = minidom.parse(str(configFile))
+        except Exception:
+            pass # reinit the file
+
+    xml_mameconfig = getRoot(config, "mameconfig")
+    xml_mameconfig.setAttribute("version", "10")
+    xml_system = getSection(config, xml_mameconfig, "system")
+    xml_system.setAttribute("name", driverName)
+
+    removeSection(config, xml_system, "crosshairs")
+    xml_crosshairs = config.createElement("crosshairs")
+    xml_system.appendChild(xml_crosshairs)
+
+    showCrosshair = system.config.get('mame_gun_crosshair', 'enabled' if guns_need_crosses(guns) else 'disabled')
+    crosshairMode = "1" if showCrosshair == "enabled" else "0"
+    for player in range(10): # MAME's MAX_PLAYERS; unused players are ignored on load
+        xml_crosshair = config.createElement("crosshair")
+        xml_crosshair.setAttribute("player", str(player))
+        xml_crosshair.setAttribute("mode", crosshairMode)
+        xml_crosshairs.appendChild(xml_crosshair)
+
+    with codecs.open(str(configFile), "w", "utf-8") as mameXml:
+        dom_string = os.linesep.join([s for s in config.toprettyxml().splitlines() if s.strip()]) # remove ugly empty lines while minicom adds them...
+        mameXml.write(dom_string)
 
 def reverseMapping(key: str) -> str | None:
     if key == "joystick1down":

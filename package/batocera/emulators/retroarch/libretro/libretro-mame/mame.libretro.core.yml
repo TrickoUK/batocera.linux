@@ -3,6 +3,7 @@ features:
   - padtokeyboard
 shared_features:
   - autosave
+  - use_guns
 custom_features:
   mame_cpu_overclock:
     group: ADVANCED OPTIONS
@@ -102,6 +103,13 @@ custom_features:
     choices:
       'On': 1
       Off (Default): 0
+  mame_gun_crosshair:
+    group: LIGHT GUN
+    prompt: SHOW LIGHT GUN CROSSHAIRS
+    description: Show a crosshair for lightgun games. Disable if your gun peripheral has its own physical sight.
+    choices:
+      Enabled (Default): enabled
+      Disabled: disabled
 systems:
   - name: adam
     custom_features:
