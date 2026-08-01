@@ -49,4 +49,7 @@ typescript
 /refresh-es.sh
 /update-usb.sh
 topic.env
-
+/notify.sh
+/post-build-clean.sh
+/rebuild.sh
+/zen3update-usb.sh
