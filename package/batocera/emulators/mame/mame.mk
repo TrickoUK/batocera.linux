@@ -142,6 +142,18 @@ endef
 
 MAME_PRE_BUILD_HOOKS += MAME_GENIE
 
+# Arcade-only SOURCEFILTER (see my-docs/mame-arcade-filters/README.md for how
+# mame-arcade.flt was generated/validated) - drops every driver source file
+# that declares only CONS()/COMP()/SYST() (console/computer/other) systems,
+# cutting compiled driver files and enabled CPU/sound/video/machine/bus cores
+# roughly in half. model2/model3/gaelco/cave3rd stay supported as a natural
+# side effect of their driver files containing arcade (GAME()) declarations.
+define MAME_COPY_ARCADE_FILTER
+	cp $(BR2_EXTERNAL_BATOCERA_PATH)/package/batocera/emulators/mame/mame-arcade.flt $(@D)/mame-arcade.flt
+endef
+
+MAME_PRE_BUILD_HOOKS += MAME_COPY_ARCADE_FILTER
+
 define MAME_BUILD_CMDS
 	+cd $(@D) ; \
 	PATH="$(HOST_DIR)/bin:$$PATH" \
@@ -156,6 +168,7 @@ define MAME_BUILD_CMDS
 	TARGETOS=linux OSD=sdl \
 	TARGET=mame \
 	SUBTARGET=mame \
+	SOURCEFILTER=mame-arcade.flt \
 	OVERRIDE_CC="$(TARGET_CC)" \
 	OVERRIDE_CXX="$(TARGET_CXX)" \
 	OVERRIDE_LD="$(TARGET_LD)" \

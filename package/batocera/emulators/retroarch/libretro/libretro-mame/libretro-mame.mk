@@ -47,6 +47,20 @@ ifeq ($(BR2_ENABLE_DEBUG),y)
     LIBRETRO_MAME_EXTRA_ARGS += SYMBOLS=1 OPTIMIZE=0
 endif
 
+# Arcade-only SOURCEFILTER (see my-docs/mame-arcade-filters/README.md for how
+# libretro-mame-arcade.flt was generated/validated) - drops every driver
+# source file that declares only CONS()/COMP()/SYST() (console/computer/
+# other) systems, cutting compiled driver files and enabled CPU/sound/video/
+# machine/bus cores roughly in half. model2/model3/gaelco/cave3rd stay
+# supported as a natural side effect of their driver files containing arcade
+# (GAME()) declarations.
+define LIBRETRO_MAME_COPY_ARCADE_FILTER
+    cp $(BR2_EXTERNAL_BATOCERA_PATH)/package/batocera/emulators/retroarch/libretro/libretro-mame/libretro-mame-arcade.flt \
+        $(@D)/libretro-mame-arcade.flt
+endef
+
+LIBRETRO_MAME_PRE_BUILD_HOOKS += LIBRETRO_MAME_COPY_ARCADE_FILTER
+
 define LIBRETRO_MAME_INSTALL_STAGING_CMDS
     $(INSTALL) -D $(@D)/mame_libretro.so \
         $(STAGING_DIR)/usr/lib/libretro/mame_libretro.so
@@ -66,6 +80,7 @@ define LIBRETRO_MAME_BUILD_CMDS
         OVERRIDE_LD="$(TARGET_CXX)" RANLIB="$(TARGET_RANLIB)" \
 		AR="$(TARGET_AR)" $(LIBRETRO_MAME_EXTRA_ARGS) \
 		CROSS_BUILD=1 TARGET="mame" SUBTARGET="mame" RETRO=1 \
+		SOURCEFILTER="libretro-mame-arcade.flt" \
 		OSD="retro" DEBUG=0
 endef
 
