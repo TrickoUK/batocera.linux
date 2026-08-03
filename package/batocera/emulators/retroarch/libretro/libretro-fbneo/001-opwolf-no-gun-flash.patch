@@ -1,0 +1,64 @@
+--- a/src/burn/drv/taito/d_taitomisc.cpp	2026-08-03 07:10:25.407668555 +0100
++++ b/src/burn/drv/taito/d_taitomisc.cpp	2026-08-03 07:10:25.390712630 +0100
+@@ -34,6 +34,12 @@
+ static INT32 OpWolfGunXOffset;
+ static INT32 OpWolfGunYOffset;
+ static INT32 bUseGuns = 0;
++
++// no-gun-flash HACK state (see OpwolfInit()/OpwolfDoReset()/TaitoMiscFrame());
++// OpwolfNoFlashHack is set once in OpwolfInit(), OpwolfNoFlashFrames counts up
++// from OpwolfDoReset() each boot
++static bool OpwolfNoFlashHack = false;
++static INT32 OpwolfNoFlashFrames = 0;
+ static INT32 bUseShifter = 0;
+ 
+ static UINT8 DariusADPCMCommand;
+@@ -2421,6 +2427,8 @@
+ 
+ 	nCyclesExtra[0] = nCyclesExtra[1] = nCyclesExtra[2] = nCyclesExtra[3] = 0;
+ 
++	OpwolfNoFlashFrames = 0;
++
+ 	return 0;
+ }
+ 
+@@ -4604,6 +4612,15 @@
+ 	OpWolfGunXOffset = 0xec - (Rom[0x03ffb0 / 2] & 0xff);
+ 	OpWolfGunYOffset = 0x1c - (Rom[0x03ffae / 2] & 0xff);
+ 
++	// The no-gun-flash HACK (see TaitoMiscFrame()) can't be applied here at ROM-load
++	// time: the maincpu runs its own boot-time ROM checksum and reports "BAD ROM" if
++	// the ROM has already been tampered with by the time that check runs (verified
++	// against libretro-mame patch 006, which hit exactly this with the same ROM).
++	// opwolfa/opwolfj/opwolfjsc/opwolfu share this init for their gun-offset
++	// calibration but weren't checked for identical code at this address, so only
++	// the exact "opwolf" set (World, Rev 2) is patched, same as the MAME fix.
++	OpwolfNoFlashHack = !strcmp(BurnDrvGetTextA(DRV_NAME), "opwolf");
++
+ 	cchip_init();
+ 
+ 	// Reset the driver
+@@ -5803,7 +5820,22 @@
+ 	for (INT32 i = 0; i < nInterleave; i++) {
+ 		SekOpen(0);
+ 		CPU_RUN(0, Sek);
+-		if (i == nInterleave - 1) SekSetIRQLine(TaitoIrqLine, CPU_IRQSTATUS_AUTO);
++		if (i == nInterleave - 1) {
++			SekSetIRQLine(TaitoIrqLine, CPU_IRQSTATUS_AUTO);
++
++			// no-gun-flash HACK (opwolf only - see OpwolfInit()): the game flashes
++			// the whole screen white for a frame every time the trigger is pulled,
++			// via a small per-frame counter at maincpu 68k address 0x1130 (immediate
++			// operand of an addi.w #1,($966,a5)); bumping it from 1 to 2 makes the
++			// flash check never match. Ported from libretro-mame patch 006, which
++			// verified the same fix against the identical ROM dump; applied here
++			// (900 real frames into each boot, ~15s) rather than at ROM-load time
++			// since a static ROM patch trips the maincpu's boot-time checksum and
++			// the game refuses to boot ("BAD ROM").
++			if (OpwolfNoFlashHack && ++OpwolfNoFlashFrames == 900) {
++				Taito68KRom1[0x1130] = 0x02;
++			}
++		}
+ 		SekClose();
+ 
+ 		if (TaitoNumZ80s > 0) {
