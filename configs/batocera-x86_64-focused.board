@@ -37,6 +37,15 @@ BR2_TARGET_SHIM=y
 
 BR2_PACKAGE_BATOCERA_SPLASH_MPV=y
 
+# Xorg display stack. batocera-system/Config.in's own forced `select
+# BR2_PACKAGE_BATOCERA_XORG if BR2_PACKAGE_BATOCERA_TARGET_X86_64` no longer
+# fires for either of this fork's boards now that both set
+# BR2_PACKAGE_BATOCERA_TARGET_ZEN3 instead of the plain (baseline, non-v3)
+# BR2_PACKAGE_BATOCERA_TARGET_X86_64 — so it needs to be selected explicitly
+# here. This is what actually makes Xorg (vs. zen3-focused's Wayland/labwc+
+# XWayland) the only difference between the two boards.
+BR2_PACKAGE_BATOCERA_XORG=y
+
 # required for ia32 uefi mixed mode 64 bit kernel loading
 BR2_TARGET_GRUB2=y
 BR2_TARGET_GRUB2_I386_EFI=y
