@@ -1,4 +1,4 @@
-#### Manufacturer-based system selections (custom-arcade fork) ####
+#### Manufacturer-based system selections (focused-system fork) ####
 # This file is fork-only: it lives outside package/batocera/core/ specifically
 # so it never touches a file batocera upstream edits, avoiding merge
 # conflicts on sync and any risk of this content leaking into an upstream

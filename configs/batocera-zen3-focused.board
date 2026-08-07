@@ -60,7 +60,7 @@ BR2_PACKAGE_BATOCERA_RETROARCH=y
 BR2_PACKAGE_BATOCERA_ARCADE_SYSTEMS=y
 
 # Manufacturer-scoped umbrellas (fork-only Config.in, see
-# package/batocera/custom-arcade/manufacturer-systems/Config.in). Each one
+# package/batocera/focused-system/manufacturer-systems/Config.in). Each one
 # select()s every x86-available core/emulator for that manufacturer's
 # systems. Requires board/batocera/x86/local-patches/manufacturer-systems.patch
 # to be applied *before* generating the defconfig, or these lines are
