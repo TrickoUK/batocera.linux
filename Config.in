@@ -204,6 +204,8 @@ menu "Controllers"
     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/controllers/wheels/hid-t150/Config.in"
     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/controllers/wheels/new-lg4ff/Config.in"
     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/controllers/wheels/hid-tmff2/Config.in"
+    source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/controllers/wheels/logitech-trueforce/Config.in"
+    source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/controllers/wheels/logi-wheel/Config.in"
   endmenu
 endmenu
 
@@ -496,6 +498,7 @@ menu "Emulators"
     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/ports/dhewm3/dentonmod/Config.in"
     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/ports/dhewm3/desolated/Config.in"
     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/ports/dhewm3/eldoom/Config.in"
+    source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/ports/dhewm3/eoc/Config.in"
     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/ports/dhewm3/fitz/Config.in"
     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/ports/dhewm3/grimm/Config.in"
     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/ports/dhewm3/hardcorps/Config.in"
@@ -612,6 +615,7 @@ endmenu
 
 menu "Utils Host"
   source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/utils-host/python-mkbootimg/Config.in.host"
+  source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/utils/picom/Config.in"
 endmenu
 
 menu "Cases"
