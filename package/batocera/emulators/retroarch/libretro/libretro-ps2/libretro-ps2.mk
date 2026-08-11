@@ -3,8 +3,8 @@
 # libretro-ps2
 #
 ################################################################################
-# Version: Commits on June 29, 2026
-LIBRETRO_PS2_VERSION = b03969a333f38de21f866c2a10da4300d170364d
+# Version: Commits on Aug 9, 2026
+LIBRETRO_PS2_VERSION = 7e65562fd497c2651cc76098acf578c901df6a9b
 LIBRETRO_PS2_SITE = https://github.com/libretro/ps2.git
 LIBRETRO_PS2_SITE_METHOD = git
 LIBRETRO_PS2_GIT_SUBMODULES = YES
