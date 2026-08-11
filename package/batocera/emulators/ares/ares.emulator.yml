@@ -1,0 +1,17 @@
+shared_features:
+  - powermode
+  - tdp
+  - videomode
+  - bezel
+  - bezel_stretch
+  - hud
+  - hud_corner
+  - bezel.tattoo
+  - bezel.tattoo_corner
+  - bezel.tattoo_file
+  - bezel.resize_tattoo
+systems:
+  - name: n64
+    exclude_extensions: [zip, 7z]
+  - name: snes
+    exclude_extensions: [gd3, gd7, dx2, zip, 7z]
