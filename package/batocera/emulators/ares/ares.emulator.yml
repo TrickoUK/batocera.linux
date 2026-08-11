@@ -36,6 +36,12 @@ custom_features:
       Full Frame: 'true'
 systems:
   - name: n64
+    # ares can read a ROM straight out of a .zip (mia/mia.cpp's identify()
+    # peeks inside .zip archives and matches on the extension of the file
+    # within), but has no decoder anywhere for .7z (confirmed: nall's
+    # decode/ library only has zip.hpp, no 7z equivalent) - it can't
+    # identify or load one at all.
+    exclude_extensions: [7z]
     custom_features:
       ares_n64_quality:
         submenu: VIDEO
@@ -67,4 +73,39 @@ systems:
           'Off': 'false'
           'On': 'true'
   - name: snes
-    exclude_extensions: [gd3, gd7, dx2]
+    exclude_extensions: [gd3, gd7, dx2, 7z]
+  - name: nes
+    # ares/mia/medium/famicom.cpp's extensions(): fc, nes, unf, unif, unh -
+    # zip works the same content-sniffed way as n64/snes; 7z doesn't, same
+    # reason as above.
+    exclude_extensions: [7z]
+  - name: megadrive
+    # ares/mia/medium/mega-drive.cpp's extensions(): md, gen, bin - "sg"
+    # and "smd" (both real raw dump variants other cores accept) aren't
+    # among them, so those two need excluding as well as 7z.
+    exclude_extensions: [sg, smd, 7z]
+  - name: pcengine
+    # ares/mia/medium/pc-engine.cpp's extensions(): pce only - unlike
+    # megadrive, "bin" is NOT supported here (PC Engine's own mia loader
+    # never lists it), so it needs excluding alongside 7z.
+    exclude_extensions: [bin, 7z]
+  - name: mastersystem
+    # ares/mia/medium/master-system.cpp's extensions(): ms, sms - "bin"
+    # isn't among them (unlike megadrive, which does accept raw .bin).
+    exclude_extensions: [bin, 7z]
+  - name: sega32x
+    # 32X is the same ares "md" core as megadrive, just loaded under a
+    # different desktop-ui system name/BIOS mode (see aresGenerator.py) -
+    # its own mia loader (mega-32x.cpp) only accepts ".32x" though, none
+    # of megadrive's wider raw-dump extensions.
+    exclude_extensions: [chd, smd, bin, md, 7z]
+  - name: megacd
+    # Also the "md" core, in its CD BIOS mode. mia's shared CompactDisc
+    # base class (mia/medium/medium.hpp) - used by every CD-based ares
+    # system, not just this one - only accepts "cue"/"chd", not "iso" or
+    # the multi-disc ".m3u" playlist format es_systems.yml lists for this
+    # system. Needs a real Mega CD BIOS in the batocera bios folder to
+    # actually boot anything (ares checks a SHA256 against known-good
+    # US/Japan/Europe dumps) - not something this integration auto-detects
+    # yet, same open item as N64DD's firmware requirement.
+    exclude_extensions: [iso, m3u]

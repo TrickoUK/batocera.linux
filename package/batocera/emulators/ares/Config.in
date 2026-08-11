@@ -6,10 +6,13 @@ config BR2_PACKAGE_ARES
 	select BR2_PACKAGE_SDL3
 	select BR2_PACKAGE_XLIB_LIBX11
 	select BR2_PACKAGE_XLIB_LIBXRANDR
+	select BR2_PACKAGE_LIBRASHADER
 	help
 	  Multi-system emulator descended from higan/bsnes. This fork builds
-	  it scoped to Nintendo 64 and Super Nintendo/Super Famicom only
-	  (ARES_CORES=n64;sfc) rather than its full system list.
+	  it scoped to Nintendo 64, Super Nintendo/Super Famicom, NES/Famicom,
+	  Mega Drive/Genesis (also covers 32X and Mega CD), PC Engine/
+	  TurboGrafx-16, and Master System only
+	  (ARES_CORES=n64;sfc;fc;md;pce;ms) rather than its full system list.
 
 	  https://ares-emu.net
 

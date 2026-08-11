@@ -48,9 +48,12 @@ ARES_PRE_CONFIGURE_HOOKS += ARES_BUILD_HOST_SOURCERY
 
 # Semicolon-separated CMake list, not space-separated (ARES_CORES is
 # consumed via CMake's IN_LIST/foreach, which is picky about this) -
-# scoped to n64 (Nintendo 64) and sfc (Super Famicom/SNES) only.
+# scoped to n64 (Nintendo 64), sfc (Super Famicom/SNES), fc
+# (Famicom/NES), md (Mega Drive/Genesis - also covers 32X and Mega CD,
+# see ares.emulator.yml), pce (PC Engine/TurboGrafx-16), and ms
+# (Master System) only.
 ARES_CONF_OPTS  = -DCMAKE_BUILD_TYPE=Release
-ARES_CONF_OPTS += -DARES_CORES="n64;sfc"
+ARES_CONF_OPTS += -DARES_CORES="n64;sfc;fc;md;pce;ms"
 ARES_CONF_OPTS += -DARES_ENABLE_LIBRASHADER=ON
 # Findlibrashader.cmake's own find_path()/find_library() don't reliably
 # locate a real install in this cross-configure (confirmed the hard way

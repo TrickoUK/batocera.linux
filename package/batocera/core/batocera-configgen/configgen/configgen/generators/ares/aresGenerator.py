@@ -21,12 +21,40 @@ if TYPE_CHECKING:
 
     from ...types import HotkeysContext
 
-# ares' own display name for each system (desktop-ui --system flag, and the
-# information.name each core registers - see ares/n64/system/system.cpp,
-# ares/sfc/system/system.cpp).
+# The name each entry needs is desktop-ui's own top-level Emulator::name
+# (desktop-ui/emulator/*.cpp - what --system actually matches against),
+# which is a different, more granular layer than the underlying core's
+# own information.name (ares/*/system/system.cpp) that several of these
+# share. "Mega Drive"/"Mega 32X"/"Mega CD" are three separate desktop-ui
+# entries, all backed by the exact same "md" ares core and all reporting
+# information.name = "Mega Drive" internally - which mode a ROM boots
+# into depends entirely on *which desktop-ui entry launched it*, not
+# anything in the ROM itself. Similarly there's no separate "NES"
+# desktop-ui entry (ares/fc's "Famicom" covers NTSC-U/NES too) or
+# "TurboGrafx-16" one (ares/pce's own load() explicitly maps *both* "PC
+# Engine" and "TurboGrafx 16" configuration strings to the same "PC
+# Engine" desktop-ui entry). "sfc"/"famicom"/"tg16" are hand-authored
+# custom ES systems some users add alongside "snes"/"nes"/"pcengine" for
+# the region-variant name/ROM-set split - each maps to the exact same
+# ares system underneath, just a different batocera system id, so they
+# need their own entries here even though they're not part of
+# ares.emulator.yml's `systems:` list (that list only registers the
+# emulator against systems the normal build-time es_systems.yml/registry
+# pipeline knows about - a custom runtime system doesn't go through it at
+# all, and hand-writes its own <emulator> entry in EmulationStation's XML
+# instead).
 _ARES_SYSTEM_NAME = {
     'n64': 'Nintendo 64',
     'snes': 'Super Famicom',
+    'sfc': 'Super Famicom',
+    'nes': 'Famicom',
+    'famicom': 'Famicom',
+    'megadrive': 'Mega Drive',
+    'sega32x': 'Mega 32X',
+    'megacd': 'Mega CD',
+    'mastersystem': 'Master System',
+    'pcengine': 'PC Engine',
+    'tg16': 'PC Engine',
 }
 
 
