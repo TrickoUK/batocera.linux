@@ -3,13 +3,22 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ... import Command
-from ...batoceraPaths import ensure_parents_and_open, mkdir_if_not_exists
+from ...batoceraPaths import BATOCERA_SHADERS, USER_SHADERS, ensure_parents_and_open, mkdir_if_not_exists
 from ...exceptions import BatoceraException
 from ..Generator import Generator
 from .aresControllers import generate_all_virtualpad_bindings
-from .aresPaths import ARES_CONFIG_DIR, ARES_SAVES_DIR, ARES_SETTINGS_FILE
+from .aresPaths import (
+    ARES_ACTIVE_SHADER,
+    ARES_CONFIG_DIR,
+    ARES_DATA_HOME,
+    ARES_SAVES_DIR,
+    ARES_SETTINGS_FILE,
+    ARES_SHADERS_DIR,
+)
 
 if TYPE_CHECKING:
+    from ...Emulator import Emulator
+
     from ...types import HotkeysContext
 
 # ares' own display name for each system (desktop-ui --system flag, and the
@@ -27,6 +36,37 @@ def _write_bml_section(lines: list[str], name: str, values: dict[str, str], /) -
     lines.append(name)
     for key, value in values.items():
         lines.append(f'  {key}: {value}')
+
+
+def _resolve_shader(system: Emulator, /) -> str:
+    """Returns the value for ares' Video/Shader BML key.
+
+    The "shaderset" custom control (shared_features - populated the same
+    way for every emulator that lists it, resolved by Emulator.py against
+    the user's own /userdata/shaders/ sets first, falling back to the
+    built-in /usr/share/batocera/shaders/ ones) already resolves down to a
+    single relative shader path (no extension) for the current system, via
+    system.renderconfig. Stage whichever real file that points to (checking
+    the same two roots, in the same order, since renderconfig doesn't say
+    which one the actual .slangp lives under) as a symlink at a fixed name
+    under ARES_SHADERS_DIR, and point ares at that - see aresPaths.py for
+    why a fixed, writable location is needed (ares only ever looks in a
+    handful of fixed candidate directories, none of which are userdata).
+    """
+    shader_path = system.renderconfig.get('shader')
+    if not shader_path:
+        return 'None'
+
+    for root in (USER_SHADERS, BATOCERA_SHADERS):
+        candidate = root / f'{shader_path}.slangp'
+        if candidate.exists():
+            mkdir_if_not_exists(ARES_SHADERS_DIR)
+            if ARES_ACTIVE_SHADER.is_symlink() or ARES_ACTIVE_SHADER.exists():
+                ARES_ACTIVE_SHADER.unlink()
+            ARES_ACTIVE_SHADER.symlink_to(candidate)
+            return ARES_ACTIVE_SHADER.name
+
+    return 'None'
 
 
 class AresGenerator(Generator):
@@ -54,7 +94,7 @@ class AresGenerator(Generator):
 
         _write_bml_section(lines, 'Video', {
             'Driver': 'OpenGL 3.2',
-            'Shader': 'None',
+            'Shader': _resolve_shader(system),
             # "Scale" = aspect-correct best-fit (desktop-ui/program/platform.cpp's
             # Program::video()) - fills as much of the screen as the game's own
             # aspect ratio allows, only ever bordering a single axis; "Integer"
@@ -104,4 +144,12 @@ class AresGenerator(Generator):
             rom,
         ]
 
-        return Command.Command(array=commandArray)
+        return Command.Command(
+            array=commandArray,
+            # ares has no CLI override for its shader search directory -
+            # only for settings.bml itself (--settings-file, used above).
+            # XDG_DATA_HOME redirects locate("Shaders/")'s user-data
+            # candidate (desktop-ui/program/drivers.cpp) to ARES_SHADERS_DIR;
+            # see aresPaths.py for the full chain.
+            env={'XDG_DATA_HOME': ARES_DATA_HOME},
+        )

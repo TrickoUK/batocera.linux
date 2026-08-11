@@ -2,6 +2,7 @@ shared_features:
   - powermode
   - tdp
   - videomode
+  - shaderset
   - bezel
   - bezel_stretch
   - hud

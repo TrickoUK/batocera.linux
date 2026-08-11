@@ -11,7 +11,7 @@ ARES_LICENSE = ISC (ares core), multiple (bundled third-party components, see LI
 ARES_LICENSE_FILES = LICENSE
 ARES_SUPPORTS_IN_SOURCE_BUILD = NO
 
-ARES_DEPENDENCIES = libgtk3 sdl3 xlib_libX11 xlib_libXrandr
+ARES_DEPENDENCIES = libgtk3 sdl3 xlib_libX11 xlib_libXrandr librashader
 
 # ares cross-builds a small in-tree resource compiler ("sourcery") that its
 # main CMake build invokes via a bare `sourcery` PATH lookup during the
@@ -51,13 +51,14 @@ ARES_PRE_CONFIGURE_HOOKS += ARES_BUILD_HOST_SOURCERY
 # scoped to n64 (Nintendo 64) and sfc (Super Famicom/SNES) only.
 ARES_CONF_OPTS  = -DCMAKE_BUILD_TYPE=Release
 ARES_CONF_OPTS += -DARES_CORES="n64;sfc"
-ARES_CONF_OPTS += -DARES_ENABLE_LIBRASHADER=OFF
-# Findlibrashader.cmake's own fallback (define a header-only interface
-# target from the vendored thirdparty/librashader/include headers when the
-# real library isn't installed) doesn't locate them on its own here even
-# though they're present in the extracted source - pre-seed the cache
-# variable it searches for so its find_path() short-circuits successfully.
-ARES_CONF_OPTS += -Dlibrashader_INCLUDE_DIR=$(@D)/thirdparty/librashader/include
+ARES_CONF_OPTS += -DARES_ENABLE_LIBRASHADER=ON
+# Findlibrashader.cmake's own find_path()/find_library() don't reliably
+# locate a real install in this cross-configure (confirmed the hard way
+# with the vendored-header fallback case, which failed the same way even
+# though the hint should have worked) - pre-seed both cache variables it
+# searches for so they short-circuit successfully rather than chase why.
+ARES_CONF_OPTS += -Dlibrashader_INCLUDE_DIR=$(STAGING_DIR)/usr/include/librashader
+ARES_CONF_OPTS += -Dlibrashader_LIBRARY=$(STAGING_DIR)/usr/lib/librashader.so
 ARES_CONF_OPTS += -DARES_BUILD_LOCAL=OFF
 ARES_CONF_OPTS += -DARES_ENABLE_MINIMUM_CPU=ON
 ARES_CONF_OPTS += -DARES_BUILD_OPTIONAL_TARGETS=OFF
