@@ -57,14 +57,16 @@ class AresGenerator(Generator):
             'Shader': 'None',
             # "Scale" = aspect-correct best-fit (desktop-ui/program/platform.cpp's
             # Program::video()) - fills as much of the screen as the game's own
-            # aspect ratio allows, only ever bordering a single axis. Set
-            # explicitly rather than relying on Settings' own struct default
-            # (also "Scale") to rule it out as the cause of any letterboxing
-            # that doesn't match this - if a game still shows borders on
-            # every side at once, that's real aspect mismatch (or the status
-            # bar reserving space), not "Integer" mode's whole-number-only
-            # scaling silently being in effect.
-            'Output': 'Scale',
+            # aspect ratio allows, only ever bordering a single axis; "Integer"
+            # only scales by whole numbers, leaving slack on both axes; "Stretch"
+            # ignores aspect entirely.
+            'Output': system.config.get('ares_output', 'Scale'),
+            'AspectCorrection': system.config.get('ares_aspect_correction', 'Standard'),
+            # "Displays the full frame without cropping 'undesirable' borders"
+            # (ares' own tooltip) - many games leave that border blank, which
+            # reads as an inconsistent, game-dependent black border around an
+            # otherwise correctly-scaled image. Default to cropped.
+            'Overscan': system.config.get('ares_overscan', 'false'),
         })
 
         _write_bml_section(lines, 'General', {
@@ -78,6 +80,14 @@ class AresGenerator(Generator):
         _write_bml_section(lines, 'Paths', {
             'Saves': str(ARES_SAVES_DIR) + '/',
         })
+
+        if system.name == 'n64':
+            _write_bml_section(lines, 'Nintendo64', {
+                'Quality': system.config.get('ares_n64_quality', 'SD'),
+                'Supersampling': system.config.get('ares_n64_supersampling', 'false'),
+                'WeaveDeinterlacing': system.config.get('ares_n64_weave_deinterlacing', 'false'),
+                'DisableVideoInterfaceProcessing': system.config.get('ares_n64_disable_vi_processing', 'false'),
+            })
 
         for player_number, bindings in generate_all_virtualpad_bindings(playersControllers).items():
             _write_bml_section(lines, f'VirtualPad{player_number}', bindings)

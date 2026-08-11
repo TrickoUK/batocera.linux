@@ -10,8 +10,60 @@ shared_features:
   - bezel.tattoo_corner
   - bezel.tattoo_file
   - bezel.resize_tattoo
+custom_features:
+  ares_output:
+    submenu: VIDEO
+    prompt: OUTPUT SCALING
+    description: How the image is fit to the screen.
+    choices:
+      Best Fit (Recommended): Scale
+      Integer: Integer
+      Stretch to Fill: Stretch
+  ares_aspect_correction:
+    submenu: VIDEO
+    prompt: ASPECT RATIO CORRECTION
+    choices:
+      Standard (Recommended): Standard
+      'Off': 'None'
+      Anamorphic (16:9): Anamorphic
+  ares_overscan:
+    submenu: VIDEO
+    prompt: OVERSCAN
+    description: Some games draw an empty border in the overscan area - crop it, or show the full frame.
+    choices:
+      Crop (Recommended): 'false'
+      Full Frame: 'true'
 systems:
   - name: n64
-    exclude_extensions: [zip, 7z]
+    custom_features:
+      ares_n64_quality:
+        submenu: VIDEO
+        prompt: RENDERING RESOLUTION
+        description: Upscales the N64's Vulkan (paraLLEl-RDP) renderer.
+        choices:
+          1x Native: SD
+          2x Native: HD
+          4x Native: UHD
+      ares_n64_supersampling:
+        submenu: VIDEO
+        prompt: SUPERSAMPLING
+        description: Downsamples the 2x/4x render back to native for smoother edges without a higher output resolution. No effect at 1x, and disables Weave Deinterlacing.
+        choices:
+          'Off': 'false'
+          'On': 'true'
+      ares_n64_weave_deinterlacing:
+        submenu: VIDEO
+        prompt: WEAVE DEINTERLACING
+        description: Doubles perceived vertical resolution on interlaced content. Disables Supersampling.
+        choices:
+          'Off': 'false'
+          'On': 'true'
+      ares_n64_disable_vi_processing:
+        submenu: VIDEO
+        prompt: DISABLE VIDEO INTERFACE PROCESSING
+        description: Renders directly from VRAM, bypassing the N64's own post-processing filters.
+        choices:
+          'Off': 'false'
+          'On': 'true'
   - name: snes
-    exclude_extensions: [gd3, gd7, dx2, zip, 7z]
+    exclude_extensions: [gd3, gd7, dx2]
