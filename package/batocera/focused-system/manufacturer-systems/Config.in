@@ -393,3 +393,17 @@ config BR2_PACKAGE_BATOCERA_ATARI_HANDHELD_SYSTEMS
 	help
 	  Atari handheld systems/emulators (Lynx — this fork's
 	  manufacturer-scoped grouping)
+
+config BR2_PACKAGE_BATOCERA_XBOX360_SYSTEMS
+	bool "batocera.linux Xbox 360 systems/emulators"
+
+	# Microsoft Xbox 360
+	select BR2_PACKAGE_XENIA		if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY && BR2_PACKAGE_BATOCERA_WINE_SYSTEMS
+	select BR2_PACKAGE_XENIA_CANARY	if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY && BR2_PACKAGE_BATOCERA_WINE_SYSTEMS
+	select BR2_PACKAGE_XENIA_EDGE		if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY || \
+						   BR2_PACKAGE_BATOCERA_TARGET_SM8550     || \
+						   BR2_PACKAGE_BATOCERA_TARGET_SM8750
+
+	help
+	  Xbox 360 systems/emulators (this fork's manufacturer-scoped
+	  grouping)
