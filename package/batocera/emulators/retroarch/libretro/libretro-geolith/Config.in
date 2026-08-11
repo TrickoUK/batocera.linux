@@ -1,0 +1,6 @@
+config BR2_PACKAGE_LIBRETRO_GEOLITH
+    bool "libretro-geolith"
+    help
+      A libretro Neo Geo emulator core, using the TerraOnion .NEO rom format.
+
+      http://www.libretro.com

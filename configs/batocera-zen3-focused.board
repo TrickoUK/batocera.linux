@@ -128,6 +128,11 @@ BR2_PACKAGE_BATOCERA_STEAM=y
 # BATOCERA_ARCADE_SYSTEMS.
 BR2_PACKAGE_LIBRETRO_NEOCD=y
 
+# Geolith: Neo Geo AES/MVS + Neo Geo CD core using TerraOnion's single-file
+# .NEO rom format (not the MAME-style zip romsets FBNeo/MAME use), so it's
+# opt-in rather than part of BATOCERA_ARCADE_SYSTEMS like FBNeo is.
+BR2_PACKAGE_LIBRETRO_GEOLITH=y
+
 # Note: Nvidia is force-selected via a Kconfig `select` for every x86_64
 # build (package/batocera/core/batocera-system/Config.in) and cannot be
 # disabled from this defconfig alone - apply

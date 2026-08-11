@@ -1,3 +1,5 @@
 systems:
   - fbneo
-  - neogeo
+  - name: neogeo
+    exclude_extensions:
+      - neo
