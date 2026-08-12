@@ -57,6 +57,34 @@ _ARES_SYSTEM_NAME = {
     'tg16': 'PC Engine',
 }
 
+# ares' keyboard-binding assignment string is "<deviceID>/<groupID>/<inputID>"
+# (desktop-ui/input/input.cpp's inputAssignment()/InputMapping::bind()). The
+# keyboard HID device never gets a text identifier() (nothing calls
+# setIdentifier() for it), so it resolves via the numeric "0x<id>" branch -
+# but its id() is NOT the zero default: InputKeyboardXlib::initialize()
+# (ruby/input/keyboard/xlib.cpp) explicitly calls
+# hid->setVendorID(HID::Keyboard::GenericVendorID)  // 0x0000
+# hid->setProductID(HID::Keyboard::GenericProductID) // 0x0001
+# hid->setPathID(0)
+# and Device::id() packs those as (pathID<<32)|(vendorID<<16)|productID,
+# giving a fixed id of 0x0001 - so the deviceID token is "0x1", not "0x0".
+# groupID 0 is HID::Keyboard::GroupID::Button (its only group). inputID is
+# the key's fixed position in the `keys.push_back(...)` list built by that
+# same initialize() - Escape=0, F1=1, F2=2, F3=3, F4=4, ... - scraped from
+# that exact list at the ARES_VERSION pinned in ares.mk; if that version is
+# ever bumped, re-diff xlib.cpp's key ordering (and these setVendorID/
+# setProductID/setPathID calls) before trusting these numbers again.
+_ARES_KEYBOARD_INPUT_ID = {
+    'F1': 1,
+    'F2': 2,
+    'F3': 3,
+    'F4': 4,
+}
+
+
+def _keyboard_binding(key: str, /) -> str:
+    return f'0x1/0/{_ARES_KEYBOARD_INPUT_ID[key]}'
+
 
 def _write_bml_section(lines: list[str], name: str, values: dict[str, str], /) -> None:
     if not values:
@@ -106,6 +134,8 @@ class AresGenerator(Generator):
                 "exit": ["KEY_LEFTALT", "KEY_F4"],
                 "save_state": "KEY_F2",
                 "restore_state": "KEY_F1",
+                "previous_slot": "KEY_F3",
+                "next_slot": "KEY_F4",
                 "menu": "KEY_F7",
             }
         }
@@ -149,6 +179,19 @@ class AresGenerator(Generator):
             'Saves': str(ARES_SAVES_DIR) + '/',
         })
 
+        # ares ships with no default hotkeys at all (every Hotkey/* key is
+        # empty until assigned via its own in-window Settings > Hotkeys
+        # panel) - without writing these, the F1/F2/F3/F4 keys hotkeygen
+        # synthesizes for save_state/restore_state/previous_slot/next_slot
+        # (getHotkeysContext() above) reach ares' window but have nothing
+        # bound to react to them.
+        _write_bml_section(lines, 'Hotkey', {
+            'SaveState': _keyboard_binding('F2'),
+            'LoadState': _keyboard_binding('F1'),
+            'DecrementStateSlot': _keyboard_binding('F3'),
+            'IncrementStateSlot': _keyboard_binding('F4'),
+        })
+
         if system.name == 'n64':
             _write_bml_section(lines, 'Nintendo64', {
                 'Quality': system.config.get('ares_n64_quality', 'SD'),
@@ -169,15 +212,40 @@ class AresGenerator(Generator):
             '--no-file-prompt',
             '--system', ares_system,
             '--settings-file', ARES_SETTINGS_FILE,
-            rom,
         ]
+
+        # Launching a specific slot from EmulationStation's save-state panel
+        # (GuiSaveState) passes "-state_slot <N>" (and "-state_file <path>",
+        # unused here - ares' own --save-state flag only takes a slot digit,
+        # deriving the actual path itself via Emulator::locate() the same
+        # way stateSave/stateLoad do). Without this, ES's panel entry just
+        # boots the ROM fresh - it never actually requests a load. ares only
+        # accepts a single digit 1-9 (desktop-ui.cpp's --save-state parsing)
+        # and silently ignores anything else, which conveniently also covers
+        # ES's slot -1 ("run current autosave") and -2 ("new game, no
+        # autosave") sentinel values - neither applies since this emulator
+        # entry has autosave="false" in es_savestates.cfg.
+        if state_slot := system.config.get('state_slot'):
+            commandArray += ['--save-state', str(state_slot)]
+
+        commandArray.append(rom)
 
         return Command.Command(
             array=commandArray,
-            # ares has no CLI override for its shader search directory -
-            # only for settings.bml itself (--settings-file, used above).
-            # XDG_DATA_HOME redirects locate("Shaders/")'s user-data
-            # candidate (desktop-ui/program/drivers.cpp) to ARES_SHADERS_DIR;
-            # see aresPaths.py for the full chain.
-            env={'XDG_DATA_HOME': ARES_DATA_HOME},
+            env={
+                # ares has no CLI override for its shader search directory -
+                # only for settings.bml itself (--settings-file, used above).
+                # XDG_DATA_HOME redirects locate("Shaders/")'s user-data
+                # candidate (desktop-ui/program/drivers.cpp) to
+                # ARES_SHADERS_DIR; see aresPaths.py for the full chain.
+                'XDG_DATA_HOME': ARES_DATA_HOME,
+                # Read by this fork's 001-batocera-savestate-system-scoped-
+                # folders.patch (desktop-ui/emulator/emulator.cpp's
+                # Emulator::locate()) so save states/undo states/screenshots
+                # land under a batocera-system-scoped folder instead of
+                # ares' own coarser core name - without this, megadrive/
+                # sega32x/megacd (all the same "md" core, all reporting
+                # root->name() == "Mega Drive") would share one save folder.
+                'ARES_BATOCERA_SYSTEM_ID': system.name,
+            },
         )

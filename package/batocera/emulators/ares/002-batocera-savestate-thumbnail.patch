@@ -1,0 +1,62 @@
+--- a/desktop-ui/program/program.hpp	2026-08-12 06:16:17.025125582 +0100
++++ b/desktop-ui/program/program.hpp	2026-08-12 06:16:50.323563243 +0100
+@@ -40,6 +40,7 @@
+   auto paletteUpdate() -> void;
+   auto runAheadUpdate() -> void;
+   auto captureScreenshot(const u32* data, u32 pitch, u32 width, u32 height) -> void;
++  auto captureStateScreenshot(const u32* data, u32 pitch, u32 width, u32 height, u32 slot) -> void;
+   auto openFile(BrowserDialog&) -> string;
+   auto selectFolder(BrowserDialog&) -> string;
+   auto saveFile(BrowserDialog& dialog) -> string;
+@@ -82,6 +83,8 @@
+   bool runAhead = false;
+   bool requestFrameAdvance = false;
+   bool requestScreenshot = false;
++  bool requestStateScreenshot = false;
++  u32 requestStateScreenshotSlot = 0;
+   bool keyboardCaptured = false;
+   atomic<bool> pendingKioskExit = false;
+ 
+--- a/desktop-ui/program/states.cpp	2026-08-12 06:16:17.029108872 +0100
++++ b/desktop-ui/program/states.cpp	2026-08-12 06:16:58.787501595 +0100
+@@ -10,6 +10,10 @@
+ 
+   if(auto state = emulator->root->serialize()) {
+     if(file::write(location, {state.data(), state.size()})) {
++      //batocera: defer a thumbnail capture to the next Program::video() callback, which is the
++      //next point a real video frame buffer is available (mirrors requestScreenshot below).
++      requestStateScreenshot = true;
++      requestStateScreenshotSlot = slot;
+       showMessage({"Saved state to slot ", slot});
+       return true;
+     }
+--- a/desktop-ui/program/platform.cpp	2026-08-12 06:16:17.033043892 +0100
++++ b/desktop-ui/program/platform.cpp	2026-08-12 06:17:02.402475265 +0100
+@@ -85,6 +85,11 @@
+     captureScreenshot(data, pitch, width, height);
+   }
+ 
++  if(requestStateScreenshot) {
++    requestStateScreenshot = false;
++    captureStateScreenshot(data, pitch, width, height, requestStateScreenshotSlot);
++  }
++
+   if(node->width() != emulator->latch.width || node->height() != emulator->latch.height || node->rotation() != emulator->latch.rotation) {
+     emulator->latch.width = node->width();
+     emulator->latch.height = node->height();
+--- a/desktop-ui/program/utility.cpp	2026-08-12 06:16:17.036388550 +0100
++++ b/desktop-ui/program/utility.cpp	2026-08-12 06:17:09.099426487 +0100
+@@ -53,6 +53,13 @@
+   }
+ }
+ 
++//batocera: thumbnail written next to a save-state file (<rom>.bs<slot>.png), for frontends
++//(EmulationStation's save-state browser) that expect a sidecar preview image per slot.
++auto Program::captureStateScreenshot(const u32* data, u32 pitch, u32 width, u32 height, u32 slot) -> void {
++  string filename{emulator->locate(emulator->game->location, {".bs", slot, ".png"}, settings.paths.saves)};
++  Encode::PNG::RGB8(filename, data, pitch, width, height);
++}
++
+ auto Program::openFile(BrowserDialog& dialog) -> string {
+   Program::Guard guard;
+   BrowserWindow window;

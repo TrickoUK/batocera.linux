@@ -1,0 +1,22 @@
+--- a/desktop-ui/emulator/emulator.cpp	2026-08-12 06:16:17.021385265 +0100
++++ b/desktop-ui/emulator/emulator.cpp	2026-08-12 06:16:39.960638723 +0100
+@@ -1,3 +1,4 @@
++#include <cstdlib>
+ #include "../desktop-ui.hpp"
+ #include "emulators.cpp"
+ 
+@@ -25,7 +26,13 @@
+ }
+ 
+ auto Emulator::locate(const string& location, const string& suffix, const string& path, maybe<string> system) -> string {
+-  if(!system) system = root->name();
++  if(!system) {
++    //batocera: disambiguate save/screenshot folders by frontend system ID rather than the
++    //core's own name, since several batocera systems (eg megadrive/sega32x/megacd) share one
++    //ares core and would otherwise collide on the same root->name() folder ("Mega Drive").
++    if(const char* batoceraSystem = getenv("ARES_BATOCERA_SYSTEM_ID")) system = string(batoceraSystem);
++    else system = root->name();
++  }
+ 
+   //game path
+   if(!path) return {Location::notsuffix(location), suffix};
