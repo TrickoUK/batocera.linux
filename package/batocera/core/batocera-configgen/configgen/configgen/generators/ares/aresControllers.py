@@ -27,10 +27,14 @@ _VPAD_KEYS: Mapping[str, str] = {
     'right': 'Pad.Right',
     'select': 'Select',
     'start': 'Start',
-    'a': 'A..South',
-    'b': 'B..East',
-    'x': 'X..West',
-    'y': 'Y..North',
+    # ES's abstract a/b/x/y are SNES-style positions (a=East, b=South,
+    # x=North, y=West - see GuiInputConfig.cpp's GUI_INPUT_CONFIG_LIST),
+    # not literal ares/Xbox-style node names, so this is a swap, not an
+    # identity mapping.
+    'a': 'B..East',
+    'b': 'A..South',
+    'x': 'Y..North',
+    'y': 'X..West',
     'pageup': 'L-Bumper',
     'pagedown': 'R-Bumper',
     'l2': 'L-Trigger',
