@@ -2326,6 +2326,10 @@ def _pcsx2_options(
     _set_from_system(coreSettings, 'pcsx2_auto_flush_software', system, 'lr_pcsx2_auto_flush_software', default='enabled')
     # EE Cycle Rate
     _set_from_system(coreSettings, 'pcsx2_ee_cycle_rate', system, 'lr_pcsx2_ee_cycle_rate', default='100% (Normal Speed)')
+    # MTVU (Multi-Threaded VU1)
+    _set_from_system(coreSettings, 'pcsx2_mtvu', system, 'lr_pcsx2_mtvu', default='enabled')
+    # Instant VU1
+    _set_from_system(coreSettings, 'pcsx2_instant_vu1', system, 'lr_pcsx2_instant_vu1', default='enabled')
     # EE Cycle Skipping
     _set_from_system(coreSettings, 'pcsx2_ee_cycle_skip', system, 'lr_pcsx2_ee_cycle_skip', default='disabled')
     # Game Enhancements hint

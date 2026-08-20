@@ -245,6 +245,20 @@ custom_features:
       130% (Overclock): 130% (Overclock)
       180% (Overclock): 180% (Overclock)
       300% (Overclock): 300% (Overclock)
+  lr_pcsx2_mtvu:
+    submenu: EMULATION
+    prompt: MTVU (MULTI-THREADED VU1) (RESTART)
+    description: Runs VU1 on its own thread. Large speedup on multi-core CPUs; a small number of games hang with it. The default matches the platform default (on arm64, MTVU is on whenever the native VU1 recompiler drives VU1).
+    choices:
+      Disabled: disabled
+      Enabled: enabled
+  lr_pcsx2_instant_vu1:
+    submenu: EMULATION
+    prompt: INSTANT VU1 (RESTART)
+    description: Runs VU1 to completion immediately (ignored while MTVU is enabled). Usually a speedup.
+    choices:
+      Disabled: disabled
+      Enabled: enabled
   lr_pcsx2_ee_cycle_skip:
     submenu: EMULATION
     prompt: EE CYCLE SKIPPING
