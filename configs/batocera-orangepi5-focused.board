@@ -1,0 +1,132 @@
+include batocera-board.common
+
+# Target definition — reuses the RK3588_MAINLINE target (Armbian-derived
+# mainline kernel, same as batocera-rk3588-mainline.board), which is what
+# the base Orange Pi 5 (RK3588S, not the Plus/5B/5-Pro variants) builds
+# under. That target normally produces images for ~14 different RK3588(S)
+# boards from one build; BR2_TARGET_BATOCERA_IMAGES below restricts it to
+# just orangepi-5, mirroring how batocera-sm8750.board carves a single
+# board out of its family's shared board-dir layout.
+BR2_aarch64=y
+BR2_cortex_a76_a55=y
+BR2_ARM_FPU_NEON_FP_ARMV8=y
+BR2_PACKAGE_BATOCERA_TARGET_RK3588_MAINLINE=y
+BR2_TARGET_OPTIMIZATION="-pipe -fsigned-char -mtune=cortex-a76"
+BR2_TARGET_GENERIC_GETTY_PORT="/dev/ttyS2"
+BR2_TARGET_GENERIC_GETTY_BAUDRATE_115200=y
+BR2_TARGET_BATOCERA_IMAGES="rockchip/rk3588-mainline/orangepi-5"
+BR2_GLOBAL_PATCH_DIR="$(BR2_EXTERNAL_BATOCERA_PATH)/board/batocera/patches $(BR2_EXTERNAL_BATOCERA_PATH)/board/batocera/rockchip/patches $(BR2_EXTERNAL_BATOCERA_PATH)/board/batocera/rockchip/rk3588-mainline/patches"
+BR2_ROOTFS_OVERLAY="$(BR2_EXTERNAL_BATOCERA_PATH)/board/batocera/fsoverlay $(BR2_EXTERNAL_BATOCERA_PATH)/board/batocera/rockchip/rk3588-mainline/fsoverlay"
+
+# Kernel - mainline stable, identical to batocera-rk3588-mainline.board
+BR2_LINUX_KERNEL=y
+BR2_LINUX_KERNEL_CUSTOM_VERSION=y
+BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE="7.1.5"
+BR2_KERNEL_HEADERS_7_1=y
+BR2_LINUX_KERNEL_PATCH="$(BR2_EXTERNAL_BATOCERA_PATH)/board/batocera/rockchip/rk3588-mainline/linux_patches"
+BR2_LINUX_KERNEL_USE_CUSTOM_CONFIG=y
+BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE="$(BR2_EXTERNAL_BATOCERA_PATH)/board/batocera/rockchip/rk3588-mainline/linux-defconfig.config"
+BR2_LINUX_KERNEL_CONFIG_FRAGMENT_FILES="$(BR2_EXTERNAL_BATOCERA_PATH)/board/batocera/rockchip/rk3588-mainline/linux-defconfig-fragment.config"
+BR2_LINUX_KERNEL_NEEDS_HOST_OPENSSL=y
+
+# Build the DTB from the kernel sources - Orange Pi 5 only (base RK3588S
+# model). batocera-rk3588-mainline.board's BR2_LINUX_KERNEL_INTREE_DTS_NAME
+# lists all ~14 boards; this only needs the one DTB.
+BR2_LINUX_KERNEL_DTS_SUPPORT=y
+BR2_LINUX_KERNEL_INTREE_DTS_NAME="rockchip/rk3588s-orangepi-5"
+BR2_TARGET_ROOTFS_SQUASHFS4_ZSTD=y
+
+# Bootloader - just the generic multi-board RK3588 u-boot (provides the
+# orangepi-5 binaries dir consumed by
+# board/batocera/rockchip/rk3588-mainline/orangepi-5/genimage.cfg); dropped
+# UBOOT_ODROID_M2 and UBOOT_ORANGEPI_5B from the parent board since this
+# target only images orangepi-5.
+BR2_PACKAGE_HOST_DOSFSTOOLS=y
+BR2_PACKAGE_UBOOT_RK3588=y
+
+# System
+# Kodi deliberately left off (unlike batocera-rk3588-mainline.board): not
+# wanted on this focused build, and its language-resource-pack downloads
+# are a source of upstream mirror flakiness (a dead resource.language.it_it
+# zip 404'd a build here).
+
+# GPU - Panthor for RK3588S Mali G610
+BR2_PACKAGE_BATOCERA_PANFROST_MESA3D=y
+BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_ZINK=y
+
+# Enable Wayland & XWayland
+BR2_PACKAGE_BATOCERA_WAYLAND_LABWC=y
+BR2_PACKAGE_BATOCERA_XWAYLAND=y
+
+# Boot splash
+BR2_PACKAGE_BATOCERA_SPLASH_MPV=y
+
+# --- Stripped-down systems selection (this fork) ---
+# Same approach as batocera-x86_64-focused.board: turn off
+# BATOCERA_ALL_SYSTEMS and hand-pick manufacturer-scoped umbrellas from
+# package/batocera/focused-system/manufacturer-systems/Config.in instead of
+# every emulator for every platform. That file's `select`s are already
+# conditioned per-BATOCERA_TARGET_* (including RK3588_MAINLINE), and both
+# it and ARCADE_SYSTEMS' standalone-MAME comment-out
+# (board/batocera/x86/local-patches/manufacturer-systems.patch,
+# no-mame.patch) are applied as uncommitted changes to shared,
+# arch-agnostic files (top-level Config.in, batocera-system/Config.in) —
+# already in effect for this board too, no extra patch work needed despite
+# living under board/batocera/x86/.
+BR2_PACKAGE_BATOCERA_ALL_SYSTEMS=n
+
+# RetroArch itself is normally pulled in by BATOCERA_ALL_SYSTEMS, not by the
+# category umbrellas below, so it needs to be selected explicitly.
+BR2_PACKAGE_BATOCERA_RETROARCH=y
+
+# Arcade systems: MAME, FBNeo, laserdisc, etc. Arch-generic; standalone
+# MAME stays off fork-wide via no-mame.patch, same as x86_64-focused.
+BR2_PACKAGE_BATOCERA_ARCADE_SYSTEMS=y
+
+# Manufacturer-scoped umbrellas.
+#
+# As on x86_64-focused: Nintendo/Sony/Atari are split into a standard
+# umbrella and a separate handheld one; unlike x86, NINTENDO_HANDHELD_SYSTEMS
+# is left on here since MelonDS (DS) has aarch64+GLES3 coverage in both
+# manufacturer-systems.Config.in and the base HANDHELD_SYSTEMS umbrella.
+# ATARI_HANDHELD_SYSTEMS (Lynx) is left off by choice.
+# XBOX360_SYSTEMS isn't included at all - xenia is x86_64-only in
+# manufacturer-systems/Config.in, no RK3588_MAINLINE coverage to opt into.
+BR2_PACKAGE_BATOCERA_NINTENDO_SYSTEMS=y
+BR2_PACKAGE_BATOCERA_NINTENDO_HANDHELD_SYSTEMS=n
+BR2_PACKAGE_BATOCERA_SEGA_SYSTEMS=y
+BR2_PACKAGE_BATOCERA_SONY_SYSTEMS=y
+BR2_PACKAGE_BATOCERA_SONY_HANDHELD_SYSTEMS=n
+BR2_PACKAGE_BATOCERA_COMMODORE_SYSTEMS=n
+BR2_PACKAGE_BATOCERA_AMSTRAD_SYSTEMS=n
+BR2_PACKAGE_BATOCERA_NEC_SYSTEMS=y
+BR2_PACKAGE_BATOCERA_ATARI_SYSTEMS=y
+BR2_PACKAGE_BATOCERA_ATARI_HANDHELD_SYSTEMS=n
+
+# Required by NINTENDO_SYSTEMS: libretro-dolphin hard-depends on libenet at
+# the Buildroot Makefile level, same gotcha documented in
+# batocera-x86_64-focused.board - its own Config.in select never pulls
+# libenet in outside of BATOCERA_ALL_SYSTEMS's COMPUTER_SYSTEMS/
+# GAMESTREAM_SYSTEMS side effect.
+BR2_PACKAGE_LIBENET=y
+
+# Neo Geo CD core, opt-in same as x86_64-focused.
+BR2_PACKAGE_LIBRETRO_NEOCD=y
+
+# Geolith (TerraOnion .NEO format) deliberately left off here (unlike
+# x86_64-focused): its upstream Makefile does a strict `ifeq ($(platform),
+# unix)` exact-match instead of the findstring-based matching most libretro
+# cores use, and this fork's retroarch.mk builds a compound
+# LIBRETRO_PLATFORM string on aarch64 ("unix arm64", from the BR2_aarch64
+# += arm64 line) - the exact match fails, geolith's Makefile falls through
+# its whole platform chain to the generic bottom `else`, which assumes
+# Windows/MSVC (`-lwinmm`, `.dll` output) and fails to link. First time
+# Geolith has been built for an ARM/aarch64 target in this fork (previously
+# x86_64-focused only, where LIBRETRO_PLATFORM stays plain "unix"). Neo-Geo
+# / Neo-Geo CD still work fine via libretro-mame + NEOCD above; revisit
+# with an upstream Makefile patch if Geolith's .NEO format is wanted later.
+# BR2_PACKAGE_LIBRETRO_GEOLITH=y
+
+# Note: ares (package/batocera/emulators/ares/Config.in) is hard
+# `depends on BR2_x86_64` upstream in this fork - not available here, unlike
+# on the x86 focused boards.
