@@ -4,6 +4,7 @@
 - The Play! emulator (and Libretro variant) has been removed in favor of PCSX2x6 for Namco2x6 systems as well as removed as a PS2 emulator.
 ### Hardware
 - Anbernic RG-DS initial support
+- Anbernic RG-SP initial support
 - Anbernic RG Vita Pro initial support
 - Anbernic RG40xx-H-v2-panel variant support
 - Anbernic RG40xx-V-v2-panel variant support
@@ -67,7 +68,7 @@
   Ensure you read the info text file in the traider folder
 - Vita3k added for capable aarch64 devices
 ### Updated
-- Azahar to 2125.1.2
+- Azahar to 2126.0
 - BigPEmu to 1.221
 - Box64 0.4.2
 - Cemu to August 7th, 2026 build
@@ -79,16 +80,18 @@
 - ECWolf to Feb 23, 2026 build
 - EDuke32 / Fury to Feb 03, 2026 build
 - ETLegacy to v2.84.0
-- Groovy MAME to 0.288
+- Flycast to v2.7
+- Groovy MAME to 0.289
 - IOQuake3 to Mar 9, 2026
 - Jazz2 to 3.6.0
 - Ledspicer to 0.7.6
 - Libretro-Arduous to April 21st, 2026 build
 - Libretro-Atari800 to July 15th, 2026 build
 - Libretro-EasyRPG to 0.8.1.1
+- Libretro-Flycast to v2.7
 - Libretro-Hatari to April 21st, 2026 build
 - Libretro-HatariB to February 14th, 2026 build
-- Libretro-MAME to 0.288
+- Libretro-MAME to 0.289
 - Libretro-PC88 to April 21st, 2026 build
 - Libretro-PC98 to May 9th, 2026 build
 - Libretro-PCSX to May 15th, 2026 build
@@ -113,7 +116,7 @@
 - Play to 0.77
 - PPSSPP to v1.20.4
 - Python Pyxel to May 9th, 2026 build
-- Redream to 1.5.0-1235-g506c3f1
+- Redream to 1.5.0-1239
 - RPCS3 to v.0.0.42
 - ScummVM to v2026.3.0
 - ShadPS4 to v.0.17.0
@@ -121,7 +124,7 @@
 - Sonic3-Air to v26.03.28.0
 - Supermodel to v0.3a-20260726-git-b7d8acd
 - TheXTech to v1.3.7.3-1
-- TRX to 1.9.2
+- TRX to 1.10.2
 - Tsugaru to v20251206
 - Vita3k to 10th of June build
 - VKQuake to 1.34.1
@@ -132,7 +135,7 @@
 - Ymir to v0.3.3
 ### System
 - Allwinner H616 device kernel updated to 7.1.5
-- Allwinner H700 device kernel updated to 7.0.14
+- Allwinner H700 device kernel updated to 7.1.9
 - ALSA UCM configuration to v1.2.16.1
 - Buildroot to 2026.05.x with supporting package & toolchain updates
 - DXVK to 3.0.2
@@ -143,7 +146,7 @@
 - Khadas VIM4 kernel updated to vendor 5.15.y
 - LabWC to 0.20.1
 - Linux Firmware to 20260622
-- Mesa3D to 26.1.6
+- Mesa3D to 26.2.1
 - MangoHud to v0.8.4
 - Nvidia Open Production driver to 610.57.04
 - Nvidia 580 Legacy driver to 580.178.04
@@ -164,7 +167,7 @@
 - WINE Proton to proton-11.0-1
 - WINE TKG to 11.13
 - Wlroots to 0.20.2
-- X86_64 / Zen3 kernel updated to 7.1.5
+- X86_64 / Zen3 kernel updated to 7.1.9
 - Xone to v0.5.8
 
 # 2026/05/30 - batocera.linux 43.1
