@@ -65,6 +65,7 @@ apple/apple2common.cpp  // [HELPER]
 apple/apple2video.cpp  // [HELPER]
 apple/apple3_m.cpp  // [HELPER]
 apple/apple3_v.cpp  // [HELPER]
+apple/athensprime.cpp  // [HELPER]
 apple/awacs_macrisc.cpp  // [HELPER]
 apple/bandit.cpp  // [HELPER]
 apple/burgundy.cpp  // [HELPER]
@@ -93,7 +94,9 @@ apple/prav8ckb.cpp  // [HELPER]
 apple/rbv.cpp  // [HELPER]
 apple/scsidma.cpp  // [HELPER]
 apple/sonora.cpp  // [HELPER]
+apple/spectred_kbd.cpp  // [HELPER]
 apple/superga2.cpp
+apple/taos.cpp  // [HELPER]
 apple/v8.cpp  // [HELPER]
 apple/valkyrie.cpp  // [HELPER]
 apple/vasp.cpp  // [HELPER]
@@ -286,6 +289,30 @@ atlus/patapata.cpp
 atlus/pitchtry.cpp
 atlus/rallypnt.cpp
 atlus/sprite013.cpp  // [HELPER]
+bally/astrocde.cpp
+bally/astrocde_v.cpp  // [HELPER]
+bally/balsente.cpp
+bally/balsente_m.cpp  // [HELPER]
+bally/balsente_v.cpp  // [HELPER]
+bally/cashline.cpp
+bally/csd.cpp  // [HELPER]
+bally/gridlee.cpp
+bally/gridlee_a.cpp  // [HELPER]
+bally/gridlee_v.cpp  // [HELPER]
+bally/mcr.cpp
+bally/mcr3.cpp
+bally/mcr3_v.cpp  // [HELPER]
+bally/mcr68.cpp
+bally/mcr_m.cpp  // [HELPER]
+bally/mcr_v.cpp  // [HELPER]
+bally/midway_sound.cpp  // [HELPER]
+bally/midwayttl.cpp
+bally/mw18w.cpp
+bally/mwsub.cpp
+bally/omegrace.cpp
+bally/sente6vb.cpp  // [HELPER]
+bally/spyhuntertec.cpp
+bally/zwackery.cpp
 barcrest/mpu1.cpp
 barcrest/mpu3.cpp
 barcrest/mpu4.cpp  // [HELPER]
@@ -443,6 +470,7 @@ dataeast/boogwing.cpp
 dataeast/brkthru.cpp
 dataeast/btime.cpp
 dataeast/bwing.cpp
+dataeast/captaven.cpp
 dataeast/cbuster.cpp
 dataeast/chanbara.cpp
 dataeast/cninja.cpp
@@ -463,12 +491,9 @@ dataeast/decmxc06.cpp  // [HELPER]
 dataeast/deco102.cpp  // [HELPER]
 dataeast/deco104.cpp  // [HELPER]
 dataeast/deco146.cpp  // [HELPER]
-dataeast/deco156.cpp
-dataeast/deco156_m.cpp  // [HELPER]
+dataeast/deco156.cpp  // [HELPER]
 dataeast/deco16ic.cpp  // [HELPER]
 dataeast/deco222.cpp  // [HELPER]
-dataeast/deco32.cpp
-dataeast/deco32_v.cpp  // [HELPER]
 dataeast/deco_ace.cpp  // [HELPER]
 dataeast/deco_irq.cpp  // [HELPER]
 dataeast/deco_ld.cpp
@@ -485,16 +510,20 @@ dataeast/decrmc3.cpp  // [HELPER]
 dataeast/deshoros.cpp
 dataeast/dfruit2.cpp
 dataeast/dietgo.cpp
+dataeast/dragngun.cpp
 dataeast/dreambal.cpp
 dataeast/dvi.cpp  // [HELPER]
 dataeast/exprraid.cpp
 dataeast/ffantasy_ms.cpp
+dataeast/fghthist.cpp
+dataeast/fghthist_v.cpp  // [HELPER]
 dataeast/firetrap.cpp
 dataeast/funkyjet.cpp
+dataeast/hvysmsh.cpp
 dataeast/karnov.cpp
 dataeast/kchamp.cpp
 dataeast/kchamp_v.cpp  // [HELPER]
-dataeast/kingobox.cpp
+dataeast/kingofb.cpp
 dataeast/lemmings.cpp
 dataeast/liberate.cpp
 dataeast/liberate_v.cpp  // [HELPER]
@@ -1052,57 +1081,6 @@ midw8080/mw8080bw_v.cpp  // [HELPER]
 midw8080/nl_280zzzap.cpp  // [HELPER]
 midw8080/nl_gunfight.cpp  // [HELPER]
 midw8080/rotaryf.cpp
-midway/astrocde.cpp
-midway/astrocde_v.cpp  // [HELPER]
-midway/atlantis.cpp
-midway/balsente.cpp
-midway/balsente_m.cpp  // [HELPER]
-midway/balsente_v.cpp  // [HELPER]
-midway/cashline.cpp
-midway/csd.cpp  // [HELPER]
-midway/gridlee.cpp
-midway/gridlee_a.cpp  // [HELPER]
-midway/gridlee_v.cpp  // [HELPER]
-midway/mcr.cpp
-midway/mcr3.cpp
-midway/mcr3_v.cpp  // [HELPER]
-midway/mcr68.cpp
-midway/mcr_m.cpp  // [HELPER]
-midway/mcr_v.cpp  // [HELPER]
-midway/midqslvr.cpp
-midway/midtunit.cpp
-midway/midtunit_m.cpp  // [HELPER]
-midway/midtunit_v.cpp  // [HELPER]
-midway/midvunit.cpp
-midway/midvunit_v.cpp  // [HELPER]
-midway/midway.cpp  // [HELPER]
-midway/midwayic.cpp  // [HELPER]
-midway/midwayttl.cpp
-midway/midwunit.cpp
-midway/midwunit_m.cpp  // [HELPER]
-midway/midxunit.cpp
-midway/midyunit.cpp
-midway/midyunit_m.cpp  // [HELPER]
-midway/midyunit_v.cpp  // [HELPER]
-midway/midzeus.cpp
-midway/midzeus_v.cpp  // [HELPER]
-midway/mw18w.cpp
-midway/mwsub.cpp
-midway/omegrace.cpp
-midway/pinball2k.cpp
-midway/predators.cpp
-midway/seattle.cpp
-midway/sente6vb.cpp  // [HELPER]
-midway/spyhuntertec.cpp
-midway/starrider.cpp
-midway/tmaster.cpp
-midway/vegas.cpp
-midway/williams.cpp
-midway/williams_m.cpp  // [HELPER]
-midway/williams_v.cpp  // [HELPER]
-midway/williamsblitter.cpp  // [HELPER]
-midway/wmg.cpp
-midway/zwackery.cpp
 miltonbradley/vectrex.cpp  // [MIXED]
 miltonbradley/vectrex_m.cpp  // [HELPER]
 miltonbradley/vectrex_v.cpp  // [HELPER]
@@ -1126,7 +1104,6 @@ misc/alinvade.cpp
 misc/amaticmg.cpp
 misc/amerihok.cpp
 misc/ampoker2.cpp
-misc/ampoker2_v.cpp  // [HELPER]
 misc/amspdwy.cpp
 misc/amstarz80.cpp
 misc/amusco.cpp
@@ -1153,7 +1130,6 @@ misc/boramz80.cpp
 misc/brglitz.cpp
 misc/buster.cpp
 misc/calomega.cpp
-misc/calomega_v.cpp  // [HELPER]
 misc/cardline.cpp
 misc/carrera.cpp
 misc/castle.cpp
@@ -1284,7 +1260,6 @@ misc/kas89.cpp
 misc/katosmedz80.cpp
 misc/kingpin.cpp
 misc/ladyfrog.cpp
-misc/ladyfrog_v.cpp  // [HELPER]
 misc/laserbas.cpp
 misc/laz_aftrshok.cpp
 misc/laz_ribrac.cpp
@@ -1330,7 +1305,6 @@ misc/musclem.cpp
 misc/nabupc_kbd.cpp  // [HELPER]
 misc/ncarrera.cpp
 misc/neomania.cpp
-misc/neoprint.cpp
 misc/news.cpp
 misc/nexus3d.cpp
 misc/nibble.cpp
@@ -1514,7 +1488,6 @@ namco/namcomcu.cpp  // [HELPER]
 namco/namcona1.cpp
 namco/namcona1_v.cpp  // [HELPER]
 namco/namconb1.cpp
-namco/namconb1_v.cpp  // [HELPER]
 namco/namcond1.cpp
 namco/namcops2.cpp
 namco/namcos1.cpp
@@ -1545,6 +1518,7 @@ namco/namcos2_v.cpp  // [HELPER]
 namco/namcos6.cpp
 namco/namcos86.cpp
 namco/namcos86_v.cpp  // [HELPER]
+namco/nl_rallyx.cpp  // [HELPER]
 namco/nl_tankbatt.cpp  // [HELPER]
 namco/ns10crypt.cpp  // [HELPER]
 namco/ns11prot.cpp  // [HELPER]
@@ -1580,12 +1554,6 @@ namco/ygv608.cpp  // [HELPER]
 nasco/crgolf.cpp
 nasco/himesiki.cpp
 nasco/suprgolf.cpp
-neogeo/midas.cpp
-neogeo/neogeo.cpp  // [MIXED]
-neogeo/neogeo_spr.cpp  // [HELPER]
-neogeo/neogeo_v.cpp  // [HELPER]
-neogeo/neopcb.cpp
-neogeo/ng_memcard.cpp  // [HELPER]
 nichibutsu/armedf.cpp
 nichibutsu/armedf_v.cpp  // [HELPER]
 nichibutsu/cclimber.cpp
@@ -1658,7 +1626,6 @@ nintendo/playch10.cpp
 nintendo/popeye.cpp
 nintendo/popeye_v.cpp  // [HELPER]
 nintendo/punchout.cpp
-nintendo/punchout_v.cpp  // [HELPER]
 nintendo/rdpblend.cpp  // [HELPER]
 nintendo/rdptpipe.cpp  // [HELPER]
 nintendo/rp2a03_vtscr.cpp  // [HELPER]
@@ -2173,8 +2140,10 @@ skeleton/bullion2.cpp
 skeleton/busicom_v.cpp  // [HELPER]
 skeleton/cadillacjack_mc68340.cpp
 skeleton/caramball.cpp
+skeleton/carnival37.cpp
 skeleton/cle68k.cpp
 skeleton/clownmgc.cpp
+skeleton/cosmo68k.cpp
 skeleton/cubieboard4.cpp  // [MIXED]
 skeleton/design.cpp
 skeleton/dharma_z180.cpp
@@ -2190,12 +2159,14 @@ skeleton/flashvga2.cpp
 skeleton/gamebox.cpp
 skeleton/ganbaremo.cpp
 skeleton/happyvideo.cpp
+skeleton/hkcastle.cpp
 skeleton/iam2.cpp
 skeleton/itt1700_kbd.cpp  // [HELPER]
 skeleton/jinhuang6.cpp
 skeleton/kkcount.cpp
 skeleton/lanmao.cpp
 skeleton/lgtz80.cpp
+skeleton/luckyjkr.cpp
 skeleton/madmoney2.cpp
 skeleton/megacrane.cpp
 skeleton/mgt_multigame.cpp
@@ -2213,6 +2184,7 @@ skeleton/sammy_pachislo_z80.cpp
 skeleton/seoul88.cpp
 skeleton/sgm.cpp
 skeleton/shoken_md06.cpp
+skeleton/st25.cpp
 skeleton/sterz80.cpp
 skeleton/syvg.cpp
 skeleton/testlove.cpp
@@ -2234,8 +2206,15 @@ snk/lasso.cpp
 snk/mainsnk.cpp
 snk/mechatt.cpp
 snk/miconkit.cpp
+snk/midas.cpp
 snk/munchmo.cpp
 snk/neocrnvl.cpp
+snk/neogeo.cpp  // [MIXED]
+snk/neogeo_spr.cpp  // [HELPER]
+snk/neogeo_v.cpp  // [HELPER]
+snk/neopcb.cpp
+snk/neoprint.cpp
+snk/ng_memcard.cpp  // [HELPER]
 snk/prehisle.cpp
 snk/snk.cpp
 snk/snk6502.cpp
@@ -2252,6 +2231,7 @@ sony/dmac_0448.cpp  // [HELPER]
 sony/news_020_mmu.cpp  // [HELPER]
 sony/news_hid.cpp  // [HELPER]
 sony/news_iop_scsi.cpp  // [HELPER]
+sony/news_lcdfb.cpp  // [HELPER]
 sony/psxcd.cpp  // [HELPER]
 sony/smc777_kbd.cpp  // [HELPER]
 sony/taito_zm.cpp  // [HELPER]
@@ -2311,6 +2291,7 @@ taito/bublbobl_m.cpp  // [HELPER]
 taito/bublbobl_v.cpp  // [HELPER]
 taito/buggychl.cpp
 taito/capr1.cpp
+taito/capr2.cpp
 taito/caprcyc.cpp
 taito/cchance.cpp
 taito/chaknpop.cpp
@@ -2355,7 +2336,6 @@ taito/msisaac.cpp
 taito/ninjaw.cpp
 taito/nl_sspeedr.cpp  // [HELPER]
 taito/nycaptor.cpp
-taito/nycaptor_v.cpp  // [HELPER]
 taito/opwolf.cpp
 taito/othunder.cpp
 taito/othunder_v.cpp  // [HELPER]
@@ -2363,6 +2343,7 @@ taito/pc080sn.cpp  // [HELPER]
 taito/pc090oj.cpp  // [HELPER]
 taito/pitnrun.cpp
 taito/pkspirit.cpp
+taito/pres2k.cpp
 taito/qix.cpp
 taito/qix_a.cpp  // [HELPER]
 taito/qix_m.cpp  // [HELPER]
@@ -2561,20 +2542,17 @@ universal/zerohour.cpp
 universal/zerohour_stars.cpp  // [HELPER]
 upl/mouser.cpp
 upl/ninjakd2.cpp
-upl/ninjakd2_v.cpp  // [HELPER]
 upl/nova2001.cpp
 upl/nova2001_v.cpp  // [HELPER]
 upl/xxmissio.cpp
 ussr/1801vp014.cpp  // [HELPER]
 ussr/1801vp033.cpp  // [HELPER]
-ussr/b2m_m.cpp  // [HELPER]
 ussr/bk_m.cpp  // [HELPER]
 ussr/istrebiteli.cpp
 ussr/jukumouse.cpp  // [HELPER]
 ussr/km035.cpp  // [HELPER]
 ussr/lviv_m.cpp  // [HELPER]
 ussr/lviv_v.cpp  // [HELPER]
-ussr/mikro80_m.cpp  // [HELPER]
 ussr/orion_m.cpp  // [HELPER]
 ussr/orion_v.cpp  // [HELPER]
 ussr/partner_m.cpp  // [HELPER]
@@ -2589,8 +2567,6 @@ ussr/tiamc1.cpp
 ussr/tiamc1_a.cpp  // [HELPER]
 ussr/tiamc1_v.cpp  // [HELPER]
 ussr/ut88_m.cpp  // [HELPER]
-ussr/vector06_m.cpp  // [HELPER]
-ussr/vector06_v.cpp  // [HELPER]
 ussr/vm1timer.cpp  // [HELPER]
 valadon/bagman.cpp
 valadon/bagman_m.cpp  // [HELPER]
@@ -2624,6 +2600,33 @@ vsystem/vsystem_gga.cpp  // [HELPER]
 vsystem/vsystem_spr.cpp  // [HELPER]
 vsystem/vsystem_spr2.cpp  // [HELPER]
 vsystem/welltris.cpp
+williams/atlantis.cpp
+williams/midqslvr.cpp
+williams/midtunit.cpp
+williams/midtunit_m.cpp  // [HELPER]
+williams/midtunit_v.cpp  // [HELPER]
+williams/midvunit.cpp
+williams/midvunit_v.cpp  // [HELPER]
+williams/midwayic.cpp  // [HELPER]
+williams/midwunit.cpp
+williams/midwunit_m.cpp  // [HELPER]
+williams/midxunit.cpp
+williams/midyunit.cpp
+williams/midyunit_m.cpp  // [HELPER]
+williams/midyunit_v.cpp  // [HELPER]
+williams/midzeus.cpp
+williams/midzeus_v.cpp  // [HELPER]
+williams/pinball2k.cpp
+williams/predators.cpp
+williams/seattle.cpp
+williams/starrider.cpp
+williams/tmaster.cpp
+williams/vegas.cpp
+williams/williams.cpp
+williams/williams_m.cpp  // [HELPER]
+williams/williams_v.cpp  // [HELPER]
+williams/williamsblitter.cpp  // [HELPER]
+williams/wmg.cpp
 wing/luckgrln.cpp
 wing/lucky37.cpp
 wing/lucky74.cpp
