@@ -1,0 +1,29 @@
+diff --git a/Src/OSD/SDL/Main.cpp b/Src/OSD/SDL/Main.cpp
+index cb32feff94..2ea5b273cc 100644
+--- a/Src/OSD/SDL/Main.cpp
++++ b/Src/OSD/SDL/Main.cpp
+@@ -646,6 +646,25 @@ static Result ResizeGLScreen(unsigned *xOffsetPtr, unsigned *yOffsetPtr, unsig
+     return Result::FAIL;
+   }
+ 
++  // Give the window manager/compositor a chance to finish negotiating the
++  // resize/fullscreen transition (this is asynchronous on Wayland) before we
++  // query the window size below -- otherwise SetGLGeometry() can compute the
++  // GL viewport against stale, pre-transition geometry, which is what produces
++  // the leftover gap/band at the edge of the screen. (The Vulkan backend has
++  // its own analogous wait in SettleVulkanDrawableSize().)
++  int prevW = -1, prevH = -1;
++  for (int i = 0; i < 20; i++)
++  {
++    SDL_PumpEvents();
++    int w, h;
++    SDL_GetWindowSize(s_window, &w, &h);
++    if (w == prevW && h == prevH)
++      break;
++    prevW = w;
++    prevH = h;
++    SDL_Delay(10);
++  }
++
+   return SetGLGeometry(xOffsetPtr, yOffsetPtr, xResPtr, yResPtr, totalXResPtr, totalYResPtr, keepAspectRatio);
+ }
