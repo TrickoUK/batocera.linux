@@ -1,0 +1,40 @@
+diff --git a/Config.in b/Config.in
+index e2c232cccc..2410f2698d 100644
+--- a/Config.in
++++ b/Config.in
+@@ -252,10 +252,11 @@ menu "Emulators"
+       source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/retroarch/libretro/libretro-bluemsx/Config.in"
+       source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/retroarch/libretro/libretro-gpsp/Config.in"
+       source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/retroarch/libretro/libretro-gp32emu/Config.in"
+       source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/retroarch/libretro/libretro-fbalpha/Config.in"
+       source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/retroarch/libretro/libretro-fbneo/Config.in"
++      source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/retroarch/libretro/libretro-geolith/Config.in"
+       source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/retroarch/libretro/libretro-gw/Config.in"
+       source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/retroarch/libretro/libretro-prboom/Config.in"
+       source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/retroarch/libretro/libretro-mrboom/Config.in"
+       source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/retroarch/libretro/libretro-tyrquake/Config.in"
+       source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/retroarch/libretro/libretro-beetle-ngp/Config.in"
+@@ -416,10 +417,11 @@ menu "Emulators"
+     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/demul/Config.in"
+     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/nanoboyadvance/Config.in"
+     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/shadps4-qtlauncher/Config.in"
+     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/drastic/Config.in"
+     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/pcsx2x6/Config.in"
++    source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/ares/Config.in"
+   endmenu
+ 
+   menu "WINE"
+     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/wine/dxvk/Config.in"
+     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/wine/dxvk-nvapi/Config.in"
+@@ -716,10 +718,11 @@ menu "Libraries"
+   source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/libraries/libvni/Config.in"
+   source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/libraries/libframeutil/Config.in"
+   source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/libraries/bgfx/Config.in"
+   source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/libraries/miniz/Config.in"
+   source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/libraries/libdovi/Config.in"
++  source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/libraries/librashader/Config.in"
+ endmenu
+ 
+ menu "Audio"
+   source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/audio/rtmidi/Config.in"
+   source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/audio/chromebook-ucm-conf/Config.in"
