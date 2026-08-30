@@ -3,8 +3,8 @@
 # libretro-ps2
 #
 ################################################################################
-# Version: Commits on Aug 12, 2026
-LIBRETRO_PS2_VERSION = 2f0f57a5102974a255865648d4c611a944b2e575
+# Version: Commits on Aug 29, 2026
+LIBRETRO_PS2_VERSION = 2dac3458788179b299d597863f500b26aaddb50d
 LIBRETRO_PS2_SITE = https://github.com/libretro/ps2.git
 LIBRETRO_PS2_SITE_METHOD = git
 LIBRETRO_PS2_GIT_SUBMODULES = YES
@@ -25,6 +25,8 @@ LIBRETRO_PS2_CONF_OPTS += -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 # regardless of CMake version). We target a single known CPU baseline, so keep
 # the old single-build path instead of upstream's new default.
 LIBRETRO_PS2_CONF_OPTS += -DDISABLE_ADVANCE_SIMD=OFF
+LIBRETRO_PS2_CONF_OPTS += -DCMAKE_C_FLAGS="$(TARGET_CFLAGS) -Wno-error=implicit-function-declaration"
+LIBRETRO_PS2_CONF_OPTS += -DCMAKE_CXX_FLAGS="$(TARGET_CXXFLAGS) -Wno-error=implicit-function-declaration"
 
 ifeq ($(BR2_PACKAGE_HAS_LIBGL),y)
     LIBRETRO_PS2_CONF_OPTS += -DUSE_OPENGL=ON
@@ -37,6 +39,12 @@ ifeq ($(BR2_PACKAGE_BATOCERA_VULKAN),y)
 else
     LIBRETRO_PS2_CONF_OPTS += -DUSE_VULKAN=OFF
 endif
+
+# below may not be needed for newer versions
+define LIBRETRO_PS2_FIX_WHOLE_ARCHIVE
+	find $(@D) -name "CMakeLists.txt" -exec sed -i 's|.[<]LINK_LIBRARY:WHOLE_ARCHIVE,\([^>]*\)>|-Wl,--whole-archive \1 -Wl,--no-whole-archive|g' {} +
+endef
+LIBRETRO_PS2_PRE_CONFIGURE_HOOKS += LIBRETRO_PS2_FIX_WHOLE_ARCHIVE
 
 define LIBRETRO_PS2_INSTALL_TARGET_CMDS
 	$(INSTALL) -D $(@D)/buildroot-build/bin/pcsx2_libretro.so \
