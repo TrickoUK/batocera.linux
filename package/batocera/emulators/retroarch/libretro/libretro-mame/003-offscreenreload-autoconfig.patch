@@ -1,6 +1,6 @@
 --- a/plugins/offscreenreload/init.lua
 +++ b/plugins/offscreenreload/init.lua
-@@ -61,10 +61,78 @@
+@@ -61,10 +61,83 @@
  		end
  	end
  
@@ -35,13 +35,18 @@
 +						if not players[p].trigger then
 +							players[p].trigger = info
 +						end
++					elseif type_token:match('_BUTTON2$')
++					   and not field.is_analog and not field.is_toggle then
++						-- already used for real gameplay (e.g. "foot pedal"),
++						-- which shares the same physical gun button as reload
++						players[p].button2_used = true
 +					end
 +				end
 +			end
 +		end
 +
 +		for player_num, pdata in pairs(players) do
-+			if pdata.y and pdata.trigger then
++			if pdata.y and pdata.trigger and not pdata.button2_used then
 +				local token = 'GUNCODE_' .. player_num .. '_BUTTON2'
 +				local seq = manager.machine.input:seq_from_tokens(token)
 +				if seq then
