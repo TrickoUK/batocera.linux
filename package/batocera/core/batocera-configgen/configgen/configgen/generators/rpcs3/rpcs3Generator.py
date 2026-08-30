@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import filecmp
 import logging
 import re
 import shutil
 import struct
+import urllib.request
+from multiprocessing import Process
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -36,6 +39,40 @@ if TYPE_CHECKING:
     from ...types import HotkeysContext, Resolution
 
 _logger = logging.getLogger(__name__)
+
+
+def _fetch_compatibility_database(target_path: Path) -> None:
+    """Download RPCS3 compatibility database to /tmp/rpcs3, compare, and update if changed."""
+    url = "https://api.rpcs3.net/config/?api=v1"
+    tmp_dir = Path("/tmp/rpcs3")
+    tmp_file = tmp_dir / target_path.name
+
+    try:
+        tmp_dir.mkdir(parents=True, exist_ok=True)
+        mkdir_if_not_exists(target_path.parent)
+
+        req = urllib.request.Request(
+            url,
+            headers={"User-Agent": "RPCS3/Batocera"}
+        )
+        with urllib.request.urlopen(req, timeout=15) as response, tmp_file.open("wb") as out_file:
+            shutil.copyfileobj(response, out_file)
+
+        # If destination doesn't exist or content has changed, overwrite it
+        if not target_path.exists() or not filecmp.cmp(tmp_file, target_path, shallow=False):
+            shutil.move(tmp_file, target_path)
+            _logger.debug("Updated RPCS3 compatibility database at %s", target_path)
+        else:
+            _logger.debug("RPCS3 compatibility database is already up to date")
+            tmp_file.unlink(missing_ok=True)
+
+    except Exception as e:
+        _logger.debug("Could not update RPCS3 compatibility database: %s", e)
+        if tmp_file.exists():
+            try:
+                tmp_file.unlink()
+            except OSError:
+                pass
 
 
 # USB device tuning for the arcade PS3 titles (System 357/369, Taiko, ...) shipped as a
@@ -385,6 +422,13 @@ class Rpcs3Generator(Generator):
 
     def generate(self, system, rom, playersControllers, metadata, guns, wheels, gameResolution):
 
+        # Update RPCS3 compatibility database in the background
+        Process(
+            target=_fetch_compatibility_database,
+            args=(RPCS3_CONFIG_DIR / "GuiConfigs" / "config_database.dat",),
+            daemon=True,
+        ).start()
+
         # RPCS3 requires a 32 GiB virtual address allocation on startup.
         # Ensure memory overcommit is not strictly blocked (mode 2).
         try:
@@ -646,6 +690,10 @@ class Rpcs3Generator(Generator):
             rpcs3ymlconfig["Input/Output"]["Camera"] = "Fake"
             rpcs3ymlconfig["Input/Output"]["Camera type"] = "PS Eye"
             self._generateGunConfig()
+        elif rpcs3ymlconfig["Input/Output"].get("Move") == "Gun":
+            rpcs3ymlconfig["Input/Output"]["Move"] = "Null"
+            rpcs3ymlconfig["Input/Output"]["Camera"] = "Null"
+            rpcs3ymlconfig["Input/Output"]["Camera type"] = "Unknown"
         # Gun crosshairs
         rpcs3ymlconfig["Input/Output"]["Show move cursor"] = system.config.get_bool("rpcs3_crosshairs")
 

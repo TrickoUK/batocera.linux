@@ -3,14 +3,8 @@
 # libretro-stella
 #
 ################################################################################
-# Version: Commits on Jul 23, 2026
-# Note: do NOT bump past this commit without checking OSystem.cxx's
-# cheatFile()/paletteFile() accessor calls - upstream commit c7d082ecce78
-# ("use accessors instead of directly touching instance vars") replaced the
-# unconditional myCheatFile member access with a cheatFile() accessor that's
-# only declared under #ifdef CHEATCODE_SUPPORT, which the libretro port never
-# defines, breaking the build. Fixed upstream? re-check before moving forward.
-LIBRETRO_STELLA_VERSION = 023972223bd6bf87465300b6f9cfdfc17d9910bb
+# Version: Commits on Aug 28, 2026
+LIBRETRO_STELLA_VERSION = aeb7eefbc07575e54401fef28f63a3f52fa721e1
 LIBRETRO_STELLA_SITE = $(call github,stella-emu,stella,$(LIBRETRO_STELLA_VERSION))
 LIBRETRO_STELLA_LICENSE = GPLv2
 LIBRETRO_STELLA_DEPENDENCIES += retroarch
