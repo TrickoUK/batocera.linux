@@ -54,3 +54,4 @@ topic.env
 /post-build-clean.sh
 /rebuild.sh
 /zen3update-usb.sh
+/backups/

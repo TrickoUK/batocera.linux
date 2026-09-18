@@ -4,9 +4,18 @@
 #
 ################################################################################
 
-LIBRETRO_MAME_VERSION = lrmame0289
-LIBRETRO_MAME_SITE = $(call github,libretro,mame,$(LIBRETRO_MAME_VERSION))
+LIBRETRO_MAME_VERSION = f72dca9ecdbc0da7e0154c218993bec7d94d158f
+LIBRETRO_MAME_SITE = $(call github,TrickoUK,libretro-mame,$(LIBRETRO_MAME_VERSION))
 LIBRETRO_MAME_LICENSE = MAME
+
+# Build from the local fork checkout instead of re-downloading a fresh tarball
+# per pinned commit - buildroot names the build dir after VERSION, so every
+# hash bump otherwise means a from-scratch extract/build with no ccache reuse.
+# Comment out to fall back to the tarball-pinned build (e.g. before an
+# upstream PR or a clean/CI-style build), bumping LIBRETRO_MAME_VERSION above
+# to match.
+LIBRETRO_MAME_OVERRIDE_SRCDIR = /var/mnt/work/batocera-build/libretro-mame-fork
+LIBRETRO_MAME_OVERRIDE_SRCDIR_RSYNC_EXCLUSIONS = --exclude=.git
 
 LIBRETRO_MAME_DEPENDENCIES = alsa-lib retroarch host-python3
 
@@ -19,6 +28,11 @@ memory_based_jobs := $(shell echo $$(( $(total_memory_kb) / 1024 / 1024 / 2 + 1)
 cpu_threads := $(shell nproc)
 jobs := $(shell echo $$(( $(memory_based_jobs) < $(cpu_threads) ? $(memory_based_jobs) : $(cpu_threads) )))
 LIBRETRO_MAME_JOBS := $(jobs)
+
+# Enable the libretro OSD's optional GPU render-target service (dlopen-based
+# EGL/GL, opt-in at build time) so the mame_psx_gpu_hle core option actually
+# has a GPU path to switch to instead of silently no-opping back to software.
+LIBRETRO_MAME_EXTRA_ARGS += HAVE_RETRO_GPU_TARGET=1
 
 # Determine the correct make target based on architecture
 # Default to 'linux' for non-x86 architectures to avoid the -m64 flag issue

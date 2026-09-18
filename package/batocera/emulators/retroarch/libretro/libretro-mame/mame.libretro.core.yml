@@ -49,6 +49,59 @@ custom_features:
       1920x1080: 1920x1080
       2560x1440: 2560x1440
       3840x2160: 3840x2160
+  mame_psx_gpu_hle:
+    group: ADVANCED OPTIONS
+    submenu: Playstation Hardware
+    prompt: PS1 GPU HARDWARE RENDERING (EXPERIMENTAL)
+    description: Render PS1-based drivers (Sony ZN, Konami GQ/GV/573/Twinkle, Namco System 10/11/12, Taito GNET, plain PS1) via the host GPU instead of MAME's software rasterizer. Requires restarting content to take effect. Revert to Disabled if a game looks wrong.
+    choices:
+      Disabled (Default): disabled
+      2x: 2x
+      4x: 4x
+  mame_psx_gpu_pgxp:
+    group: ADVANCED OPTIONS
+    submenu: Playstation Hardware
+    prompt: PS1 GPU PGXP GEOMETRY CORRECTION (EXPERIMENTAL)
+    description: Only affects GTE-sourced polygons when PS1 GPU Hardware Rendering above is also enabled. Redoes the PS1 geometry transform in floating point instead of the console's low-precision fixed-point math, reducing vertex wobble on distant/small geometry. Requires restarting content to take effect.
+    choices:
+      Disabled (Default): disabled
+      Enabled: enabled
+  mame_psx_gpu_msaa:
+    group: ADVANCED OPTIONS
+    submenu: Playstation Hardware
+    prompt: PS1 GPU 4x MSAA (EXPERIMENTAL)
+    description: Only affects PS1 GPU Hardware Rendering above when it's also enabled. Smooths jagged polygon edges using 4x multisample anti-aliasing on the GPU render target. Requires restarting content to take effect. Disable if a game looks worse.
+    choices:
+      Enabled (Default): enabled
+      Disabled: disabled
+  mame_psx_gpu_texfilter:
+    group: ADVANCED OPTIONS
+    submenu: Playstation Hardware
+    prompt: PS1 GPU TEXTURE FILTERING (EXPERIMENTAL)
+    description: Only affects PS1 GPU Hardware Rendering above when it's also enabled. Smooths 3D polygon and sprite textures. By default 2D content (sprites, and polygons detected as 2D - HUD, text, UI, backgrounds) is excluded and stays pixel-sharp - see the two Exclude options below to change that. Bilinear samples the four nearest texels; Trilinear additionally blends in a coarser sample on distant/minified polygons to reduce shimmering; 3-Point (as seen on Beetle PSX HW) is an N64-style alternative to Bilinear that blends only 3 of the 4 nearest texels, giving a slightly different, more angular look. Texture-edge bleeding into whatever's packed next to a texture in VRAM is guarded against for all three, but if you still see color smearing at texture edges on a specific game, try Disabled. Requires restarting content to take effect.
+    choices:
+      Disabled (Default): disabled
+      Bilinear: bilinear
+      Trilinear: trilinear
+      3-Point: 3point
+  mame_psx_gpu_filter_exclude_sprite:
+    group: ADVANCED OPTIONS
+    submenu: Playstation Hardware
+    prompt: PS1 GPU EXCLUDE SPRITES FROM FILTERING (EXPERIMENTAL)
+    description: Only affects PS1 GPU Hardware Rendering above when PS1 GPU Texture Filtering is also enabled. Sprites (used heavily for HUD/text/UI, but also in-game 2D art in some games) are already excluded from filtering by default so they stay pixel-sharp - this only needs changing if a specific game wants its sprites smoothed too. Opaque Only filters this game's semi-transparent sprites (glow/particle effects etc.) while keeping opaque ones sharp; Opaque and Semi-Transparent excludes both (the default); Disabled filters sprites the same as everything else. Requires restarting content to take effect.
+    choices:
+      Opaque and Semi-Transparent (Default): all
+      Opaque Only: opaque
+      Disabled: disabled
+  mame_psx_gpu_filter_exclude_2d_polygon:
+    group: ADVANCED OPTIONS
+    submenu: Playstation Hardware
+    prompt: PS1 GPU EXCLUDE 2D POLYGONS FROM FILTERING (EXPERIMENTAL)
+    description: Only affects PS1 GPU Hardware Rendering above when PS1 GPU Texture Filtering is also enabled. Many PS1 games draw 2D content (HUD/text/UI) using the same general polygon commands as real 3D geometry instead of a dedicated sprite command, which the Exclude Sprites option above can't catch - this detects those with a heuristic (an unrotated, screen-aligned quad with an exact 1:1 texel-to-pixel mapping) and excludes them the same way. The heuristic can occasionally misclassify real 3D geometry (an unrotated, unscaled wall or floor tile, for example) - try Disabled for a specific game if 3D surfaces look unexpectedly unfiltered. Requires restarting content to take effect.
+    choices:
+      Opaque and Semi-Transparent (Default): all
+      Opaque Only: opaque
+      Disabled: disabled
   altlayout:
     prompt: SPECIAL CONTROL LAYOUTS
     description: Controls for 5/6 button games and other unique controls

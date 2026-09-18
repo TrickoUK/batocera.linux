@@ -680,6 +680,24 @@ def _mame_options(
     # Video Resolution
     _set_from_system(coreSettings, 'mame_altres', system, default='640x480')
 
+    # PS1 GPU Hardware Rendering (Experimental)
+    _set_from_system(coreSettings, 'mame_psx_gpu_hle', system, default='disabled')
+
+    # PS1 GPU PGXP Geometry Correction (Experimental)
+    _set_from_system(coreSettings, 'mame_psx_gpu_pgxp', system, default='disabled')
+
+    # PS1 GPU 4x MSAA (Experimental)
+    _set_from_system(coreSettings, 'mame_psx_gpu_msaa', system, default='enabled')
+
+    # PS1 GPU Texture Filtering (Experimental)
+    _set_from_system(coreSettings, 'mame_psx_gpu_texfilter', system, default='disabled')
+
+    # PS1 GPU Exclude Sprites from Filtering (Experimental)
+    _set_from_system(coreSettings, 'mame_psx_gpu_filter_exclude_sprite', system, default='all')
+
+    # PS1 GPU Exclude 2D Polygons from Filtering (Experimental)
+    _set_from_system(coreSettings, 'mame_psx_gpu_filter_exclude_2d_polygon', system, default='all')
+
     # Disable controller profiling
     _set(coreSettings, 'mame_buttons_profiles', 'disabled')
 
