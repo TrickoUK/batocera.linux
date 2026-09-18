@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-LIBRETRO_MAME_VERSION = f72dca9ecdbc0da7e0154c218993bec7d94d158f
+LIBRETRO_MAME_VERSION = 710e50642a7458d74225b22c1eb00432e443dfa7
 LIBRETRO_MAME_SITE = $(call github,TrickoUK,libretro-mame,$(LIBRETRO_MAME_VERSION))
 LIBRETRO_MAME_LICENSE = MAME
 

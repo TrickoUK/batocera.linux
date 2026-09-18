@@ -56,6 +56,7 @@ custom_features:
     description: Render PS1-based drivers (Sony ZN, Konami GQ/GV/573/Twinkle, Namco System 10/11/12, Taito GNET, plain PS1) via the host GPU instead of MAME's software rasterizer. Requires restarting content to take effect. Revert to Disabled if a game looks wrong.
     choices:
       Disabled (Default): disabled
+      1x: 1x
       2x: 2x
       4x: 4x
   mame_psx_gpu_pgxp:
