@@ -1,21 +1,6 @@
-diff --git a/pcsx2/Input/InputManager.h b/pcsx2/Input/InputManager.h
-index 5e7bd4e..b00e125 100644
---- a/pcsx2/Input/InputManager.h
-+++ b/pcsx2/Input/InputManager.h
-@@ -163,7 +163,7 @@ namespace InputManager
- 	static constexpr double VIBRATION_UPDATE_INTERVAL_SECONDS = 0.5; // 500ms
- 
- 	/// Maximum number of host mouse devices.
--	static constexpr u32 MAX_POINTER_DEVICES = 1;
-+	static constexpr u32 MAX_POINTER_DEVICES = 2;
- 	static constexpr u32 MAX_POINTER_BUTTONS = 3;
- 
- 	/// Maximum number of software cursors. We allocate an extra two for USB devices with
-diff --git a/pcsx2/ImGui/ImGuiManager.cpp b/pcsx2/ImGui/ImGuiManager.cpp
-index 84d0641..353d038 100644
 --- a/pcsx2/ImGui/ImGuiManager.cpp
 +++ b/pcsx2/ImGui/ImGuiManager.cpp
-@@ -1333,13 +1333,15 @@ void ImGuiManager::DrawSoftwareCursors()
+@@ -1333,13 +1333,15 @@
  		}
  	}
  
@@ -34,11 +19,9 @@ index 84d0641..353d038 100644
  		DrawSoftwareCursor(s_software_cursors[i], s_software_cursors[i].pos);
  }
  
-diff --git a/pcsx2/USB/usb-lightgun/guncon2.cpp b/pcsx2/USB/usb-lightgun/guncon2.cpp
-index a69dbb1..d6d0e04 100644
 --- a/pcsx2/USB/usb-lightgun/guncon2.cpp
 +++ b/pcsx2/USB/usb-lightgun/guncon2.cpp
-@@ -31,6 +31,12 @@
+@@ -20,6 +20,12 @@
  
  #include <tuple>
  
@@ -51,7 +34,7 @@ index a69dbb1..d6d0e04 100644
  namespace usb_lightgun
  {
  	enum : u32
-@@ -130,6 +136,7 @@ namespace usb_lightgun
+@@ -119,6 +125,7 @@
  	struct GunCon2State
  	{
  		explicit GunCon2State(u32 port_);
@@ -59,7 +42,7 @@ index a69dbb1..d6d0e04 100644
  
  		USBDevice dev{};
  		USBDesc desc{};
-@@ -148,6 +155,7 @@ namespace usb_lightgun
+@@ -138,6 +145,7 @@
  		float center_y = 120;
  		float scale_x = 1.0f;
  		float scale_y = 1.0f;
@@ -67,7 +50,7 @@ index a69dbb1..d6d0e04 100644
  
  		//////////////////////////////////////////////////////////////////////////
  		// Host State (Not Saved)
-@@ -175,6 +183,12 @@ namespace usb_lightgun
+@@ -165,6 +173,12 @@
  
  		std::tuple<s16, s16> CalculatePosition();
  
@@ -79,8 +62,8 @@ index a69dbb1..d6d0e04 100644
 +
  		// 0..1, not -1..1.
  		std::pair<float, float> GetAbsolutePositionFromRelativeAxes() const;
- 		u32 GetSoftwarePointerIndex() const;
-@@ -240,6 +254,12 @@ namespace usb_lightgun
+ 		u32 EffectivePointerIndex() const;
+@@ -231,6 +245,12 @@
  		0x08, // Polling interval (frame counts)
  	};
  
@@ -93,7 +76,7 @@ index a69dbb1..d6d0e04 100644
  	static void guncon2_handle_control(
  		USBDevice* dev, USBPacket* p, int request, int value, int index, int length, uint8_t* data)
  	{
-@@ -269,9 +289,93 @@ namespace usb_lightgun
+@@ -260,9 +280,93 @@
  		p->status = USB_RET_STALL;
  	}
  
@@ -187,16 +170,16 @@ index a69dbb1..d6d0e04 100644
  
  		switch (p->pid)
  		{
-@@ -280,6 +384,8 @@ namespace usb_lightgun
+@@ -271,6 +375,8 @@
  				if (p->ep->nr == 1)
  				{
  					const auto [pos_x, pos_y] = us->CalculatePosition();
 +					if (!us->cursor_path.empty() && udev_has(us))
 +						ImGuiManager::SetSoftwareCursorPosition(us->port, us->udev_internalGunX, us->udev_internalGunY);
  
- 					// Time Crisis games do a "calibration" by displaying a black frame for a single frame,
- 					// waiting for the gun to report (0, 0), and then computing an offset on the first non-zero
-@@ -350,8 +456,16 @@ namespace usb_lightgun
+ 					// Forward mouse position to JVS: on-screen = coords, off-screen = (0,0), update sensor bit
+ 					// TODO: use CalculatePosition() result instead of raw mouse, so Relative Aiming (joystick) works for S246
+@@ -358,8 +464,16 @@
  	GunCon2State::GunCon2State(u32 port_)
  		: port(port_)
  	{
@@ -213,8 +196,8 @@ index a69dbb1..d6d0e04 100644
  	void GunCon2State::AutoConfigure()
  	{
  		const std::string serial = VMManager::GetDiscSerial();
-@@ -384,6 +498,13 @@ namespace usb_lightgun
- 			(has_relative_binds) ? GetAbsolutePositionFromRelativeAxes() : InputManager::GetPointerAbsolutePosition(0);
+@@ -392,6 +506,13 @@
+ 			(has_relative_binds) ? GetAbsolutePositionFromRelativeAxes() : InputManager::GetPointerAbsolutePosition(EffectivePointerIndex());
  		GSTranslateWindowToDisplayCoordinates(window_x, window_y, &pointer_x, &pointer_y);
  
 +		if(udev_has(this)) {
@@ -227,18 +210,16 @@ index a69dbb1..d6d0e04 100644
  		s16 pos_x, pos_y;
  		if (pointer_x < 0.0f || pointer_y < 0.0f)
  		{
-@@ -433,7 +554,8 @@ namespace usb_lightgun
+@@ -448,6 +569,7 @@
  
  	u32 GunCon2State::GetSoftwarePointerIndex() const
  	{
--		return has_relative_binds ? (InputManager::MAX_POINTER_DEVICES + port) : 0;
 +		if (udev_fd != -1) return port;
-+		return has_relative_binds ? (InputManager::MAX_POINTER_DEVICES + port) : port;
+ 		return has_relative_binds ? (InputManager::MAX_POINTER_DEVICES + port) : EffectivePointerIndex();
  	}
  
- 	void GunCon2State::UpdateSoftwarePointerPosition()
-@@ -458,9 +580,151 @@ namespace usb_lightgun
- 		return "guncon2";
+@@ -475,9 +597,151 @@
+ 		return ICON_PF_GUNCON2;
  	}
  
 +	int event_isNumber(const char *s) {
@@ -389,11 +370,9 @@ index a69dbb1..d6d0e04 100644
  		s->desc.full = &s->desc_dev;
  		s->desc.str = desc_strings;
  
-diff --git a/pcsx2/USB/usb-lightgun/guncon2.h b/pcsx2/USB/usb-lightgun/guncon2.h
-index 9b7d011..5d46d36 100644
 --- a/pcsx2/USB/usb-lightgun/guncon2.h
 +++ b/pcsx2/USB/usb-lightgun/guncon2.h
-@@ -18,6 +18,8 @@
+@@ -6,6 +6,8 @@
  
  namespace usb_lightgun
  {
@@ -402,7 +381,7 @@ index 9b7d011..5d46d36 100644
  	class GunCon2Device final : public DeviceProxy
  	{
  	public:
-@@ -30,5 +32,8 @@ namespace usb_lightgun
+@@ -19,5 +21,8 @@
  		void SetBindingValue(USBDevice* dev, u32 bind_index, float value) const override;
  		std::span<const InputBindingInfo> Bindings(u32 subtype) const override;
  		std::span<const SettingInfo> Settings(u32 subtype) const override;
