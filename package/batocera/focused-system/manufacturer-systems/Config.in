@@ -237,8 +237,8 @@ config BR2_PACKAGE_BATOCERA_SEGA_SYSTEMS
 #	select BR2_PACKAGE_REDREAM		if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY || \
 #	                                   BR2_PACKAGE_BATOCERA_XWAYLAND
 
-	# Standalone Sega Model 2 emulator
-	select BR2_PACKAGE_MODEL2EMU		if BR2_PACKAGE_BATOCERA_WINE
+	# Standalone Sega Model 2 emulator (sm2-emu replaced model2emu upstream)
+	select BR2_PACKAGE_SM2_EMU			if BR2_PACKAGE_BATOCERA_VULKAN
 
 	# Standalone Sega Model 3 emulator
 	select BR2_PACKAGE_SUPERMODEL		    if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY || \
