@@ -19,6 +19,12 @@ LIBRETRO_PS2_CONF_OPTS += -DLIBRETRO=ON
 LIBRETRO_PS2_CONF_OPTS += -DBUILD_REGRESS=OFF
 LIBRETRO_PS2_CONF_OPTS += -DBUILD_TOOLS=OFF
 LIBRETRO_PS2_CONF_OPTS += -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+# Multi-ISA runtime SIMD dispatch links per-tier (sse4/avx/avx2) static libs via
+# CMake's $<LINK_LIBRARY:WHOLE_ARCHIVE,...>, which the Unix Makefiles generator
+# does not support for the CXX link language (fails the CMake generate step
+# regardless of CMake version). We target a single known CPU baseline, so keep
+# the old single-build path instead of upstream's new default.
+LIBRETRO_PS2_CONF_OPTS += -DDISABLE_ADVANCE_SIMD=OFF
 LIBRETRO_PS2_CONF_OPTS += -DCMAKE_C_FLAGS="$(TARGET_CFLAGS) -Wno-error=implicit-function-declaration"
 LIBRETRO_PS2_CONF_OPTS += -DCMAKE_CXX_FLAGS="$(TARGET_CXXFLAGS) -Wno-error=implicit-function-declaration"
 
