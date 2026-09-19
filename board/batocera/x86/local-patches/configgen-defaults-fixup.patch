@@ -1,7 +1,7 @@
-diff --git a/package/batocera/core/batocera-configgen/configs/configgen-defaults-x86_64.yml b/package/batocera/core/batocera-configgen/configs/configgen-defaults-x86_64.yml
-index f9b055c319..0581885c7b 100755
---- a/package/batocera/core/batocera-configgen/configs/configgen-defaults-x86_64.yml
-+++ b/package/batocera/core/batocera-configgen/configs/configgen-defaults-x86_64.yml
+diff --git a/python-src/batocera-launch/resources/defaults/config-x86_64.yml b/python-src/batocera-launch/resources/defaults/config-x86_64.yml
+index f9b055c319..0581885c7b 100644
+--- a/python-src/batocera-launch/resources/defaults/config-x86_64.yml
++++ b/python-src/batocera-launch/resources/defaults/config-x86_64.yml
 @@ -15,58 +15,62 @@ saturn:
    emulator: libretro
    core:     beetle-saturn
