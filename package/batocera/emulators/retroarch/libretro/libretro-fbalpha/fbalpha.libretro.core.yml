@@ -3,6 +3,4 @@ file_extensions:
   - 7z
 systems:
   - fbneo
-  - name: neogeo
-    exclude_extensions:
-      - neo
+  - neogeo

@@ -59,8 +59,6 @@ file_extensions:
   - zip
 systems:
   - name: neogeo
-    exclude_extensions:
-      - neo
     custom_features:
       fbneo-neogeo-mode-switch:
         prompt: NEO GEO BIOS

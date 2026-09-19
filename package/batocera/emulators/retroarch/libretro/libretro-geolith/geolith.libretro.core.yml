@@ -58,10 +58,11 @@ custom_features:
       'On': 'on'
 systems:
   - name: neogeo
-    exclude_extensions:
-      - 7z
-      - zip
+    # libretro.c's valid_extensions is "neo|chd|cue": .neo for cartridge
+    # (AES/MVS) content, cue/chd for Neo Geo CD. No MAME-style .zip/.7z.
+    file_extensions: [neo]
   - name: neogeocd
+    file_extensions: [cue, chd]
     custom_features:
       geolith_cd_system_type:
         prompt: CD SYSTEM TYPE
