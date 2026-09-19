@@ -3,15 +3,15 @@
 # batocera-emulationstation
 #
 ################################################################################
-# Last update: Commits on Aug 29, 2026
-BATOCERA_EMULATIONSTATION_VERSION = d048eacc032a1b7745e2a9f28b396efc521c5528
+# Last update: Commits on Sep 13, 2026
+BATOCERA_EMULATIONSTATION_VERSION = 1750dded8c0fdff70630026f756a69fcad0bb995
 BATOCERA_EMULATIONSTATION_SITE = https://github.com/batocera-linux/batocera-emulationstation
 BATOCERA_EMULATIONSTATION_SITE_METHOD = git
 BATOCERA_EMULATIONSTATION_LICENSE = MIT
 BATOCERA_EMULATIONSTATION_GIT_SUBMODULES = YES
 BATOCERA_EMULATIONSTATION_LICENSE = MIT, Apache-2.0
 BATOCERA_EMULATIONSTATION_DEPENDENCIES = sdl2 sdl2_mixer vlc libfreeimage freetype alsa-lib
-BATOCERA_EMULATIONSTATION_DEPENDENCIES += libcurl rapidjson batocera-es-system host-gettext
+BATOCERA_EMULATIONSTATION_DEPENDENCIES += libcurl rapidjson batocera-es-system host-gettext libfribidi
 # install in staging for debugging (gdb)
 BATOCERA_EMULATIONSTATION_INSTALL_STAGING = YES
 BATOCERA_EMULATIONSTATION_INSTALL_IMAGES = YES

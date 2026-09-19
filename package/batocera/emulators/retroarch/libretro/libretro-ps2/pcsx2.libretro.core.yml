@@ -297,5 +297,17 @@ custom_features:
     choices:
       Disabled: disabled
       Enabled: enabled
+file_extensions:
+  - iso
+  - mdf
+  - nrg
+  - bin
+  - img
+  - dump
+  - gz
+  - cso
+  - chd
+  - m3u
+  - zso
 systems:
-  - name: ps2
+  - ps2

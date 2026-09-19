@@ -356,5 +356,16 @@ custom_features:
     choices:
       'Off': disabled
       'On': enabled
+file_extensions:
+  - cue
+  - img
+  - mdf
+  - pbp
+  - toc
+  - cbn
+  - m3u
+  - ccd
+  - chd
+  - iso
 systems:
   - psx

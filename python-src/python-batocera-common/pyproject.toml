@@ -6,6 +6,9 @@ dependencies = [
     'typing-extensions',
     'PyYAML',
     'ruamel.yaml',
+    'aiohttp',
+    'aiodns',
+    'brotli',
 ]
 
 [build-system]
@@ -19,3 +22,4 @@ include = ["/batocera_common"]
 minversion = "9.0"
 addopts = ["--import-mode=importlib", "--cov=batocera_common", "--cov-branch", "--cov-report=term"]
 strict = true
+asyncio_mode = "auto"
