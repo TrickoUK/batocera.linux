@@ -797,6 +797,7 @@ def createLibretroConfig(
         "beetle-saturn" : { "default" : { "device": 260, "p1": 0, "p2": 1 } },
         "opera"         : { "default" : { "device": 260, "p1": 0, "p2": 1 } },
         "stella"        : { "default" : { "device":   4, "p1": 0, "p2": 1 } },
+        "supermodel"    : { "default" : { "device":   1, "p1": 0, "p2": 1 } },
         "vice_x64"      : { "default" : { "gameDependant": [ { "key": "type", "value": "stack_light_rifle", "mapcorekey": "vice_joyport_type", "mapcorevalue": "15" } ] } },
         "dolphin"       : { "default" : { "device": 769, "p1": 0, "p2": 1, "p3": 2, "p4": 3 } }
     }

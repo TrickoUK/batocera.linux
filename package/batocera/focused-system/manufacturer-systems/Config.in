@@ -19,6 +19,13 @@
 # same way as no-nvidia.patch), not as a permanent edit to the shared
 # top-level Config.in. See USER-INSTRUCTIONS.md for the apply/revert workflow.
 
+# Fork-only libretro cores whose Config.in is sourced from here instead of from
+# the shared top-level Config.in, so they need no local patch to stay wired in
+# (geolith, ares and librashader do — see focused-emulator-configin-hooks.patch).
+menu "Fork-only libretro cores"
+source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/retroarch/libretro/libretro-supermodel/Config.in"
+endmenu
+
 config BR2_PACKAGE_BATOCERA_NINTENDO_SYSTEMS
 	bool "batocera.linux Nintendo systems/emulators"
 
@@ -246,6 +253,10 @@ config BR2_PACKAGE_BATOCERA_SEGA_SYSTEMS
 											   BR2_PACKAGE_BATOCERA_TARGET_SM8250     || \
 											   BR2_PACKAGE_BATOCERA_TARGET_SM8550     || \
 											   BR2_PACKAGE_BATOCERA_TARGET_SM8750
+
+	# libretro port of Supermodel (Sega Model 3), an extra core alongside the
+	# standalone one above. x86 only for now: needs OpenGL 4.1 core profile
+	select BR2_PACKAGE_LIBRETRO_SUPERMODEL	if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY
 
 	# Demul emulator - multiple Sega arcade systems
 	select BR2_PACKAGE_DEMUL		if BR2_PACKAGE_BATOCERA_WINE

@@ -1,0 +1,9 @@
+config BR2_PACKAGE_LIBRETRO_SUPERMODEL
+    bool "libretro-supermodel"
+    depends on BR2_INSTALL_LIBSTDCPP
+    select BR2_PACKAGE_ZLIB
+    help
+      A libretro port of Supermodel, the Sega Model 3 arcade emulator.
+      Needs OpenGL 4.1 (New3D) and an OpenGL-capable RetroArch video driver.
+
+      https://github.com/libretro/Libretro-Supermodel

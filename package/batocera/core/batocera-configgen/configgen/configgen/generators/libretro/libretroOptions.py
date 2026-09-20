@@ -2076,6 +2076,48 @@ def _fbneo_options(
         _set_from_system(coreSettings, 'fbneo-memcard-mode', system, 'fbneo-memcard-mode', default='per-game')
 
 
+# Sega Model 3 (Supermodel)
+def _supermodel_options(
+    coreSettings: UnixSettings, system: Emulator, rom: Path, guns: Guns, wheels: DeviceInfoMapping, /,
+) -> None:
+    # Graphics
+    _set_from_system(coreSettings, 'supermodel_resolution', system, default='native')
+    _set_from_system(coreSettings, 'supermodel_supersampling', system, default='1')
+    _set_from_system(coreSettings, 'supermodel_wide_screen', system, default='disabled')
+    _set_from_system(coreSettings, 'supermodel_crt_colors', system, default='0')
+    _set_from_system(coreSettings, 'supermodel_upscale_mode', system, default='2')
+    _set_from_system(coreSettings, 'supermodel_no_white_flash', system, default='disabled')
+    _set_from_system(coreSettings, 'supermodel_av_timing', system, default='60hz')
+    _set_from_system(coreSettings, 'supermodel_renderer_3d', system, default='new3d')
+    _set_from_system(coreSettings, 'supermodel_quad_rendering', system, default='disabled')
+
+    # Light gun
+    _set_from_system(coreSettings, 'supermodel_crosshairs', system, default='3' if guns_need_crosses(guns) else '0')
+    _set_from_system(coreSettings, 'supermodel_gun_input', system, default='hybrid')
+    _set_from_system(coreSettings, 'supermodel_star_wars_input', system, default='hybrid')
+
+    # Driving
+    _set_from_system(coreSettings, 'supermodel_force_feedback', system, default='enabled')
+    _set_from_system(coreSettings, 'supermodel_four_speed_shifter', system, default='h_gate')
+    _set_from_system(coreSettings, 'supermodel_steering_response', system, default='linear')
+    _set_from_system(coreSettings, 'supermodel_steering_output_range', system, default='100')
+    _set_from_system(coreSettings, 'supermodel_accelerator_output_range', system, default='100')
+    _set_from_system(coreSettings, 'supermodel_brake_output_range', system, default='100')
+
+    # Audio
+    _set_from_system(coreSettings, 'supermodel_sound_volume', system, default='100')
+    _set_from_system(coreSettings, 'supermodel_music_volume', system, default='100')
+    _set_from_system(coreSettings, 'supermodel_scsp_dsp', system, default='new')
+
+    # Advanced
+    _set_from_system(coreSettings, 'supermodel_ppc_frequency', system, default='auto')
+    _set_from_system(coreSettings, 'supermodel_emulation_threading', system, default='multi_gpu')
+    _set_from_system(coreSettings, 'supermodel_frameskip', system, default='0')
+    _set_from_system(coreSettings, 'supermodel_network_board', system, default='enabled')
+    _set_from_system(coreSettings, 'supermodel_initial_nvram_setup', system, default='enabled')
+    _set_from_system(coreSettings, 'supermodel_timing_overlay', system, default='disabled')
+
+
 # SNK Neogeo AES/MVS / Neogeo CD (Geolith)
 def _geolith_options(
     coreSettings: UnixSettings, system: Emulator, rom: Path, guns: Guns, wheels: DeviceInfoMapping, /,
@@ -2654,6 +2696,7 @@ _option_functions: dict[str, Callable[[UnixSettings, Emulator, Path, Guns, Devic
     'fuse': _fuse_options,
     'fbneo': _fbneo_options,
     'geolith': _geolith_options,
+    'supermodel': _supermodel_options,
     'neocd': _neocd_options,
     'ppsspp': _ppsspp_options,
     'mednafen_psx': _mednafen_psx_options,
