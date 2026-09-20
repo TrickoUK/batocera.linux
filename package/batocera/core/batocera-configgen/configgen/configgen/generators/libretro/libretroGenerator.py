@@ -424,5 +424,8 @@ def getGFXBackend(system: Emulator) -> str:
                 backend = "glcore"
             if backend == "glcore" and core in [ 'parallel_n64', 'yabasanshiro', 'boom3' ]:
                 backend = "gl"
+            # supermodel's New3D engine asks for a core profile; its Legacy3D engine needs a compatibility one
+            if core == 'supermodel':
+                backend = "gl" if system.config.get('supermodel_renderer_3d') == 'legacy3d' else "glcore"
 
         return backend
