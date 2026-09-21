@@ -733,10 +733,14 @@ class Emulator(AbstractAsyncContextManager['Emulator', bool | None], ABC):
         # SDL VSync is a big deal on OGA and RPi4
         os.environ.update({'SDL_RENDER_VSYNC': self.config.get_bool('sdlvsync', True, return_values=('1', '0'))})
 
+        # Managers exit in reverse order, so hotkeygen is entered before evmapy to leave after it. Stopping evmapy
+        # releases the buttons it still holds (e.g. KEY_EXIT while hotkey+start is held past the game's exit), and
+        # that release has to reach hotkeygen while it is still in the game's context, or the keys the press sent
+        # (Alt+F4) are never released.
         async with (
             script_caller(('gameStart', 'gameStop'), self.system, self.name, self.core, self.rom),
-            EvmapyManager(self) as evmapy_manager,
             HotkeygenManager(self.hotkeygen_context, self.config.get_bool('exithotkeyonly'), self.config.ui_mode),
+            EvmapyManager(self) as evmapy_manager,
         ):
             with self.prepare_execution_path():
                 if self.needs_sdl_controller_db:

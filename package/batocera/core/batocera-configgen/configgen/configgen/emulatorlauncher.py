@@ -193,9 +193,13 @@ def start_rom(args: Arguments, profiler: Profiler, rom: Path, original_rom: Path
 
                 # run the emulator
                 _evmapy_instance = evmapy(systemName, system.config.emulator, effectiveCore, original_rom, player_controllers, guns)
+                # the hotkeygen context is entered first so that it is left after evmapy: stopping evmapy releases
+                # the buttons it still holds (e.g. KEY_EXIT while hotkey+start is held past the game's exit), and
+                # that release has to reach hotkeygen while it is still in the game's context, or the keys the
+                # press sent (Alt+F4) are never released
                 with (
-                    _evmapy_instance,
-                    set_hotkeygen_context(generator, system)
+                    set_hotkeygen_context(generator, system),
+                    _evmapy_instance
                 ):
                     # change directory if wanted
                     executionDirectory = generator.executionDirectory(system.config, rom)
