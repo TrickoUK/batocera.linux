@@ -21,7 +21,7 @@ from evdev import ecodes
 from batocera_common.paths import CONFIGS
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Callable, Mapping
     from types import FrameType
 
     class HotkeysContext(TypedDict):
@@ -48,6 +48,9 @@ GUSERCOMMONCONTEXT_FILE: Final = GUSER_DIR / Path("common_context.conf")
 GUSERDEFAULTMAPPING_FILE: Final = GUSER_DIR / Path("default_mapping.conf")
 
 gdebug = False
+
+# While keys are held on behalf of a button, poll this often so a release that never arrives is noticed.
+HELD_KEYS_POLL_MS: Final = 100
 
 ECODES_NAMES: Final[dict[int, str]] = {
     # add BTN_ to that joysticks buttons can run hotkeys (but keep generating only KEY_ events)
@@ -388,12 +391,21 @@ class Daemon:
     held_keys: dict[tuple[int, int], tuple[int, list[int]]] = field(init=False, default_factory=dict)
     context_generation: int = field(init=False, default=0)
 
+    # Written by the SIGHUP handler to make poll() return at once, so that a context change is applied
+    # (and the keys of the previous context released) without waiting for the poll timeout.
+    wake_r: int = field(init=False)
+    wake_w: int = field(init=False)
+
     def __post_init__(self) -> None:
         self.udev_context = pyudev.Context()
         self.monitor = pyudev.Monitor.from_netlink(self.udev_context)
         self.monitor.filter_by(subsystem='input')
 
         self.poll = select.poll()
+
+        self.wake_r, self.wake_w = os.pipe()
+        os.set_blocking(self.wake_r, False)
+        os.set_blocking(self.wake_w, False)
 
         keys_list = [x for x in range(ecodes.KEY_MAX) if x in ECODES_NAMES and ECODES_NAMES[x][:4] == "KEY_"]
         keys_list.append(ecodes.BTN_LEFT)
@@ -434,42 +446,53 @@ class Daemon:
                         print(f"Removing device {device.device_node}: {input_device.name}")
 
                     # the release event of a button that vanishes with its device never comes
-                    self.__release_held(fd=input_device.fileno())
+                    self.__release_device(input_device.fileno())
 
                     self.poll.unregister(input_device)
                     del self.mappings_by_fd[input_device.fileno()]
                     del self.input_devices_by_fd[input_device.fileno()]
                     del self.input_devices[device.device_node]
 
-    def __release_held(self, *, fd: int | None = None, code: int | None = None, stale_only: bool = False) -> bool:
-        """Send key-up for keys held down on behalf of a source button.
+    def __release(self, source: tuple[int, int]) -> bool:
+        """Send key-up for the keys held down on behalf of one source button (device fd, event code)."""
+        held = self.held_keys.pop(source, None)
+        if held is None:
+            return False
 
-        fd / code limit this to one source device / button, stale_only to the buttons pressed under an
-        earlier context. Returns whether anything was released.
-        """
-        released = False
-
-        for source, (generation, codes) in list(self.held_keys.items()):
-            if fd is not None and source[0] != fd:
-                continue
-            if code is not None and source[1] != code:
-                continue
-            if stale_only and generation == self.context_generation:
-                continue
-
-            del self.held_keys[source]
-            if gdebug:
-                print(f"releasing held keys {codes} of source {source}")
-            # last pressed first, so that modifiers (Alt) outlive the key they modify (F4)
-            for key_code in reversed(codes):
+        if gdebug:
+            print(f"releasing held keys {held[1]} of source {source}")
+        # last pressed first, so that modifiers (Alt) outlive the key they modify (F4)
+        for key_code in reversed(held[1]):
+            try:
                 send_keys(self.target, key_code, False)
-            released = True
+            except Exception as e:
+                # keep going: every key left down is a stuck key
+                print(f"failed to release key {key_code} of source {source}: {e}")
+        return True
 
-        return released
+    def __release_matching(self, matches: Callable[[tuple[int, int], int], bool]) -> None:
+        for source, (generation, _) in list(self.held_keys.items()):
+            if matches(source, generation):
+                self.__release(source)
+
+    def __release_device(self, fd: int) -> None:
+        self.__release_matching(lambda source, _: source[0] == fd)
+
+    def __is_pressed(self, source: tuple[int, int]) -> bool:
+        """Whether the kernel still reports the source button as pressed (EVIOCGKEY)."""
+        fd, code = source
+        device = self.input_devices_by_fd.get(fd)
+        if device is None:
+            return False
+
+        try:
+            return code in device.active_keys()
+        except OSError:
+            return False
 
     def __handle_event(self, event: evdev.InputEvent, action: str, begin: bool, source: int) -> None:
         # undo what the press of this button sent, even if the context changed in between
-        if not begin and self.__release_held(fd=source, code=event.code):
+        if not begin and self.__release((source, event.code)):
             return
 
         if self.context is not None and action in self.context["keys"]:
@@ -503,6 +526,10 @@ class Daemon:
         self.context_generation += 1
         self.context = get_context()
         self.require_reconfig = True # done outside of the event cause, to make it safely
+        try:
+            os.write(self.wake_w, b"\0")
+        except OSError:
+            pass # pipe full: a wake-up is already pending
 
     def __reload_devices_configs(self) -> None:
         # reload config files for devices
@@ -535,6 +562,8 @@ class Daemon:
         for device in self.udev_context.list_devices(subsystem='input'):
             self.__handle_actions('add', device)
 
+        self.poll.register(self.wake_r, select.POLLIN)
+
         # to read new contexts
         signal.signal(signal.SIGHUP, self.__handle_sighup)
 
@@ -544,15 +573,19 @@ class Daemon:
                 self.require_reconfig = False
                 self.__reload_devices_configs()
 
-            # short timeout: after a context change (a game exiting), the keys the previous context
-            # sent for a still-held button are released within this time
-            ready = self.poll.poll(200)
-            try:
-                self.__release_held(stale_only=True)
-            except Exception as e:
-                print(f"failed to release keys held under a previous context: {e}")
+            ready = self.poll.poll(HELD_KEYS_POLL_MS if self.held_keys else 1000)
+
+            # a context change (a game exiting) must not leave the keys it sent for a still-held button down
+            self.__release_matching(lambda _, generation: generation != self.context_generation)
 
             for fd, _ in ready:
+                if fd == self.wake_r:
+                    try:
+                        os.read(self.wake_r, 4096)
+                    except OSError:
+                        pass
+                    continue
+
                 try:
                     if fd == self.monitor.fileno():
                         (action, device) = self.monitor.receive_device()
@@ -583,10 +616,7 @@ class Daemon:
                                     print(e)
                                     print(f"error on device {input_device.name} ({input_device.path}), closing.")
                                 # a device that goes away (e.g. evmapy's at the end of a game) can't send the release
-                                try:
-                                    self.__release_held(fd=fd)
-                                except Exception as release_error:
-                                    print(f"failed to release keys held for {input_device.path}: {release_error}")
+                                self.__release_device(fd)
                                 del self.mappings_by_fd[fd]
                                 del self.input_devices_by_fd[fd]
                                 del self.input_devices[input_device.path]
@@ -594,6 +624,11 @@ class Daemon:
                                 input_device.close()
                             except:
                                 pass
+
+            # a release that never came (dropped events, ...): believe what the kernel reports for the device
+            if self.held_keys:
+                self.__release_matching(lambda source, _: not self.__is_pressed(source))
+
         # never happening, but should be done to quit
         self.target.close()
 
