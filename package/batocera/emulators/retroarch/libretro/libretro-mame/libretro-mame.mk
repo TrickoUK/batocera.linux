@@ -4,7 +4,8 @@
 #
 ################################################################################
 
-LIBRETRO_MAME_VERSION = 710e50642a7458d74225b22c1eb00432e443dfa7
+# 23/09 3DO M2 speed fixes
+LIBRETRO_MAME_VERSION = c02b8f3d7a710e20a055764cc0d1b6cf366f4908
 LIBRETRO_MAME_SITE = $(call github,TrickoUK,libretro-mame,$(LIBRETRO_MAME_VERSION))
 LIBRETRO_MAME_LICENSE = MAME
 
@@ -14,8 +15,8 @@ LIBRETRO_MAME_LICENSE = MAME
 # Comment out to fall back to the tarball-pinned build (e.g. before an
 # upstream PR or a clean/CI-style build), bumping LIBRETRO_MAME_VERSION above
 # to match.
-LIBRETRO_MAME_OVERRIDE_SRCDIR = /var/mnt/work/batocera-build/libretro-mame-fork
-LIBRETRO_MAME_OVERRIDE_SRCDIR_RSYNC_EXCLUSIONS = --exclude=.git
+#LIBRETRO_MAME_OVERRIDE_SRCDIR = /var/mnt/work/batocera-build/libretro-mame-fork
+#LIBRETRO_MAME_OVERRIDE_SRCDIR_RSYNC_EXCLUSIONS = --exclude=.git
 
 LIBRETRO_MAME_DEPENDENCIES = alsa-lib retroarch host-python3
 
