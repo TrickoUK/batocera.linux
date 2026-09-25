@@ -1,6 +1,9 @@
+diff --git a/src/mame/sega/model2.h b/src/mame/sega/model2.h
+index ee22588..c975a9a 100644
 --- a/src/mame/sega/model2.h
 +++ b/src/mame/sega/model2.h
-@@ -97,7 +97,8 @@
+@@ -96,10 +96,11 @@ public:
+ 	void init_pltkids();
  	void init_rchase2();
  	void init_manxttdx();
  	void init_doa();
@@ -9,11 +12,13 @@
  	void init_sgt24h();
  	void init_srallyc();
  	void init_powsledm();
+ 	void lamp_output_w(u8 data);
+ 
+diff --git a/src/mame/sega/model2.cpp b/src/mame/sega/model2.cpp
+index 899828e..7004542 100644
 --- a/src/mame/sega/model2.cpp
 +++ b/src/mame/sega/model2.cpp
-@@ -7551,13 +7551,24 @@
- void model2_state::init_zerogun()
- {
+@@ -7553,10 +7553,21 @@ void model2_state::init_zerogun()
  	// HACK: fix bug in program: it destroys the interrupt table and never fixes it
  	u32 *ROM = &memregion("maincpu")->as_u32();
  	ROM[0x700/4] = 0x08000004;
@@ -35,8 +40,10 @@
  	//u32 *ROM = &memregion("maincpu")->as_u32();
  	//ROM[0x56578/4] = 0x08000004;
  	//ROM[0x5b3e8/4] = 0x08000004;
- }
-@@ -7706,6 +7706,6 @@
+@@ -7703,11 +7714,11 @@ GAMEL(1996, stcc,       0,        stcc,         indy500,   model2c_state, empty_
+ GAMEL(1996, stccb,      stcc,     stcc,         indy500,   model2c_state, empty_init,    ROT0, "Sega",   "Sega Touring Car Championship (Revision B)", MACHINE_NOT_WORKING, layout_vr )
+ GAMEL(1996, stcca,      stcc,     stcc,         indy500,   model2c_state, empty_init,    ROT0, "Sega",   "Sega Touring Car Championship (Revision A)", MACHINE_NOT_WORKING, layout_vr )
+ GAMEL(1996, stcco,      stcc,     stcc,         indy500,   model2c_state, empty_init,    ROT0, "Sega",   "Sega Touring Car Championship", MACHINE_NOT_WORKING, layout_vr )
  GAME( 1996, waverunr,   0,        waverunr,     waverunr,  model2c_state, empty_init,    ROT0, "Sega",   "Wave Runner (Japan, Revision A)", MACHINE_NOT_WORKING )
  GAME( 1997, bel,        0,        bel,          bel,       model2c_state, empty_init,    ROT0, "Sega / EPL Productions", "Behind Enemy Lines", MACHINE_NOT_WORKING )
 -GAME( 1997, hotd,       0,        hotd,         hotd,      model2c_state, empty_init,    ROT0, "Sega",   "The House of the Dead (Revision A)", MACHINE_NOT_WORKING )
@@ -44,3 +51,5 @@
  GAME( 1997, hotdo,      hotd,     hotd,         hotd,      model2c_state, empty_init,    ROT0, "Sega",   "The House of the Dead", MACHINE_NOT_WORKING )
  GAME( 1997, hotdp,      hotd,     hotd,         hotd,      model2c_state, empty_init,    ROT0, "Sega",   "The House of the Dead (prototype)", MACHINE_NOT_WORKING )
  GAME( 1997, overrev,    0,        overrev2c,    overrev,   model2c_state, empty_init,    ROT0, "Jaleco", "Over Rev (Model 2C, Revision A)", MACHINE_NOT_WORKING )
+ GAME( 1997, rascot2,    0,        model2c,      model2crx, model2c_state, empty_init,    ROT0, "Sega",   "Royal Ascot II", MACHINE_NOT_WORKING )
+ GAME( 1997, segawski,   0,        segawski,     segawski,  model2c_state, empty_init,    ROT0, "Sega",   "Sega Water Ski (Japan, Revision A)", MACHINE_NOT_WORKING )
