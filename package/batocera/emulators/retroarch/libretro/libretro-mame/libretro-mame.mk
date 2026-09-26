@@ -4,8 +4,8 @@
 #
 ################################################################################
 
-# 25/09 Konami Viper fixes
-LIBRETRO_MAME_VERSION = 575419b607d72c128b203e6d08d3aa0628d8d0d5
+# 26/09 full mamedev sync (mame0289-1156), fork-carried game fixes
+LIBRETRO_MAME_VERSION = e7f1c548db97199b6830f239c01bb0e9ec991aab
 LIBRETRO_MAME_SITE = $(call github,TrickoUK,libretro-mame,$(LIBRETRO_MAME_VERSION))
 LIBRETRO_MAME_LICENSE = MAME
 
@@ -62,19 +62,12 @@ ifeq ($(BR2_ENABLE_DEBUG),y)
     LIBRETRO_MAME_EXTRA_ARGS += SYMBOLS=1 OPTIMIZE=0
 endif
 
-# Arcade-only SOURCEFILTER (see my-docs/mame-arcade-filters/README.md for how
-# libretro-mame-arcade.flt was generated/validated) - drops every driver
-# source file that declares only CONS()/COMP()/SYST() (console/computer/
-# other) systems, cutting compiled driver files and enabled CPU/sound/video/
-# machine/bus cores roughly in half. model2/model3/gaelco/cave3rd stay
-# supported as a natural side effect of their driver files containing arcade
-# (GAME()) declarations.
-define LIBRETRO_MAME_COPY_ARCADE_FILTER
-    cp $(BR2_EXTERNAL_BATOCERA_PATH)/package/batocera/emulators/retroarch/libretro/libretro-mame/libretro-mame-arcade.flt \
-        $(@D)/libretro-mame-arcade.flt
-endef
-
-LIBRETRO_MAME_PRE_BUILD_HOOKS += LIBRETRO_MAME_COPY_ARCADE_FILTER
+# Arcade-only SOURCEFILTER - drops every driver source file that declares
+# only CONS()/COMP()/SYST() (console/computer/other) systems, cutting compiled
+# driver files and enabled CPU/sound/video/machine/bus cores roughly in half.
+# The filter lives in the fork itself (fork-specific/arcade.flt) so it stays in
+# step with the driver tree it describes and gets regenerated with each
+# upstream MAME sync - see the fork's CLAUDE.md "Arcade-only build filter".
 
 define LIBRETRO_MAME_INSTALL_STAGING_CMDS
     $(INSTALL) -D $(@D)/mame_libretro.so \
@@ -95,7 +88,7 @@ define LIBRETRO_MAME_BUILD_CMDS
         OVERRIDE_LD="$(TARGET_CXX)" RANLIB="$(TARGET_RANLIB)" \
 		AR="$(TARGET_AR)" $(LIBRETRO_MAME_EXTRA_ARGS) \
 		CROSS_BUILD=1 TARGET="mame" SUBTARGET="mame" RETRO=1 \
-		SOURCEFILTER="libretro-mame-arcade.flt" \
+		SOURCEFILTER="fork-specific/arcade.flt" \
 		OSD="retro" DEBUG=0
 endef
 
