@@ -421,6 +421,8 @@ class Daemon:
     def __handle_actions(self, action: str, device: pyudev.Device) -> None:
         if device.device_node is not None and device.device_node.startswith("/dev/input/event"):
             if action == "add":
+                # A device can be added twice at boot, drop the old entry so its fd leaves the poll
+                self.__forget_device(device.device_node)
                 input_device = evdev.InputDevice(device.device_node)
 
                 if input_device.name != DEVICE_NAME:
@@ -439,19 +441,26 @@ class Daemon:
                             self.mappings_by_fd[input_device.fileno()] = mapping
                             self.poll.register(input_device, select.POLLIN)
             elif action == "remove":
-                input_device = self.input_devices.get(device.device_node)
+                if gdebug and device.device_node in self.input_devices:
+                    print(f"Removing device {device.device_node}: {self.input_devices[device.device_node].name}")
+                self.__forget_device(device.device_node)
 
-                if input_device is not None:
-                    if gdebug:
-                        print(f"Removing device {device.device_node}: {input_device.name}")
+    def __forget_device(self, device_node: str) -> None:
+        input_device = self.input_devices.pop(device_node, None)
+        if input_device is None:
+            return
 
-                    # the release event of a button that vanishes with its device never comes
-                    self.__release_device(input_device.fileno())
-
-                    self.poll.unregister(input_device)
-                    del self.mappings_by_fd[input_device.fileno()]
-                    del self.input_devices_by_fd[input_device.fileno()]
-                    del self.input_devices[device.device_node]
+        fd = input_device.fileno()
+        # the release event of a button that vanishes with its device never comes
+        # (e.g. evmapy's device at the end of a game)
+        self.__release_device(fd)
+        try:
+            self.poll.unregister(fd)
+        except KeyError:
+            pass
+        self.mappings_by_fd.pop(fd, None)
+        self.input_devices_by_fd.pop(fd, None)
+        input_device.close()
 
     def __release(self, source: tuple[int, int]) -> bool:
         """Send key-up for the keys held down on behalf of one source button (device fd, event code)."""
@@ -586,6 +595,14 @@ class Daemon:
                         pass
                     continue
 
+                # Drop fds we no longer track, poll would return them forever and spin the loop
+                if fd != self.monitor.fileno() and fd not in self.input_devices_by_fd:
+                    try:
+                        self.poll.unregister(fd)
+                    except KeyError:
+                        pass
+                    continue
+
                 try:
                     if fd == self.monitor.fileno():
                         (action, device) = self.monitor.receive_device()
@@ -610,20 +627,11 @@ class Daemon:
                     else:
                         # error on a single device
                         if fd in self.input_devices_by_fd:
-                            try:
-                                input_device = self.input_devices_by_fd[fd]
-                                if not (isinstance(e, OSError) and e.errno == errno.ENODEV):
-                                    print(e)
-                                    print(f"error on device {input_device.name} ({input_device.path}), closing.")
-                                # a device that goes away (e.g. evmapy's at the end of a game) can't send the release
-                                self.__release_device(fd)
-                                del self.mappings_by_fd[fd]
-                                del self.input_devices_by_fd[fd]
-                                del self.input_devices[input_device.path]
-                                self.poll.unregister(input_device)
-                                input_device.close()
-                            except:
-                                pass
+                            input_device = self.input_devices_by_fd[fd]
+                            if not (isinstance(e, OSError) and e.errno == errno.ENODEV):
+                                print(e)
+                                print(f"error on device {input_device.name} ({input_device.path}), closing.")
+                            self.__forget_device(input_device.path)
 
             # a release that never came (dropped events, ...): believe what the kernel reports for the device
             if self.held_keys:

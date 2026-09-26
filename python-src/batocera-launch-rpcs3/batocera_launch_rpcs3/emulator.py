@@ -19,8 +19,7 @@ from batocera_common.dict import merge
 from batocera_common.fs import directory_differences
 from batocera_common.paths import BIOS, CACHE, CONFIGS
 from batocera_common.yaml import safe_dump_yaml12, safe_load_yaml12
-from batocera_launch import BatoceraException, Command, Emulator, HotkeysContext, ParallelStartupTaskMixin
-from batocera_launch.asyncio import download
+from batocera_launch import BatoceraException, Command, Emulator, HotkeysContext, ParallelStartupTaskMixin, download
 from batocera_launch.paths import configure_emulator
 
 from .controllers import generate_controllers_config
@@ -475,9 +474,11 @@ class RPCS3(ParallelStartupTaskMixin, Emulator):
     def in_game_ratio(self) -> float:
         return 16 / 9
 
-    @property
-    def needs_overlayfs(self) -> bool:
-        return True
+    def needs_overlayfs(self, rom: Path, /) -> bool:
+        # A PSN squashfs (dev_hdd0/game/<ID> layout) writes trophy/save data straight into
+        # that tree via the dev_hdd0 redirect below. A disc-dump squashfs (PS3_GAME/USRDIR)
+        # never writes through its rom, so it doesn't need one.
+        return (rom / 'dev_hdd0' / 'game').is_dir()
 
     @property
     def closest_screen_ratio(self) -> str:

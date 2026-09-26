@@ -60,7 +60,6 @@ menu "System"
     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/boot/uboot-rk356x/Config.in"
     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/boot/uboot-rk3562/Config.in"
     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/boot/uboot-rk3576/Config.in"
-    source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/boot/uboot-gameforce-ace/Config.in"
     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/boot/uboot-anbernic-h700/Config.in"
   endmenu
 
@@ -344,6 +343,7 @@ menu "Emulators"
       source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/retroarch/libretro/libretro-gearcoleco/Config.in"
       source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/retroarch/libretro/libretro-ep128emu-core/Config.in"
       source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/retroarch/libretro/libretro-azahar/Config.in"
+      source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/retroarch/libretro/libretro-anybor/Config.in"
      endmenu
   endmenu
 
@@ -486,6 +486,7 @@ menu "Emulators"
     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/ports/openjkdf2/Config.in"
     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/ports/openjk/Config.in"
     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/ports/openmohaa/Config.in"
+    source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/ports/opengoal/Config.in"
     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/ports/yquake2/Config.in"
     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/ports/yquake2/yquake2-xatrix/Config.in"
     source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/ports/yquake2/yquake2-rogue/Config.in"
@@ -727,6 +728,7 @@ menu "Libraries"
   source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/libraries/miniz/Config.in"
   source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/libraries/lzma-sdk/Config.in"
   source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/libraries/libdovi/Config.in"
+  source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/libraries/python-lazy-loader/Config.in"
 endmenu
 
 menu "Audio"

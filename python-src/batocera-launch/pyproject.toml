@@ -7,6 +7,7 @@ dependencies = [
     'aiohttp',
     'aiodns',
     'brotli',
+    'lazy-loader',
 ]
 
 [project.scripts]
@@ -63,6 +64,7 @@ mugen = 'batocera_launch.emulators.mugen:Mugen'
 nanoboyadvance = 'batocera_launch.emulators.nanoboyadvance:Nanoboyadvance'
 odcommander = 'batocera_launch.emulators.odcommander:ODCommander'
 openbor = 'batocera_launch.emulators.openbor:Openbor'
+opengoal = 'batocera_launch.emulators.opengoal:OpenGOAL'
 openmsx = 'batocera_launch.emulators.openmsx:Openmsx'
 pcsx2x6 = 'batocera_launch.emulators.pcsx2x6:Pcsx2x6'
 ppsspp = 'batocera_launch.emulators.ppsspp:PPSSPP'
@@ -121,3 +123,4 @@ include = ["/batocera_launch"]
 minversion = "9.0"
 addopts = ["--import-mode=importlib", "--cov=batocera_launch", "--cov-branch", "--cov-report=term"]
 strict = true
+asyncio_mode = "auto"
