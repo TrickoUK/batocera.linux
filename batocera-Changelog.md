@@ -1,6 +1,10 @@
 # 2026/xx/xx - batocera.linux 44 - Malachite
 ### Special Notes
-- Samba no longer maps unknown usernames to guest: Windows 11 24H2+ blocks unsigned guest sessions without prompting, so Windows now asks for credentials - log in as root with the root password ("linux" unless security is enabled)
+- From v44 you can use `batocera-upgrade --update-bootloader` to flash required bootloader and firmware manually
+  SPI u-boot, Qualcomm ABL, Raspberry Pi EEPROM, H700 u-boot
+- Samba no longer maps unknown usernames to guest
+  Windows 11 24H2+ blocks unsigned guest sessions without prompting, so Windows now asks for credentials
+  Log in as root with the root password ("linux" unless security is enabled)
 - GZDoom has been replaced by UZDoom, a continuation of ZDoom and GZDoom - existing gzdoom ROM folders, .gzdoom mod files, and configs need to be renamed to uzdoom
 - ShadPS4 has moved from the no longer maintained ShadPS4 Plus to standard ShadPS4
 - SM2-Emu replaces Model2Emu which ran through WINE bringing Model 2 emualtion to more systems
@@ -23,6 +27,7 @@
 ### Added
 - Anbernic H700 device deep sleep suspend, replacing fake suspend
 - Anbernic H700 device hardware acceleration support
+- Anbernic H700 device u-boot is now updated by system upgrades, needed for deep sleep
 - Anbernic RG35XX Plus battery backed real-time clock
 - Anbernic RGCubeXX device LED controller support
 - Armsx2 for SM8250, SM8550 and SM8750
@@ -302,21 +307,25 @@
 - FFMPEG to 8.1.2
 - Flatpak to 1.18.2
 - GStreamer codecs to 1.28.5
+- H700 device kernel updated to 7.2.8
 - Khadas VIM4 kernel updated to vendor 5.15.y
-- LabWC to 0.20.1
+- LabWC to 0.20.2
 - Linux Firmware to 20260810
 - Mesa3D to 26.2.3
 - MangoHud to v0.8.4
 - Nvidia Open Production driver to 615.71.09
 - Nvidia 580 Legacy driver to 580.178.04
 - QT to 6.11.1
-- Qualcomm SM6115 device kernel updated to 7.0.14
-- Qualcomm SM8550 device kernel updated to 7.0.14
-- Qualcomm SM8750 device kernel updated to 7.1.9
-- Raspberry Pi device kernel updated to 6.18.39
-- Rockchip RK3568 device kernel updated to 7.0.14
-- Rockchip RK3588 mainline device kernel updated to 7.2.6
-- Rocknix ABL to 1.1.6 (SM6115 & SM8x50 devices)
+- Qualcomm SM4450 device kernel updated to 7.2.8
+- Qualcomm SM6115 device kernel updated to 7.2.8
+- Qualcomm SM8250 device kernel updated to 7.2.8
+- Qualcomm SM8550 device kernel updated to 7.2.8
+- Qualcomm SM8750 device kernel updated to 7.2.8
+- Raspberry Pi device kernel updated to 6.18.53
+- Rockchip RK3562 device kernel updated to 7.2.8
+- Rockchip RK3568 device kernel updated to 7.2.8
+- Rockchip RK3588 mainline device kernel updated to 7.2.8
+- Rocknix ABL to 1.1.8 (SM6115 & SMxx50 devices)
 - RyzenAdj to v0.19.0
 - SDL3 to 3.4.14
 - Sound Open Firmware to 2025.12.2
@@ -328,7 +337,7 @@
 - WINE Proton to proton-11.0-1
 - WINE TKG to 11.17
 - Wlroots to 0.20.2
-- X86_64 / Zen3 kernel updated to 7.2.6
+- X86_64 / Zen3 kernel updated to 7.2.8
 - Xone to v0.5.8
 
 # 2026/05/30 - batocera.linux 43.1
