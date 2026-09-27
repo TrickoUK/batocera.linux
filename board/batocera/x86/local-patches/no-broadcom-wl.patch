@@ -1,0 +1,18 @@
+diff --git a/package/batocera/core/batocera-system/Config.in b/package/batocera/core/batocera-system/Config.in
+index d8bb4ed9da..91733bf591 100644
+--- a/package/batocera/core/batocera-system/Config.in
++++ b/package/batocera/core/batocera-system/Config.in
+@@ -488,11 +488,12 @@ config BR2_PACKAGE_BATOCERA_SYSTEM
+ 
+     select BR2_PACKAGE_RK915        if BR2_PACKAGE_BATOCERA_TARGET_RK3326
+ 
+ 	select BR2_PACKAGE_UWE5622    if BR2_PACKAGE_BATOCERA_TARGET_H616
+ 
+-	select BR2_PACKAGE_BROADCOM_WL	if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY
++	# Disabled for this fork: no Broadcom Wi-Fi (older Macs) needed.
++	# select BR2_PACKAGE_BROADCOM_WL	if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY
+ 
+ 	# ethernet
+ 	#select BR2_PACKAGE_R8125		if BR2_PACKAGE_BATOCERA_TARGET_X86_ANY
+ 	#select BR2_PACKAGE_R8168		if BR2_PACKAGE_BATOCERA_TARGET_X86_ANY
+ 
