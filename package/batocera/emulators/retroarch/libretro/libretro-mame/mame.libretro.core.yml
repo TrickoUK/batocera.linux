@@ -103,6 +103,16 @@ custom_features:
       Opaque and Semi-Transparent (Default): all
       Opaque Only: opaque
       Disabled: disabled
+  mame_voodoo_tex_supersample:
+    group: ADVANCED OPTIONS
+    submenu: 3dfx Voodoo Hardware
+    prompt: VOODOO TEXTURE SUPERSAMPLING
+    description: Reduces shimmering on distant textures in 3dfx Voodoo games (Konami Viper, Midway Seattle/Vegas). Higher settings use more CPU. Requires restarting content to take effect.
+    choices:
+      Off (Default): disabled
+      2x2: 2x2
+      3x3 (Recommended): 3x3
+      4x4 (Slow): 4x4
   altlayout:
     prompt: SPECIAL CONTROL LAYOUTS
     description: Controls for 5/6 button games and other unique controls

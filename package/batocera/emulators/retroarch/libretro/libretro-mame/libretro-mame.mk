@@ -4,8 +4,8 @@
 #
 ################################################################################
 
-# 26/09 full mamedev sync (mame0289-1156), fork-carried game fixes
-LIBRETRO_MAME_VERSION = e7f1c548db97199b6830f239c01bb0e9ec991aab
+# 27/09 mamedev sync (mame0289-1168), Voodoo texture supersampling option, fork-carried game fixes
+LIBRETRO_MAME_VERSION = 007b4b4437241be7a8a376fdf7a57b743f0f0ed2
 LIBRETRO_MAME_SITE = $(call github,TrickoUK,libretro-mame,$(LIBRETRO_MAME_VERSION))
 LIBRETRO_MAME_LICENSE = MAME
 

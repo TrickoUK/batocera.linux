@@ -698,6 +698,9 @@ def _mame_options(
     # PS1 GPU Exclude 2D Polygons from Filtering (Experimental)
     _set_from_system(coreSettings, 'mame_psx_gpu_filter_exclude_2d_polygon', system, default='all')
 
+    # 3dfx Voodoo Texture Supersampling (Enhancement)
+    _set_from_system(coreSettings, 'mame_voodoo_tex_supersample', system, default='disabled')
+
     # Disable controller profiling
     _set(coreSettings, 'mame_buttons_profiles', 'disabled')
 
