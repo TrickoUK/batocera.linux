@@ -701,6 +701,9 @@ def _mame_options(
     # 3dfx Voodoo Texture Supersampling (Enhancement)
     _set_from_system(coreSettings, 'mame_voodoo_tex_supersample', system, default='disabled')
 
+    # 3dfx Voodoo Edge Anti-Aliasing (Enhancement)
+    _set_from_system(coreSettings, 'mame_voodoo_edge_aa', system, default='disabled')
+
     # Disable controller profiling
     _set(coreSettings, 'mame_buttons_profiles', 'disabled')
 

@@ -113,6 +113,14 @@ custom_features:
       2x2: 2x2
       3x3 (Recommended): 3x3
       4x4 (Slow): 4x4
+  mame_voodoo_edge_aa:
+    group: ADVANCED OPTIONS
+    submenu: 3dfx Voodoo Hardware
+    prompt: VOODOO EDGE ANTI-ALIASING
+    description: Smooths the stair-stepped outlines of 3D objects in 3dfx Voodoo games (Konami Viper, Midway Seattle/Vegas). Textures, HUD and text stay sharp. Low CPU cost. Requires restarting content to take effect.
+    choices:
+      Off (Default): disabled
+      On: enabled
   altlayout:
     prompt: SPECIAL CONTROL LAYOUTS
     description: Controls for 5/6 button games and other unique controls
