@@ -55,3 +55,9 @@ topic.env
 /rebuild.sh
 /zen3update-usb.sh
 /backups/
+.prompt-tag
+mame-refresh.sh
+sync-mame-patches.sh
+/fbneoroms
+/roms
+
