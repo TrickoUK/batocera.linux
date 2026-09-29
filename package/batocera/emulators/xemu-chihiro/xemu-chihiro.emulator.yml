@@ -74,6 +74,34 @@ custom_features:
     choices:
       Enabled: "true"
       Disabled (Default): "false"
+  xemu_chihiro_gpu_boost:
+    group: ADVANCED OPTIONS
+    prompt: GPU BOOST
+    description: Smoother, faster rendering (experimental). Turn it off to get stock xemu rendering. Smooth first play and Real hardware speed need it.
+    choices:
+      On (Default): "true"
+      'Off': "false"
+  xemu_chihiro_cpu_boost:
+    group: ADVANCED OPTIONS
+    prompt: CPU BOOST
+    description: Games run faster (experimental). Turn it off only if a game misbehaves.
+    choices:
+      On (Default): "true"
+      'Off': "false"
+  xemu_chihiro_smooth_first_play:
+    group: ADVANCED OPTIONS
+    prompt: SMOOTH FIRST PLAY
+    description: Prepares the game's effects while it boots, so the first minutes do not stutter while they compile. Needs GPU boost.
+    choices:
+      On (Default): "true"
+      'Off': "false"
+  xemu_chihiro_real_hw_speed:
+    group: ADVANCED OPTIONS
+    prompt: REAL HARDWARE SPEED
+    description: Holds the machine to the cabinet's own pace. Off, it runs as fast as your computer allows. Needs GPU boost.
+    choices:
+      On: "true"
+      Off (Default): "false"
   xemu_chihiro_freeplay:
     group: CABINET
     prompt: FREE PLAY
