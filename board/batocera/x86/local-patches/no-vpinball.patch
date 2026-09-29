@@ -1,8 +1,7 @@
 diff --git a/package/batocera/core/batocera-system/Config.in b/package/batocera/core/batocera-system/Config.in
-index 862da7b6cb..bf6406ba49 100644
 --- a/package/batocera/core/batocera-system/Config.in
 +++ b/package/batocera/core/batocera-system/Config.in
-@@ -376,11 +376,18 @@ config BR2_PACKAGE_BATOCERA_SYSTEM
+@@ -405,11 +405,18 @@
  												 BR2_PACKAGE_BATOCERA_TARGET_BCM2712
  
  	# screens
@@ -26,7 +25,7 @@ index 862da7b6cb..bf6406ba49 100644
  	select BR2_PACKAGE_SDL2_TOUCH_TEST    # ALL
  
  	# swap
-@@ -1576,13 +1583,18 @@ config BR2_PACKAGE_BATOCERA_CONSOLE_SYSTEMS
+@@ -1701,14 +1708,19 @@
  										   BR2_PACKAGE_BATOCERA_TARGET_SM8750
  
  	# Pinball
@@ -36,6 +35,7 @@ index 862da7b6cb..bf6406ba49 100644
 -										   BR2_PACKAGE_BATOCERA_TARGET_RK3588_MAINLINE || \
 -										   BR2_PACKAGE_BATOCERA_TARGET_SM8250          || \
 -										   BR2_PACKAGE_BATOCERA_TARGET_SM8550          || \
+-										   BR2_PACKAGE_BATOCERA_TARGET_SM8650          || \
 -										   BR2_PACKAGE_BATOCERA_TARGET_SM8750
 +	# Disabled for this fork: no interest in virtual pinball. Also drops
 +	# libdmdutil/dmd-simulator/dmd-play-rust/BATOCERA_BACKGLASS above,
@@ -48,6 +48,7 @@ index 862da7b6cb..bf6406ba49 100644
 +	# 									   BR2_PACKAGE_BATOCERA_TARGET_RK3588_MAINLINE || \
 +	# 									   BR2_PACKAGE_BATOCERA_TARGET_SM8250          || \
 +	# 									   BR2_PACKAGE_BATOCERA_TARGET_SM8550          || \
++	# 									   BR2_PACKAGE_BATOCERA_TARGET_SM8650          || \
 +	# 									   BR2_PACKAGE_BATOCERA_TARGET_SM8750
  
  	# Panasonic 3DO

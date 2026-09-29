@@ -9,6 +9,9 @@
 - ShadPS4 has moved from the no longer maintained ShadPS4 Plus to standard ShadPS4
 - SM2-Emu replaces Model2Emu which ran through WINE bringing Model 2 emualtion to more systems
 - The Play! emulator (and Libretro variant) has been removed in favor of PCSX2x6 for Namco2x6 systems as well as removed as a PS2 emulator.
+- Sega Chihiro now runs using Tovarichtch's Xemu Chihiro fork
+  Games meed to be .bin netboot images made with Chihiro-netboot
+  BIOS files come from MAME's chihiro.zip, extracted into bios/chihiro
 ### Hardware
 - Anbernic RG-DS initial support
 - Anbernic RG-DS Plus initial support
@@ -17,8 +20,10 @@
 - Anbernic RG Vita Pro initial support
 - Anbernic RG40xx-H-v2-panel variant support
 - Anbernic RG40xx-V-v2-panel variant support
+- Ayaneo Pocket DS initial support
 - AYN Odin initial support
 - AYN Odin 3 initial support
+- GameKiddy GKD Pixel2 initial support
 - KICKPI K3B initial support
 - Mangmi Air X initial support
 - Odroid M2 initial support
@@ -56,6 +61,7 @@
 - Steam is installed automatically from Flathub the first time it is launched
 - Upgrades : migration from x86_64 to x86-64-v3 is now possible from the menu for eligible software.
 - Upgrades : upgrades to stable releases is now possible via torrent, directly from the menu.
+- Xemu Chihiro fork for the Sega Chihiro, with light guns, wheels with force feedback, card readers and linked cabinets
 - Xenia-Edge for x864_64 and select aarch64 devices
 ### Fixed
 - Samba wide symbolic links under /userdata (e.g. to external drives) being silently disabled, and secure mode granting guest access to the share
@@ -73,9 +79,11 @@
 - Mupen64 not starting fullscreen with Wayland
 - Power button shutdown now closes the running game and shuts down through EmulationStation, saving gamelists
 - Pygame fullscreen with Wayland
+- R36S and other RK3326 clones losing the chosen panel overlay (mipi-panel.dtbo) after an upgrade, leaving a working backlight but a broken screen
 - Raze analog controls and improved controller bindings
 - SC-3000 games not scrapable (now scraped as SG-1000)
 - Simcoupe not starting fullscreen
+- SM8250 devices overcharging the battery (wrong charge voltage and current), and Retroid Pocket not charging again after powering a USB-C hub or dock
 - Sonic Mania controllers
 - Sonic Mania settings changed in-game (e.g. screen shader) now persist between launches
 - Taradino blank screen with Wayland
@@ -323,6 +331,7 @@
 - Qualcomm SM8550 device kernel updated to 7.2.8
 - Qualcomm SM8750 device kernel updated to 7.2.8
 - Raspberry Pi device kernel updated to 6.18.53
+- Rockchip RK3326 device kernel updated to 7.2.8
 - Rockchip RK3562 device kernel updated to 7.2.8
 - Rockchip RK3568 device kernel updated to 7.2.8
 - Rockchip RK3588 mainline device kernel updated to 7.2.8
