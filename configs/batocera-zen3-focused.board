@@ -122,6 +122,11 @@ BR2_PACKAGE_LIBENET=y
 # in manufacturer-systems/Config.in (Xbox 360/xenia not requested).
 BR2_PACKAGE_XEMU=y
 
+# Sega Chihiro (arcade Xbox hardware): upstream split this out of xemu into
+# its own emulator fork (xemu-chihiro) on 2026-09-28; xemu itself no longer
+# lists the chihiro system, so without this the system disappears.
+BR2_PACKAGE_XEMU_CHIHIRO=y
+
 # Steam (Flatpak): batocera-steam provides the "steam" ES system and the
 # batocera-steam/batocera-steam-update launcher scripts. It's only pulled in
 # by BATOCERA_ALL_SYSTEMS (same gap as WINE_SYSTEMS above), so it needs to be
