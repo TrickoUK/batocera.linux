@@ -164,3 +164,7 @@ BR2_PACKAGE_ARES=y
 # disabled from this defconfig alone - apply
 # board/batocera/x86/local-patches/no-nvidia.patch before generating the
 # defconfig. AMD/Intel mesa drivers are unaffected by that patch.
+
+# Prune Nvidia/Intel-GPU/Intel-audio firmware (runs upstream's post-build
+# script first). Overrides the value from batocera-board.common.
+BR2_ROOTFS_POST_BUILD_SCRIPT="$(BR2_EXTERNAL_BATOCERA_PATH)/board/batocera/x86/focused-post-build.sh"
