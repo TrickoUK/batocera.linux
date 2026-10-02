@@ -37,7 +37,7 @@
 - Anbernic RGCubeXX device LED controller support
 - Armsx2 for SM8250, SM8550 and SM8750
 - Battery, charger and power button support for Intel Atom laptops and tablets with the X-Powers AXP288 PMIC
-- BCC: audio devices can now be switch from the bcc menu (while playing games for example)
+- BCC: audio devices can now be switch from the BCC menu (while playing games for example)
 - Box64 userland x86_64 emulator for aarch64
 - Broadcom STA (wl) wifi driver for older Macs, enable with broadcom-wl=true in batocera-boot.conf
 - Drastic back for Aarch64 devices
@@ -48,15 +48,16 @@
 - ES setting to choose which CPU cores an emulator runs on (fast or all), keeping emulators off the slow efficiency cores of big.LITTLE devices by default
 - ES can now display Unicode for ID3 tags of songs played
 - ES now supports correctly Arabic and Hebrew glyph rendering
+- ES can have a maximum depth of subfolders to go through when indexing (skip subfoldes with large amount of files)
 - GameTank console support through GameTankEmulator
 - Legion Go / Go 2 LED controller support
+- Libretro-anybor : for openbor games (support all openbor versions)
 - Libretro-Azahar
 - NanoBoyAdvance as an alternative GBA emulator
 - OpenGOAL for the Jak and Daxter trilogy, built from your own PS2 disc image
 - PCSX2x6 emulator for Namco2x6 systems (see the _info.txt file for rom details)
 - RPCS3 interface translations
 - SM2-Emu emulator for Model 2 games
-- libretro-anybor : for openbor games (support all openbor versions)
 - Sonic Mania options for 4:3 aspect ratio, screen shaders and the developer menu
 - Steam Controller (2026) support on x86_64 / Zen3
 - Steam is installed automatically from Flathub the first time it is launched
@@ -119,7 +120,7 @@
 ### Updated
 - Amiberry to v8.3.0
 - AppleWin to Sep 6, 2026 build
-- Armsx2 to 2.7
+- Armsx2 to 2.7.2
 - Azahar to 2126.1.2
 - BigPEmu to 1.221
 - Blake Stone to v1.3.4
@@ -332,7 +333,7 @@
 - Qualcomm SM8250 device kernel updated to 7.2.8
 - Qualcomm SM8550 device kernel updated to 7.2.8
 - Qualcomm SM8750 device kernel updated to 7.2.8
-- Raspberry Pi device kernel updated to 6.18.53
+- Raspberry Pi device kernel updated to 6.18.54
 - Rockchip RK3326 device kernel updated to 7.2.8
 - Rockchip RK3562 device kernel updated to 7.2.8
 - Rockchip RK3568 device kernel updated to 7.2.8
