@@ -121,10 +121,9 @@ index b750590..b40d1cc 100644
  	USB/shared/ringbuffer.h
  )
 diff --git a/pcsx2/PAD/PAD.cpp b/pcsx2/PAD/PAD.cpp
-index 1d617f0..c4fbaa2 100644
 --- a/pcsx2/PAD/PAD.cpp
 +++ b/pcsx2/PAD/PAD.cpp
-@@ -327,6 +327,7 @@ namespace Input
+@@ -376,6 +376,7 @@
  			{ "USB Keyboard", RETRO_DEVICE_KEYBOARD },
  			{ "USB Mouse", RETRO_DEVICE_MOUSE },
  			{ "USB Keyboard + Mouse", RETRO_DEVICE_KEYBOARD_AND_MOUSE },
@@ -132,7 +131,7 @@ index 1d617f0..c4fbaa2 100644
  			{},
  		};
  
-@@ -451,6 +452,13 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
+@@ -509,6 +510,13 @@
  				USBSetPortDevice(0, USB_DEV_KEYBOARD, port);
  				USBSetPortDevice(1, USB_DEV_MOUSE, port);
  				break;
@@ -140,11 +139,11 @@ index 1d617f0..c4fbaa2 100644
 +				/* USB GunCon2 coexists with the DualShock on this slot, as on
 +				 * real hardware - the pad stays available for menu/pause
 +				 * navigation while the gun drives gameplay. */
-+				si->SetStringValue(section, "Type", "DualShock2");
++				s_pad_type_name[port] = "DualShock2";
 +				USBSetPortDevice(port, USB_DEV_GUNCON2, port);
 +				break;
  			default:
- 				si->SetStringValue(section, "Type", "None");
+ 				s_pad_type_name[port] = "None";
  				USBSetPortDevice(port, USB_DEV_NONE, port);
 diff --git a/pcsx2/USB/USB.h b/pcsx2/USB/USB.h
 index f16c574..9c44930 100644

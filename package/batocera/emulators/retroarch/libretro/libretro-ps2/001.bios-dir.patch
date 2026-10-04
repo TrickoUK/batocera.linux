@@ -1,8 +1,6 @@
-diff --git a/libretro/main.cpp b/libretro/main.cpp
-index d04d4effd7..c58e14d48b 100644
---- a/libretro/main.cpp
-+++ b/libretro/main.cpp
-@@ -2348,7 +2348,7 @@ void retro_init(void)
+--- a/libretro/main.cpp	2026-10-03 15:13:12.006620769 +0100
++++ b/libretro/main.cpp	2026-10-03 15:13:12.015769778 +0100
+@@ -2426,7 +2426,7 @@
  		FileSystem::FindResultsArray results;
  		char bios_dir[PCSX2_PATH_MAX];
  
@@ -11,16 +9,14 @@ index d04d4effd7..c58e14d48b 100644
  		if (FileSystem::FindFiles(bios_dir, "*", FILESYSTEM_FIND_FILES, &results))
  		{
  			u32 version, region;
-diff --git a/pcsx2/Pcsx2Config.cpp b/pcsx2/Pcsx2Config.cpp
-index a5e87e6e6d..e25b15203d 100644
---- a/pcsx2/Pcsx2Config.cpp
-+++ b/pcsx2/Pcsx2Config.cpp
-@@ -1029,7 +1029,7 @@ void Pcsx2Config::CopyRuntimeConfig(Pcsx2Config& cfg)
- 
- void EmuFolders::SetDefaults(SettingsInterface& si)
+--- a/pcsx2/Pcsx2Config.cpp	2026-10-03 15:13:12.011040464 +0100
++++ b/pcsx2/Pcsx2Config.cpp	2026-10-03 15:13:12.019075337 +0100
+@@ -755,7 +755,7 @@
  {
--	si.SetStringValue("Folders", "Bios", "bios");
-+	si.SetStringValue("Folders", "Bios", "/userdata/bios/ps2");
- 	si.SetStringValue("Folders", "MemoryCards", "memcards");
- 	si.SetStringValue("Folders", "Cheats", "cheats");
- 	si.SetStringValue("Folders", "CheatsWS", "cheats_ws");
+ 	/* The only folder a core option sets is the memory cards'; the rest
+ 	 * are their defaults under DataRoot. */
+-	SetFolder(Bios, sizeof(Bios), DataRoot, "bios");
++	SetFolder(Bios, sizeof(Bios), DataRoot, "/userdata/bios/ps2");
+ 	SetFolder(MemoryCards, sizeof(MemoryCards), DataRoot, (memcards && memcards[0]) ? memcards : "memcards");
+ 	SetFolder(Cheats, sizeof(Cheats), DataRoot, "cheats");
+ 	SetFolder(CheatsWS, sizeof(CheatsWS), DataRoot, "cheats_ws");
