@@ -3,8 +3,8 @@
 # libretro-geolith
 #
 ################################################################################
-# Version: Commits on Jul 14, 2026
-LIBRETRO_GEOLITH_VERSION = c5b57a6b31b7abef4a8a9b521cae58d653e28154
+# Version: Commits on Sep 14, 2026
+LIBRETRO_GEOLITH_VERSION = 194024931935eff2092e36fc4f8e53e62ed11097
 LIBRETRO_GEOLITH_SITE = $(call github,libretro,geolith-libretro,$(LIBRETRO_GEOLITH_VERSION))
 LIBRETRO_GEOLITH_LICENSE = BSD-3-Clause
 LIBRETRO_GEOLITH_DEPENDENCIES += retroarch

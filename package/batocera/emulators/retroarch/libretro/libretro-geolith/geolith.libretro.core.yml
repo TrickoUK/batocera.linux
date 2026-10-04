@@ -72,3 +72,9 @@ systems:
           Top Loader: cd_top
           CDZ: cdz
           CDZ (Universe BIOS): cdz_unibios
+      geolith_cd_dma_len_limit:
+        prompt: CD DMA LENGTH LIMIT (HACK)
+        description: Fixes corrupted sound in Art of Fighting's bonus stage. Unconfirmed on real hardware.
+        choices:
+          'Off': disabled
+          'On': enabled

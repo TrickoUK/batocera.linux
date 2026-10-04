@@ -24,3 +24,4 @@ class Geolith(Core):
 
         if self.system == 'neogeocd':
             core_options.set_from_config('geolith_cd_system_type', default='cdz')
+            core_options.set_from_config('geolith_cd_dma_len_limit', default='disabled')

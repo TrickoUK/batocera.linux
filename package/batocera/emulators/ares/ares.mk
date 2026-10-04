@@ -3,8 +3,8 @@
 # ares
 #
 ################################################################################
-# Version: Commits on Jul 31, 2026
-ARES_VERSION = b80f67d38312648d197762121c3a27b02c0887db
+# Version: Commits on Sep 23, 2026
+ARES_VERSION = 4cb8d92b441557cb6bcaf133c4cbc7f6819b1122
 ARES_SITE = https://github.com/ares-emulator/ares
 ARES_SITE_METHOD = git
 ARES_LICENSE = ISC (ares core), multiple (bundled third-party components, see LICENSE)
