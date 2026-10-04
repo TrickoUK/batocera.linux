@@ -1,0 +1,335 @@
+Revert upstream 6eabf2242 and 8d2f5d6ea (MTGS early vsync)
+
+8d2f5d6ea lets the EE run on to the next frame as soon as its vsync is
+consumed, so a finished frame can be presented from a ring drain outside
+retro_run. With RetroArch on Vulkan that makes the full-screen input
+overlay (the Sinden light gun border) get drawn inside the game viewport
+for single frames, roughly every 0.75 s - a visible border flicker in
+every PS2 light gun game. 6eabf2242 is upstream's follow-up fix for a
+hang on content close that 8d2f5d6ea introduced, so both go together.
+
+Measured on the box (grim captures): unreverted core about 1 bad frame
+in 60, this revert 0 in 600. Drop when upstream no longer needs it.
+
+Only the source hunks are reverted; the tests/mtgsvsync and
+tests/mtgsclose harnesses the commits added are not part of the build.
+
+diff --git a/libretro/main.cpp b/libretro/main.cpp
+index 91f7e6834..ceebd5be8 100644
+--- a/libretro/main.cpp
++++ b/libretro/main.cpp
+@@ -2136,20 +2136,11 @@ static void libretro_context_reset(void)
+ 	cpu_thread_resume();
+ }
+ 
+ static void libretro_context_destroy(void)
+ {
+-	/* Pausing drains the GS ring, and since the EE runs a frame ahead
+-	 * the drain finds that frame's vsync in it. It is consumed here and
+-	 * not presented: a present is a video_refresh from inside the
+-	 * frontend's own context teardown, on the context being torn down.
+-	 * RetroArch up to 1.22 holds its context lock across this callback
+-	 * and takes it again at the top of video_refresh, and hangs there
+-	 * for good (issue #171). */
+-	mtgs_hold_present(1);
+ 	cpu_thread_pause();
+-	mtgs_hold_present(0);
+ 
+ #ifdef ENABLE_VULKAN
+ 	/* The frontend keeps replaying the last set_image (cached-frame
+ 	 * replay: pause, menu background, its own context-teardown blit) and
+ 	 * releases that view during the reinit that follows this callback.
+@@ -2899,15 +2890,11 @@ bool retro_load_game_special(unsigned game_type,
+ 
+ void retro_unload_game(void)
+ {
+ 	if (MTGS::IsOpen())
+ 	{
+-		/* As in libretro_context_destroy: the frame the EE had ready is
+-		 * consumed, not handed to a frontend that is unloading the game. */
+-		mtgs_hold_present(1);
+ 		cpu_thread_pause();
+-		mtgs_hold_present(0);
+ 		MTGS::CloseGS();
+ 	}
+ 
+ 	VMManager::Shutdown();
+ 	/* Shutdown() flipped state to Stopping; if cpu_thread is sleeping
+diff --git a/pcsx2/MTGS.cpp b/pcsx2/MTGS.cpp
+index 0cfbd6861..fdab8f90c 100644
+--- a/pcsx2/MTGS.cpp
++++ b/pcsx2/MTGS.cpp
+@@ -68,25 +68,10 @@ union PacketTagType
+  * its own cursors onto separate cache lines, so the alignas gymnastics the
+  * old cursor pair needed live inside the queue now. */
+ static retro_spsc_t s_Ring;
+ static bool s_RingOk = false;
+ 
+-/* The GS's view of the privileged registers: a copy of PS2MEM_GS taken
+- * on this thread at each vsync, reset and freeze, while the EE is held
+- * in WaitGS. The renderers read display registers at vsync and nothing
+- * else, so a copy taken then is the frame's, and the EE is free to write
+- * the next frame's the moment its vsync is consumed - before the scanout,
+- * the frontend's present and its pacing wait, which the EE then overlaps
+- * instead of idling through. CSR stays in PS2MEM_GS, where the EE keeps
+- * it atomically; the field it carries at the vsync rides in the packet. */
+-alignas(64) static u8 s_gs_regs[PS2MEM_GS_REGS];
+-
+-static __fi void mtgs_sync_regs(void)
+-{
+-	memcpy(s_gs_regs, PS2MEM_GS, sizeof(s_gs_regs));
+-}
+-
+ static_assert(sizeof(PacketTagType) == 16, "command ring framing is one 16-byte record per packet");
+ 
+ /* Reserve one record.  Backpressure on a full ring: the consumer is the
+  * libretro thread, which the frontend keeps pumping through retro_run, so
+  * a full ring drains and progress is guaranteed.  The old open-coded ring
+@@ -126,14 +111,10 @@ alignas(64) static u64 g_gs_idle_ticks;
+ alignas(64) static u64 g_ee_wait_ticks;
+ #endif
+ 
+ extern struct retro_hw_render_callback hw_render;
+ 
+-/* Set by the frontend's thread around a context teardown, and read by
+- * the drain that teardown runs on the same thread: mtgs_hold_present. */
+-static int s_present_held = 0;
+-
+ /* See GS.h. NULL unless the renderer in use installed them. */
+ void (*gs_hw_context_begin)(void) = NULL;
+ void (*gs_hw_context_end)(void)   = NULL;
+ 
+ /* One read of the CPU count, cached. Spinning on a single-core host only
+@@ -198,16 +179,11 @@ void MTGS::PostVsyncStart()
+ 	// length in SIMDs (128 bits).
+ 	PacketTagType* tag = RingWriteBegin();
+ 	if (tag)
+ 	{
+ 		tag->command = GS_RINGTYPE_VSYNC;
+-		/* The field this vsync scans out, and whether the privileged
+-		 * registers changed since the last one: read here, on the thread
+-		 * that owns them, so the consumer needs nothing from the EE's
+-		 * state by the time it gets to them. */
+-		tag->data[0] = (gsCSRload() & GS_CSR_FIELD) ? 0 : 1;
+-		tag->data[1] = (u32)retro_atomic_exchange_int(&s_GSRegistersWritten, 0);
++		tag->data[0] = 0;
+ 		RingWriteEnd();
+ 	}
+ 
+ #ifdef ENABLE_PCSX2_PROFILER
+ 	{
+@@ -225,14 +201,17 @@ void MTGS::PostVsyncStart()
+ 		else if (frames == 1)
+ 			last_wall = now;
+ 	}
+ #endif
+ 
+-	/* This wait is the pacing between the two threads: the EE holds here
+-	 * until the libretro thread has consumed this vsync packet, which is
+-	 * where the GS takes its copy of the registers and lets the EE go on
+-	 * to the next frame while it scans this one out and hands it over. */
++	// Remove extra frame input lag. With VsyncQueueSize hard-locked to 0 in
++	// the libretro topology, this WaitGS IS the frame-pacing mechanism: it
++	// blocks cpu_thread until the libretro thread (= MTGS thread) drains
++	// the ring through this VSYNC packet.
++	//
++	// (Letting the EE run 1-2 frames ahead of the GS was tried and measured: no
++	// change in wall time, because the EE is not actually waiting here.)
+ 	WaitGS(false);
+ }
+ 
+ void MTGS::InitAndReadFIFO(u8* mem, u32 qwc)
+ {
+@@ -277,13 +256,12 @@ void MTGS::TryOpenGS(void)
+ 			(size_t)MTGS_RINGBUFFERSIZE * sizeof(PacketTagType));
+ 		if (!s_RingOk)
+ 			log_cb(RETRO_LOG_ERROR, "MTGS: command ring allocation failed; GS commands will be dropped\n");
+ 	}
+ 
+-	mtgs_sync_regs();
+ 	GS_HW_CONTEXT_BEGIN();
+-	GSopen(EmuConfig.GS, EmuConfig.GS.Renderer, hw_render.context_type, s_gs_regs);
++	GSopen(EmuConfig.GS, EmuConfig.GS.Renderer, hw_render.context_type, PS2MEM_GS);
+ 	GS_HW_CONTEXT_END();
+ 
+ 	retro_atomic_store_release_int(&s_open_flag, true);
+ }
+ 
+@@ -433,59 +411,34 @@ bool MTGS::MainLoop(bool flush_all)
+ 							break;
+ 					}
+ 				}
+ 					break;
+ 				case GS_RINGTYPE_VSYNC:
+-				{
+-					const u32 field = tag.data[0];
+-					const bool registers_written = tag.data[1] != 0;
+-					/* The EE is held in WaitGS behind this packet, so the
+-					 * registers are this frame's: take them, and if this is
+-					 * the per-frame exit, commit the packet and let the EE go
+-					 * before the scanout. The tag is not read past here. */
+-					mtgs_sync_regs();
+-					if (!flush_all)
+-					{
+-						consumed += sizeof(PacketTagType);
+-						retro_spsc_read_end(&s_Ring, consumed);
+-						consumed = 0;
+-						/* Idle at the current epoch releases WaitGS's
+-						 * empty-wait. Entries behind the vsync (a soft-reset
+-						 * tag rides along with no notify of its own) re-arm
+-						 * the work count so the next call drains them. */
+-						if (work_eventcount_check(&s_sem_event) || retro_spsc_read_avail(&s_Ring) != 0)
+-							work_eventcount_notify(&s_sem_event);
+-					}
+-					/* Whether this vsync is scanned out: see
+-					 * mtgs_vsync_presents (MTGSOwner.h). A drain on the
+-					 * thread that renders presents the frame the EE had
+-					 * ready, unless the frontend is taking the context
+-					 * away. */
+-					if (mtgs_vsync_presents(flush_all,
+-								sthread_get_current_thread_id(), s_thread,
+-								s_present_held))
++					// CSR & 0x2000; is the pageflip id.
++					// flush_all skips GSvsync when multi-threaded (reset/pause drain
++					// without rendering), but in single-threaded mode MainLoop(true)
++					// IS the render path — call GSvsync.
++					if(!flush_all || sthread_get_current_thread_id() == s_thread)
+ 					{
+ 						GS_HW_CONTEXT_BEGIN();
+-						GSvsync(field, registers_written);
++						GSvsync((gsCSRload() & GS_CSR_FIELD) ? 0 : 1,
++						        (bool)retro_atomic_exchange_int(&s_GSRegistersWritten, 0));
+ 						GS_HW_CONTEXT_END();
+ 					}
+-					if (!flush_all)
+-						return true;
++					else
++						retro_atomic_store_release_int(&s_GSRegistersWritten, 0);
+ 					break;
+-				}
+ 				case GS_RINGTYPE_FREEZE:
+ 					{
+ 						MTGS_FreezeData* data = (MTGS_FreezeData*)tag.pointer;
+ 						int mode = tag.data[0];
+-						mtgs_sync_regs();
+ 						GS_HW_CONTEXT_BEGIN();
+ 						GSfreeze((FreezeAction)mode, (freezeData*)data->fdata);
+ 						GS_HW_CONTEXT_END();
+ 					}
+ 					break;
+ 				case GS_RINGTYPE_RESET:
+-					mtgs_sync_regs();
+ 					GS_HW_CONTEXT_BEGIN();
+ 					GSreset(tag.data[0] != 0);
+ 					GS_HW_CONTEXT_END();
+ 					break;
+ 				case GS_RINGTYPE_INIT_AND_READ_FIFO:
+@@ -497,10 +450,34 @@ bool MTGS::MainLoop(bool flush_all)
+ 				default:
+ 					break;
+ 			}
+ 
+ 			consumed += sizeof(PacketTagType);
++
++			if (!flush_all && tag.command == GS_RINGTYPE_VSYNC)
++			{
++				retro_spsc_read_end(&s_Ring, consumed);
++				/* Returning mid-ring: the batch acknowledge at the top of
++				 * the outer loop already consumed the notifies for any
++				 * entries still queued behind this vsync.  The eventcount's
++				 * contract -- relied on by WaitForEmpty and by the
++				 * pre-park empty post in WaitForWorkTimed -- is that a
++				 * consumer at RUNNING_0 has drained the ring, and the
++				 * per-frame early exit is the one place this consumer
++				 * breaks it.  Re-arm the sema when entries remain so the
++				 * next WaitForWorkTimed drains them instead of parking
++				 * and waking a producer whose WaitGS(false) rendezvous
++				 * (readbacks, freezes) has not actually completed: a
++				 * producer released early reads a readback buffer the GS
++				 * side never filled, and the stale entry is processed
++				 * late into memory the EE may have reused.  A notify
++				 * racing a concurrent enqueue at worst doubles up; the
++				 * state machine absorbs spurious wakes by design. */
++				if (retro_spsc_read_avail(&s_Ring) != 0)
++					work_eventcount_notify(&s_sem_event);
++				return true;
++			}
+ 		}
+ 		retro_spsc_read_end(&s_Ring, consumed);
+ 		}
+ 	}
+ 
+@@ -633,18 +610,10 @@ void MTGS::WaitForClose()
+ void mtgs_claim_ring(void)
+ {
+ 	MTGS::s_thread = sthread_get_current_thread_id();
+ }
+ 
+-/* The frontend's thread, around context_destroy and unload: the drain
+- * inside consumes the frame the EE had ready without presenting it. See
+- * mtgs_vsync_presents (MTGSOwner.h). */
+-void mtgs_hold_present(int on)
+-{
+-	s_present_held = on;
+-}
+-
+ /* The EE thread, as it starts and as it ends. See MTGSOwner.h. */
+ void mtgs_set_producer_thread(int on)
+ {
+ 	MTGS::s_producer_thread = on ? sthread_get_current_thread_id() : 0;
+ }
+diff --git a/pcsx2/MTGSOwner.h b/pcsx2/MTGSOwner.h
+index ee428a4ed..4d7cefee5 100644
+--- a/pcsx2/MTGSOwner.h
++++ b/pcsx2/MTGSOwner.h
+@@ -37,50 +37,17 @@ static int mtgs_wait_drains(uintptr_t self, uintptr_t producer, int is_mtvu)
+ 	if (is_mtvu)
+ 		return 0;
+ 	return self != producer;
+ }
+ 
+-/* Whether a vsync taken off the ring is scanned out and handed to the
+- * frontend.
+- *
+- * In retro_run, always: that is the frame. In a drain (flush_all) it is
+- * when the thread draining is the one that renders, because since the EE
+- * runs a frame ahead of the scanout a drain finds that frame's vsync in
+- * the ring - a savestate or a reset taken between two retro_runs would
+- * otherwise swallow it.
+- *
+- * Except while the frontend is taking the context away. context_destroy
+- * pauses the EE, which is a drain, and the frame it finds has nowhere to
+- * go: the context it would be shown on is the one being destroyed. And
+- * presenting it is a call back into the frontend from inside the
+- * frontend's own teardown. RetroArch up to 1.22 holds its context lock
+- * across context_destroy and takes the same lock at the top of every
+- * video_refresh; the lock is not recursive, so the present never returns
+- * and neither does the frontend (closing content hung, issue #171).
+- *
+- * flush_all: the call is a drain, not retro_run's pass
+- * self:      the calling thread
+- * renderer:  the thread that renders (mtgs_claim_ring)
+- * held:      the frontend is taking the context away (mtgs_hold_present) */
+-static int mtgs_vsync_presents(int flush_all, uintptr_t self,
+-		uintptr_t renderer, int held)
+-{
+-	if (!flush_all)
+-		return 1;
+-	if (held)
+-		return 0;
+-	return self == renderer;
+-}
+-
+ /* Defined in MTGS.cpp. Plain C names and linkage: callable from a C
+  * file the day the callers are one. */
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+ void mtgs_claim_ring(void);            /* frontend, first thing in retro_run */
+ void mtgs_set_producer_thread(int on); /* EE thread, as it starts and ends   */
+-void mtgs_hold_present(int on);        /* frontend, around a context teardown */
+ #ifdef __cplusplus
+ }
+ #endif
+ 
+ #endif
