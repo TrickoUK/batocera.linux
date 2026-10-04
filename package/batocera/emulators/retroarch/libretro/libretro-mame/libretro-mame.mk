@@ -18,7 +18,7 @@ LIBRETRO_MAME_LICENSE = MAME
 LIBRETRO_MAME_OVERRIDE_SRCDIR = /var/mnt/work/batocera-build/libretro-mame
 LIBRETRO_MAME_OVERRIDE_SRCDIR_RSYNC_EXCLUSIONS = --exclude=.git
 
-LIBRETRO_MAME_DEPENDENCIES = alsa-lib retroarch host-python3
+LIBRETRO_MAME_DEPENDENCIES = alsa-lib retroarch host-python3 batocera-launch-libretro-mame
 
 $(eval $(call register,mame.libretro.core.yml))
 $(eval $(call register-if-kconfig,BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY,sega-arcade.mame.libretro.core.yml))
