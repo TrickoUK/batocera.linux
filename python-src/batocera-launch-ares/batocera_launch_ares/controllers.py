@@ -5,8 +5,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from ...controller import Controller, Controllers
-    from ...input import Input
+    from batocera_launch import Controller, Controllers, Input
 
 # ares' desktop-ui has one generic "Virtual Gamepad" input device per player
 # slot (VirtualPad1..VirtualPad5, see desktop-ui/input/input.hpp). Every

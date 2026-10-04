@@ -1,0 +1,17 @@
+[project]
+name = "batocera-launch-ares"
+version = '44.0'
+dependencies = [
+    'batocera-common',
+    'batocera-launch',
+]
+
+[project.entry-points."batocera_launch.emulators"]
+ares = 'batocera_launch_ares:Ares'
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+include = ["/batocera_launch_ares"]

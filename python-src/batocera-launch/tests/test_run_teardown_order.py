@@ -60,6 +60,7 @@ def _run_emulator(monkeypatch: pytest.MonkeyPatch) -> list[str]:
     emulator.prepare_bezel = AsyncMock(return_value=None)
     emulator.prepare_hud = AsyncMock()
     emulator.before_run = AsyncMock()
+    emulator._Emulator__plugins = MagicMock(ready=AsyncMock())  # name-mangled Emulator.__plugins
 
     assert asyncio.run(emulator_module.Emulator.run(emulator)) == 0
     return events

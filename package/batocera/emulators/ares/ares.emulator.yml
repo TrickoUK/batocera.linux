@@ -95,7 +95,7 @@ systems:
     file_extensions: [sms, zip]
   - name: sega32x
     # 32X is the same ares "md" core as megadrive, just loaded under a
-    # different desktop-ui system name/BIOS mode (see aresGenerator.py) -
+    # different desktop-ui system name/BIOS mode (see batocera_launch_ares/emulator.py) -
     # its own mia loader (mega-32x.cpp) only accepts ".32x" though, none
     # of megadrive's wider raw-dump extensions.
     file_extensions: [32x, zip]

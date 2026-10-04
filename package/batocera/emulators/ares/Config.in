@@ -7,6 +7,7 @@ config BR2_PACKAGE_ARES
 	select BR2_PACKAGE_XLIB_LIBX11
 	select BR2_PACKAGE_XLIB_LIBXRANDR
 	select BR2_PACKAGE_LIBRASHADER
+	select BR2_PACKAGE_BATOCERA_LAUNCH_ARES if BR2_PACKAGE_BATOCERA_LAUNCH
 	help
 	  Multi-system emulator descended from higan/bsnes. This fork builds
 	  it scoped to Nintendo 64, Super Nintendo/Super Famicom, NES/Famicom,
