@@ -95,15 +95,21 @@ def find_mode(video_mode: str, listed_modes: Iterable[str], /) -> str | None:
         return video_mode
 
     wanted = _parse_mode(video_mode)
-    if wanted is None or wanted[1] is None:
+    if wanted is None:
         return None
 
     wanted_resolution, wanted_refresh = wanted
+    if wanted_refresh is None:
+        return None
+
     for candidate in listed:
         parsed = _parse_mode(candidate)
-        if parsed is None or parsed[1] is None or parsed[0] != wanted_resolution:
+        if parsed is None:
             continue
-        if abs(parsed[1] - wanted_refresh) <= _REFRESH_TOLERANCE_MHZ:
+        resolution, refresh = parsed
+        if refresh is None or resolution != wanted_resolution:
+            continue
+        if abs(refresh - wanted_refresh) <= _REFRESH_TOLERANCE_MHZ:
             return candidate
 
     return None
