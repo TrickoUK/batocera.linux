@@ -29,6 +29,7 @@
 - Odroid M2 initial support
 - Radxa Rock-5T initial support
 - Retroid Pocket Nova initial support
+- R36 Ultra initial support
 ### Added
 - Anbernic H700 device deep sleep suspend, replacing fake suspend
 - Anbernic H700 device hardware acceleration support
@@ -297,7 +298,7 @@
 - Ur-Quan Masters to Aug 21, 2026 build
 - UZDoom to 5.0.3
 - Visual Pinball to Sep 16, 2026 build
-- Vita3k to Sep 17, 2026 build
+- Vita3k to Oct 6, 2026 build
 - VKQuake to 1.36.0
 - vkQuake2 to Aug 5, 2026 build
 - VKQuake3 to 1.36
