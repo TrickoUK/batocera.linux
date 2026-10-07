@@ -846,6 +846,8 @@ class RPCS3(ParallelStartupTaskMixin, Emulator):
                     else {}
                 ),
                 'Show move cursor': self.config.get_bool('rpcs3_crosshairs'),
+                # Batocera 012-gun-shake.patch: steady gun motion + shake on the gun's BTN_2 button
+                'Lightgun Steady Motion': self.config.get_bool('rpcs3_gun_steady_motion'),
             },
             'Miscellaneous': {
                 'Exit RPCS3 when process finishes': True,

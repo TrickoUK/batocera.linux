@@ -394,6 +394,15 @@ custom_features:
     choices:
       'Off': false
       'On': true
+  rpcs3_gun_steady_motion:
+    order: 100
+    group: CONTROLS
+    submenu: LIGHT GUNS
+    prompt: LIGHT GUN SHAKE BUTTON
+    description: Stops gun aim jitter registering as PS Move shakes (e.g. House of the Dead 4 reloading after every shot). Shake/reload is then done with the gun's BTN_2 button (Sinden front right).
+    choices:
+      'Off (Default)': false
+      'On': true
   rpcs3_controller1:
     group: CONTROLS
     submenu: CONTROLLER 1

@@ -1,0 +1,66 @@
+--- a/rpcs3/Emu/Cell/Modules/cellGem.cpp
++++ b/rpcs3/Emu/Cell/Modules/cellGem.cpp
+@@ -2729,6 +2729,11 @@
+ 	return true;
+ }
+ 
++// Batocera: gun button that fakes a PS Move shake (e.g. reload in House of the Dead 4)
++static constexpr gun_button gun_shake_button = gun_button::btn_2; // BTN_2 = Sinden front right button
++static constexpr f32 gun_shake_velocity = 1500.0f; // mm/s
++static constexpr f32 gun_shake_accel = 60000.0f;   // mm/s² (~6 G)
++
+ template <typename T>
+ static void gun_pos_to_gem_state(u32 gem_no, gem_config::gem_controller& controller, T& gem_state)
+ {
+@@ -2750,6 +2755,41 @@
+ 	{
+ 		ps_move_data& move_data = ::at32(g_fxo->get<gem_config>().fake_move_data, gem_no);
+ 		pos_to_gem_state(gem_no, controller, gem_state, x_pos, y_pos, x_max, y_max, move_data);
++
++		// Batocera: a lightgun has no motion sensor. Velocity/acceleration derived from the
++		// aim position turn normal pointer jitter into a constant "shake" (several G), which
++		// makes shake-to-reload games (House of the Dead 4) reload after every shot.
++		// Optionally report a steady controller instead, and fake a shake while the shake button is held.
++		if (!g_cfg.io.lightgun_steady_motion)
++			return;
++
++		bool shake = false;
++		{
++			gun_thread& gun = g_fxo->get<gun_thread>();
++			std::scoped_lock lock(gun.handler.mutex);
++			shake = gun.handler.get_button(gem_no, gun_shake_button) == 1;
++		}
++
++		static bool s_shake_phase[CELL_GEM_MAX_NUM]{};
++		const f32 sign = (s_shake_phase[gem_no % CELL_GEM_MAX_NUM] = !s_shake_phase[gem_no % CELL_GEM_MAX_NUM]) ? 1.0f : -1.0f;
++
++		for (u32 i = 0; i < 3; i++)
++		{
++			gem_state->vel[i] = 0.0f;
++			gem_state->accel[i] = 0.0f;
++		}
++
++		if (shake)
++		{
++			gem_state->vel[1] = sign * gun_shake_velocity;
++			gem_state->accel[1] = sign * gun_shake_accel;
++		}
++
++		for (u32 i = 0; i < 3; i++)
++		{
++			gem_state->handle_vel[i] = gem_state->vel[i];
++			gem_state->handle_accel[i] = gem_state->accel[i];
++		}
+ 	}
+ 	else if constexpr (std::is_same_v<T, vm::ptr<CellGemImageState>>)
+ 	{
+--- a/rpcs3/Emu/system_config.h
++++ b/rpcs3/Emu/system_config.h
+@@ -290,6 +290,7 @@
+ 		cfg::uint<0, 100'000> pad_sleep{this, "Pad handler sleep (microseconds)", 1'000, true};
+ 		cfg::_bool background_input_enabled{this, "Background input enabled", true, true};
+ 		cfg::_bool show_move_cursor{this, "Show move cursor", false, true};
++		cfg::_bool lightgun_steady_motion{this, "Lightgun Steady Motion", false, true}; // Batocera: no fake motion from gun aim, shake on a gun button
+ 		cfg::_bool paint_move_spheres{this, "Paint move spheres", false, true};
+ 		cfg::_bool allow_move_hue_set_by_game{this, "Allow move hue set by game", false, true};
+ 		cfg::_bool lock_overlay_input_to_player_one{this, "Lock overlay input to player one", false, true};
