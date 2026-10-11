@@ -64,6 +64,12 @@ class MAME(MAMEControllers, MAMECommand, MAMEBase):
             # 3dfx Voodoo Edge Anti-Aliasing (Enhancement)
             core_options.set_from_config('mame_voodoo_edge_aa', default='disabled')
 
+            # Gamepad steering assists for wheel games (override MAME's Machine Configuration)
+            core_options.set_from_config('mame_steering_response', default='game')
+            core_options.set_from_config('mame_steering_smoothing', default='game')
+            core_options.set_from_config('mame_steering_input', default='game')
+            core_options.set_from_config('mame_stick_steering_speed', default='game')
+
             # Disable controller profiling
             core_options.set('mame_buttons_profiles', 'disabled')
 
