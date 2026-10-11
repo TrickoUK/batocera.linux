@@ -129,7 +129,7 @@ custom_features:
   lr_pcsx2_pgs_ssaa:
     submenu: VIDEO
     prompt: PARALLEL SUPER SAMPLING
-    description: Apply supersampled anti-aliasing (SSAA), only used by the paraLLEl-GS renderer. High-res scanout requires at least '4x SSAA (ordered)' or higher. Native disables super sampling.
+    description: Apply supersampled anti-aliasing (SSAA), only used by the paraLLEl-GS renderer. 2x high-res scanout requires at least '4x SSAA (ordered)'. 4x high-res scanout requires '16x SSAA (ordered)'. 4x full field height requires '32x SSAA (ordered)'. Native disables super sampling.
     choices:
       Native: Native
       2x SSAA: 2x SSAA
@@ -137,13 +137,19 @@ custom_features:
       4x SSAA (ordered, can high-res): 4x SSAA (ordered, can high-res)
       8x SSAA (can high-res): 8x SSAA (can high-res)
       16x SSAA (can high-res): 16x SSAA (can high-res)
+      16x SSAA (ordered, can high-res 4x): 16x SSAA (ordered, can high-res 4x)
+      32x SSAA (ordered, can high-res 4x full): 32x SSAA (ordered, can high-res 4x full)
   lr_pcsx2_pgs_high_res_scanout:
     submenu: VIDEO
     prompt: HIGH-RES SCANOUT (EXPERIMENTAL)
-    description: Allows upscaling with paraLLEl-GS. Doesn't work with every game. Requires Parallel Super Sampling set to at least 4x SSAA (ordered) or higher.
+    description: Scans out above native resolution with paraLLEl-GS (2x - 1280x896, 4x - 2560x1792). Doesn't work with every game. 2x requires Parallel Super Sampling at 4x SSAA (ordered) or higher. 4x requires 16x SSAA (ordered) and falls back to 2x otherwise. Anti-aliased 4x trades slight softness for less shimmer. Full field height requires 32x SSAA (ordered) and helps games that render one field at a time.
     choices:
       Disabled: disabled
-      Enabled: enabled
+      2x: enabled
+      4x: enabled (4x)
+      4x Anti-Aliased: enabled (4x, anti-aliased)
+      4x Full Field Height: enabled (4x, full field height)
+      4x Anti-Aliased Full Field Height: enabled (4x, anti-aliased, full field height)
   lr_pcsx2_pgs_ss_tex:
     submenu: VIDEO
     prompt: SSAA TEXTURE (EXPERIMENTAL)
