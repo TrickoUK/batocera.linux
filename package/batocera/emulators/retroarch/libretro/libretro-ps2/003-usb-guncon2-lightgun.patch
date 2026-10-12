@@ -1,5 +1,5 @@
 diff --git a/libretro/USB.cpp b/libretro/USB.cpp
-index 7c8a906ff..6469c310e 100644
+index 7c8a906ff..8002883ce 100644
 --- a/libretro/USB.cpp
 +++ b/libretro/USB.cpp
 @@ -15,10 +15,11 @@
@@ -14,7 +14,7 @@ index 7c8a906ff..6469c310e 100644
  
  #include "libretro.h"
  
-@@ -38,23 +39,36 @@ static s64        s_usb_remaining = 0;
+@@ -38,29 +39,46 @@ static s64        s_usb_remaining = 0;
  
  static int        s_port_device[USB::NUM_PORTS] = { USB_DEV_NONE, USB_DEV_NONE };
  static unsigned   s_input_port[USB::NUM_PORTS]  = { 0, 1 };
@@ -54,7 +54,18 @@ index 7c8a906ff..6469c310e 100644
  
  static OHCIPort& GetOHCIPort(u32 port)
  {
-@@ -71,10 +85,13 @@ static void USBCreateDevice(u32 port)
+-	const u32 rhport = (port < s_qemu_ohci->num_ports) ? port : 0;
++	/* The PS2's first USB port is the OHCI's second root hub port, as in
++	 * standalone PCSX2 (USB.cpp GetOHCIPort). Games that tell players
++	 * apart by port, like the GunCon2 Time Crisis games, otherwise see the
++	 * first controller port's device as player 2. */
++	const u32 rhport = (port == 0) ? 1 : 0;
+ 	return s_qemu_ohci->rhport[rhport];
+ }
+ 
+ static void USBCreateDevice(u32 port)
+ {
+@@ -71,10 +89,13 @@ static void USBCreateDevice(u32 port)
  			dev = usb_hid::usb_hid_create_kbd(port);
  			break;
  		case USB_DEV_MOUSE:
@@ -68,7 +79,7 @@ index 7c8a906ff..6469c310e 100644
  	}
  	if (!dev)
  		return;
-@@ -164,19 +181,45 @@ void USBreset(void)
+@@ -164,19 +185,45 @@ void USBreset(void)
  void USBasync(u32 cycles)
  {
  	if (!s_qemu_ohci)
