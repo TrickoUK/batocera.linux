@@ -63,22 +63,10 @@ custom_features:
     prompt: RENDERING RESOLUTION
     description: Enhancement. Increase the rendering resolution. Makes 3D objects clearer.
     choices:
-      1x Native (PS2): 1x Native (PS2)
-      2x Native (~720p): 2x Native (~720p)
-      3x Native (~1080p): 3x Native (~1080p)
-      4x Native (~1440p/2K): 4x Native (~1440p/2K)
-      5x Native (~1800p/3K): 5x Native (~1800p/3K)
-      6x Native (~2160p/4K): 6x Native (~2160p/4K)
-      7x Native (~2530p): 7x Native (~2530p)
-      8x Native (~2880p/5K): 8x Native (~2880p/5K)
-      9x Native (~3240p): 9x Native (~3240p)
-      10x Native (~3600p/6K): 10x Native (~3600p/6K)
-      11x Native (~3960p): 11x Native (~3960p)
-      12x Native (~4320p/8K): 12x Native (~4320p/8K)
-      13x Native (~5824p): 13x Native (~5824p)
-      14x Native (~6272p): 14x Native (~6272p)
-      15x Native (~6720p): 15x Native (~6720p)
-      16x Native (~7168p): 16x Native (~7168p)
+      1x Native (PS2): 1x (Native)
+      2x Native (~720p): 2x
+      4x Native (~1440p/2K): 4x
+      8x Native (~2880p/5K): 8x
   lr_pcsx2_texture_filtering:
     submenu: VIDEO
     prompt: TEXTURE FILTERING
@@ -93,7 +81,7 @@ custom_features:
     prompt: TRILINEAR FILTERING
     description: Control the texture's trilinear filtering of the emulation.
     choices:
-      'OFF': false
+      'OFF': disabled
       Trilinear (PS2): Trilinear (PS2)
       Trilinear (Forced): Trilinear (Forced)
   lr_pcsx2_anisotropic:
@@ -111,7 +99,7 @@ custom_features:
     prompt: DITHERING
     description: Reduces banding between colors and improves the preceived color depth.
     choices:
-      'OFF': false
+      'OFF': disabled
       Scaled: Scaled
       Unscaled: Unscaled
       Force 32bit: Force 32bit
@@ -177,7 +165,7 @@ custom_features:
     description: Select a deinterlacing method. Use Automatic if unsure what to pick.
     choices:
       Automatic: Automatic
-      'OFF': Off
+      'OFF': 'Off'
       Weave TFF: Weave TFF
       Weave BFF: Weave BFF
       Bob TFF: Bob TFF

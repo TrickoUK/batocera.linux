@@ -1,8 +1,10 @@
 diff --git a/libretro/USB.cpp b/libretro/USB.cpp
-index 7c8a906..6469c31 100644
+index 7c8a906ff..6469c310e 100644
 --- a/libretro/USB.cpp
 +++ b/libretro/USB.cpp
-@@ -17,6 +17,7 @@
+@@ -15,10 +15,11 @@
+ 
+ #include <cstdlib>
  
  #include "../pcsx2/USB/USB.h"
  #include "../pcsx2/USB/libretro-usb/USBinternal.h"
@@ -10,7 +12,11 @@ index 7c8a906..6469c31 100644
  #include "../pcsx2/USB/libretro-usb/usb-hid.h"
  #include "../pcsx2/SaveState.h"
  
-@@ -40,19 +41,32 @@ static int        s_port_device[USB::NUM_PORTS] = { USB_DEV_NONE, USB_DEV_NONE }
+ #include "libretro.h"
+ 
+@@ -38,23 +39,36 @@ static s64        s_usb_remaining = 0;
+ 
+ static int        s_port_device[USB::NUM_PORTS] = { USB_DEV_NONE, USB_DEV_NONE };
  static unsigned   s_input_port[USB::NUM_PORTS]  = { 0, 1 };
  static USBDevice* s_usb_device[USB::NUM_PORTS]  = { nullptr, nullptr };
  
@@ -46,7 +52,11 @@ index 7c8a906..6469c31 100644
  	}
  }
  
-@@ -73,6 +87,9 @@ static void USBCreateDevice(u32 port)
+ static OHCIPort& GetOHCIPort(u32 port)
+ {
+@@ -71,10 +85,13 @@ static void USBCreateDevice(u32 port)
+ 			dev = usb_hid::usb_hid_create_kbd(port);
+ 			break;
  		case USB_DEV_MOUSE:
  			dev = usb_hid::usb_hid_create_mouse(port);
  			break;
@@ -56,7 +66,11 @@ index 7c8a906..6469c31 100644
  		default:
  			return;
  	}
-@@ -166,6 +183,20 @@ void USBasync(u32 cycles)
+ 	if (!dev)
+ 		return;
+@@ -164,19 +181,45 @@ void USBreset(void)
+ void USBasync(u32 cycles)
+ {
  	if (!s_qemu_ohci)
  		return;
  
@@ -77,7 +91,7 @@ index 7c8a906..6469c31 100644
  	/* Pump one frame of frontend keyboard/mouse input into attached HID
  	 * devices before advancing the controller. */
  	{
-@@ -173,8 +204,20 @@ void USBasync(u32 cycles)
+ 		retro_input_state_t input_cb = PADGetInputStateCallback();
  		u32 port;
  		for (port = 0; port < USB::NUM_PORTS; port++)
  		{
@@ -100,19 +114,27 @@ index 7c8a906..6469c31 100644
  		}
  	}
  
+ 	s_usb_remaining += cycles;
+ 	s_usb_clocks    += s_usb_remaining;
 diff --git a/pcsx2/CMakeLists.txt b/pcsx2/CMakeLists.txt
-index b750590..b40d1cc 100644
+index 16121dea4..0ad0d1a13 100644
 --- a/pcsx2/CMakeLists.txt
 +++ b/pcsx2/CMakeLists.txt
-@@ -725,6 +725,7 @@ set(pcsx2USBSources
+@@ -811,10 +811,11 @@ set(pcsx2USBSources
+ 	USB/libretro-usb/bus.cpp
+ 	USB/libretro-usb/core.cpp
  	USB/libretro-usb/desc.cpp
  	USB/libretro-usb/hid.cpp
  	USB/libretro-usb/input-keymap-qcode-to-qnum.cpp
 +	USB/libretro-usb/usb-guncon2.cpp
  	USB/libretro-usb/usb-hid.cpp
  	USB/libretro-usb/usb-ohci.cpp
+ 	USB/libretro-usb/ohci_dma.c
+ 	USB/libretro-usb/ohci_dma.h
  	USB/shared/ringbuffer.cpp
-@@ -737,6 +738,7 @@ set(pcsx2USBHeaders
+@@ -825,10 +826,11 @@ set(pcsx2USBHeaders
+ 	USB/libretro-usb/desc.h
+ 	USB/libretro-usb/hid.h
  	USB/libretro-usb/input-keymap.h
  	USB/libretro-usb/qusb.h
  	USB/libretro-usb/queue.h
@@ -120,10 +142,52 @@ index b750590..b40d1cc 100644
  	USB/libretro-usb/usb-hid.h
  	USB/shared/ringbuffer.h
  )
+ set(pcsx2ZipToolsSources)
+ set(pcsx2ZipToolsHeaders)
 diff --git a/pcsx2/PAD/PAD.cpp b/pcsx2/PAD/PAD.cpp
+index 6ba40e451..3f32da1c5 100644
 --- a/pcsx2/PAD/PAD.cpp
 +++ b/pcsx2/PAD/PAD.cpp
-@@ -376,6 +376,7 @@
+@@ -199,10 +199,15 @@ struct pad_input
+ 	int lx, ly, rx, ry;
+ 	int mouse_x, mouse_y;
+ 	u8  analog[12];
+ 	u8  keys[RETROK_LAST / 8 + 1];
+ 	u8  mouse_buttons;
++	/* USB GunCon2: absolute aim, off-screen flag and the buttons as a
++	 * mask of RETRO_DEVICE_ID_LIGHTGUN_* ids. */
++	s16 gun_x, gun_y;
++	u8  gun_offscreen;
++	u32 gun_buttons;
+ };
+ static struct pad_input pad_staged[2];
+ static struct pad_input pad_live[2];
+ 
+ extern "C" void pad_input_latch(void)
+@@ -229,10 +234,20 @@ static int16_t pad_latched_input(unsigned port, unsigned device, unsigned index,
+ 	if (port >= 2)
+ 		return 0;
+ 	in = &pad_live[port];
+ 	if (device == RETRO_DEVICE_KEYBOARD)
+ 		return id < RETROK_LAST && ((in->keys[id >> 3] >> (id & 7)) & 1);
++	if (device == RETRO_DEVICE_LIGHTGUN)
++	{
++		switch (id)
++		{
++			case RETRO_DEVICE_ID_LIGHTGUN_SCREEN_X:     return in->gun_x;
++			case RETRO_DEVICE_ID_LIGHTGUN_SCREEN_Y:     return in->gun_y;
++			case RETRO_DEVICE_ID_LIGHTGUN_IS_OFFSCREEN: return in->gun_offscreen;
++			default:                                    return id < 32 && ((in->gun_buttons >> id) & 1);
++		}
++	}
+ 	if (device != RETRO_DEVICE_MOUSE)
+ 		return 0;
+ 	switch (id)
+ 	{
+ 		case RETRO_DEVICE_ID_MOUSE_X:
+@@ -428,10 +443,11 @@ namespace Input
+ 		static const struct retro_controller_description port_devices[] = {
+ 			{ "DualShock 2", RETRO_DEVICE_JOYPAD },
  			{ "USB Keyboard", RETRO_DEVICE_KEYBOARD },
  			{ "USB Mouse", RETRO_DEVICE_MOUSE },
  			{ "USB Keyboard + Mouse", RETRO_DEVICE_KEYBOARD_AND_MOUSE },
@@ -131,7 +195,41 @@ diff --git a/pcsx2/PAD/PAD.cpp b/pcsx2/PAD/PAD.cpp
  			{},
  		};
  
-@@ -509,6 +510,13 @@
+ 		static const struct retro_controller_info ports[] = {
+ 			{ port_devices, sizeof(port_devices) / sizeof(*port_devices) },
+@@ -513,10 +529,29 @@ namespace Input
+ 				pad_staged[port].mouse_buttons = (u8)(
+ 					  (input_cb(port, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT)   ? 1 : 0)
+ 					| (input_cb(port, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT)  ? 2 : 0)
+ 					| (input_cb(port, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_MIDDLE) ? 4 : 0));
+ 			}
++			if (pad_type[port] == RETRO_DEVICE_LIGHTGUN)
++			{
++				static const unsigned gun_ids[] = {
++					RETRO_DEVICE_ID_LIGHTGUN_TRIGGER, RETRO_DEVICE_ID_LIGHTGUN_RELOAD,
++					RETRO_DEVICE_ID_LIGHTGUN_START, RETRO_DEVICE_ID_LIGHTGUN_SELECT,
++					RETRO_DEVICE_ID_LIGHTGUN_AUX_A, RETRO_DEVICE_ID_LIGHTGUN_AUX_B,
++					RETRO_DEVICE_ID_LIGHTGUN_AUX_C,
++					RETRO_DEVICE_ID_LIGHTGUN_DPAD_UP, RETRO_DEVICE_ID_LIGHTGUN_DPAD_DOWN,
++					RETRO_DEVICE_ID_LIGHTGUN_DPAD_LEFT, RETRO_DEVICE_ID_LIGHTGUN_DPAD_RIGHT,
++				};
++				unsigned i;
++				pad_staged[port].gun_x         = (s16)input_cb(port, RETRO_DEVICE_LIGHTGUN, 0, RETRO_DEVICE_ID_LIGHTGUN_SCREEN_X);
++				pad_staged[port].gun_y         = (s16)input_cb(port, RETRO_DEVICE_LIGHTGUN, 0, RETRO_DEVICE_ID_LIGHTGUN_SCREEN_Y);
++				pad_staged[port].gun_offscreen = input_cb(port, RETRO_DEVICE_LIGHTGUN, 0, RETRO_DEVICE_ID_LIGHTGUN_IS_OFFSCREEN) != 0;
++				pad_staged[port].gun_buttons   = 0;
++				for (i = 0; i < C89_ARRAY_SIZE(gun_ids); i++)
++					if (input_cb(port, RETRO_DEVICE_LIGHTGUN, 0, gun_ids[i]))
++						pad_staged[port].gun_buttons |= 1u << gun_ids[i];
++			}
+ 
+ 			pad_staged[port].buttons = new_button_mask;
+ 			pad_staged[port].lx      = new_lx;
+ 			pad_staged[port].ly      = new_ly;
+ 			pad_staged[port].rx      = new_rx;
+@@ -582,10 +617,17 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
+ 				 * this slot is kept for menu/pause navigation. */
+ 				s_pad_type_name[port] = "DualShock2";
  				USBSetPortDevice(0, USB_DEV_KEYBOARD, port);
  				USBSetPortDevice(1, USB_DEV_MOUSE, port);
  				break;
@@ -145,11 +243,15 @@ diff --git a/pcsx2/PAD/PAD.cpp b/pcsx2/PAD/PAD.cpp
  			default:
  				s_pad_type_name[port] = "None";
  				USBSetPortDevice(port, USB_DEV_NONE, port);
+ 				break;
+ 		}
 diff --git a/pcsx2/USB/USB.h b/pcsx2/USB/USB.h
-index f16c574..9c44930 100644
+index cd630b0f8..fe7e64a85 100644
 --- a/pcsx2/USB/USB.h
 +++ b/pcsx2/USB/USB.h
-@@ -87,6 +87,7 @@ enum UsbPortDevice
+@@ -74,10 +74,11 @@ namespace USB
+ enum UsbPortDevice
+ {
  	USB_DEV_NONE = 0,
  	USB_DEV_KEYBOARD,
  	USB_DEV_MOUSE,
@@ -157,9 +259,11 @@ index f16c574..9c44930 100644
  };
  
  void USBSetPortDevice(unsigned port, int device, unsigned input_port);
+ 
+ void USBinit(void);
 diff --git a/pcsx2/USB/libretro-usb/usb-guncon2.cpp b/pcsx2/USB/libretro-usb/usb-guncon2.cpp
 new file mode 100644
-index 0000000..4165d94
+index 000000000..4165d9472
 --- /dev/null
 +++ b/pcsx2/USB/libretro-usb/usb-guncon2.cpp
 @@ -0,0 +1,474 @@
@@ -639,7 +743,7 @@ index 0000000..4165d94
 +} // namespace usb_guncon2
 diff --git a/pcsx2/USB/libretro-usb/usb-guncon2.h b/pcsx2/USB/libretro-usb/usb-guncon2.h
 new file mode 100644
-index 0000000..3bff4b9
+index 000000000..3bff4b9a9
 --- /dev/null
 +++ b/pcsx2/USB/libretro-usb/usb-guncon2.h
 @@ -0,0 +1,29 @@

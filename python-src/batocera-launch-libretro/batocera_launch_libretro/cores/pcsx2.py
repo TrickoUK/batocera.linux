@@ -33,8 +33,12 @@ class Pcsx2(GLCoreForceMixin, Core):
         if renderer == 'Auto':
             renderer = 'Vulkan' if self.config.get('gfxbackend') == 'vulkan' else 'OpenGL'
         core_options.set('pcsx2_renderer', renderer)
-        # Render resolution
-        core_options.set_from_config('pcsx2_upscale_multiplier', 'lr_pcsx2_resolution', default='1x Native (PS2)')
+        # Render resolution: the core only takes 1x/2x/4x/8x; older values such as
+        # '3x Native (~1080p)' drop to the largest supported multiplier below them
+        resolution = str(self.config.get('lr_pcsx2_resolution', '1x (Native)'))
+        multiplier = int(digits) if (digits := resolution.partition('x')[0]).isdigit() else 1
+        multiplier = max(m for m in (1, 2, 4, 8) if m <= max(multiplier, 1))
+        core_options.set('pcsx2_upscale_multiplier', '1x (Native)' if multiplier == 1 else f'{multiplier}x')
         # Texture Filtering
         core_options.set_from_config('pcsx2_texture_filtering', 'lr_pcsx2_texture_filtering', default='Bilinear (PS2)')
         # Trilinear Filtering
