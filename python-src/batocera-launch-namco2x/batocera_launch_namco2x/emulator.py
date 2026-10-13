@@ -85,17 +85,12 @@ class Namco2x(Emulator):
         self.game_dir.mkdir(parents=True, exist_ok=True)
         return self.game_dir
 
-    @property
-    def handles_bezels(self) -> bool:
-        # the engine draws its own gun border around the picture; batocera's
-        # border overlay is X11-only and would not show over this window
-        return True
-
     def _gun_border(self) -> str:
+        # auto: batocera's own gun border (the bezel overlay, which honours the
+        # border size/colour/mode settings) is drawn over the game, so the
+        # engine's plain white one stays off; a number forces the engine's
         if (value := self.config.get_str('namco2x_gun_border', 'auto')) != 'auto':
             return value
-        if self.config.use_guns and self.guns and (dimensions := self.gun_border_dimensions) is not None:
-            return str(min(6, sum(dimensions)))
         return '0'
 
     def _crosshair(self) -> str:

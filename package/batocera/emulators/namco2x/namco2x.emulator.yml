@@ -29,10 +29,9 @@ custom_features:
   namco2x_gun_border:
     group: LIGHTGUN
     prompt: GUN BORDER
-    description: The game's own white border for light guns, in percent of the screen. Auto follows the Batocera border settings when a gun that needs one is connected.
+    description: Auto uses Batocera's gun border (size and colour from the light gun settings). A percentage draws the game's own white border instead, with the picture inside it.
     choices:
       Auto (Default): auto
-      'Off': 0
       1%: 1
       2%: 2
       3%: 3

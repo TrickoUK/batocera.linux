@@ -1,0 +1,18 @@
+{
+    "actions_gun1": [
+        {
+            "trigger": "1",
+            "type": "key",
+            "target": "KEY_5",
+            "description": "Coin"
+        }
+    ],
+    "actions_gun2": [
+        {
+            "trigger": "1",
+            "type": "key",
+            "target": "KEY_6",
+            "description": "Coin"
+        }
+    ]
+}

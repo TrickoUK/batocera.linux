@@ -86,7 +86,7 @@ def test_namco2x_configure_without_guns(tmp_path: Path, monkeypatch: pytest.Monk
     }
 
 
-def test_namco2x_sinden_gets_border_and_no_crosshair(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_namco2x_sinden_uses_batocera_border_and_no_crosshair(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     emulator = _make_namco2x(
         tmp_path,
         monkeypatch,
@@ -100,7 +100,8 @@ def test_namco2x_sinden_gets_border_and_no_crosshair(tmp_path: Path, monkeypatch
     asyncio.run(emulator.configure())
 
     cfg = _cfg(tmp_path)
-    assert cfg['gun_border'] == '3'  # big = 2% white + 1% black
+    assert cfg['gun_border'] == '0'  # batocera's bezel overlay draws the border
+    assert not emulator.handles_bezels
     assert cfg['crosshair'] == '0'
 
 
@@ -198,5 +199,5 @@ def test_namco2x_time_crisis_2(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) 
 
     assert command.args == [Path('/usr/lib/namco2x/tc2'), '--window', '--fullscreen']
     text = (tmp_path / 'saves' / 'namco2x' / 'timecrs2' / 'tc2.cfg').read_text()
-    assert 'gun_border=2\n' in text  # medium (the default) = 2%
+    assert 'gun_border=0\n' in text
     assert 'crosshair=0\n' in text
