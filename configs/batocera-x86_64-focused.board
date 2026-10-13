@@ -162,7 +162,9 @@ BR2_PACKAGE_ARES=y
 
 # namco2x: prebuilt release binaries of the Namco 2x decompilation
 # (github.com/spacestate1/namco22-decompile), registered as an extra
-# emulator for namco22 (Time Crisis 1+2, Rave Racer, Ace Driver, Dirt Dash);
+# emulator for namco22 (every game in the 0.7.0 release: TC1/TC2, Rave
+# Racer, Ace Driver, Dirt Dash, Tokyo Wars, Cyber Commando, Prop Cycle,
+# Cyber Sled);
 # MAME stays the default, pick it per game in ES.
 # Fork-only: the binaries contain code translated from the MAME ROM sets.
 BR2_PACKAGE_NAMCO2X=y

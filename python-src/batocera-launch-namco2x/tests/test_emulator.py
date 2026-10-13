@@ -139,9 +139,9 @@ def test_namco2x_replaces_stale_rom_link(tmp_path: Path, monkeypatch: pytest.Mon
 
 
 def test_namco2x_rejects_unsupported_game(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    emulator = _make_namco2x(tmp_path, monkeypatch, 'propcycl.zip', {})
+    emulator = _make_namco2x(tmp_path, monkeypatch, 'outrun.zip', {})
 
-    with pytest.raises(BatoceraException, match="unsupported game 'propcycl'"):
+    with pytest.raises(BatoceraException, match="unsupported game 'outrun'"):
         asyncio.run(emulator.configure())
 
 
@@ -201,3 +201,57 @@ def test_namco2x_time_crisis_2(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) 
     text = (tmp_path / 'saves' / 'namco2x' / 'timecrs2' / 'tc2.cfg').read_text()
     assert 'gun_border=0\n' in text
     assert 'crosshair=0\n' in text
+
+
+def _write_zip(path: Path, names: list[str]) -> None:
+    import zipfile
+
+    with zipfile.ZipFile(path, 'w') as zf:
+        for name in names:
+            zf.writestr(name, name)
+
+
+def test_namco2x_prop_cycle_fullscreen_through_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    emulator = _make_namco2x(tmp_path, monkeypatch, 'propcycl.zip', {})
+    _write_zip(Path(emulator.rom), [f'pr2vera.{n}' for n in range(1, 5)] + ['pr1data.8k'])
+
+    command = asyncio.run(emulator.configure())
+
+    assert command.args == [Path('/usr/lib/namco2x/propcycl'), 'extracted']
+    assert command.env == {'PROPCYCL_FULLSCREEN': '1', 'PROPCYCL_NO_AUTOSTART': '1'}
+    game_dir = tmp_path / 'saves' / 'namco2x' / 'propcycl'
+    assert (game_dir / 'propcycl_controls.cfg').exists()
+    # the renamed MAME program chips are unpacked under the engine's names
+    assert (game_dir / 'extracted' / 'pr2ver-a.1').read_text() == 'pr2vera.1'
+    assert not (game_dir / 'extracted' / 'pr2vera.1').exists()
+    assert (game_dir / 'extracted' / 'pr1data.8k').exists()
+
+    # a second launch leaves the unpacked folder alone
+    (game_dir / 'extracted' / 'pr1data.8k').unlink()
+    asyncio.run(emulator.configure())
+    assert not (game_dir / 'extracted' / 'pr1data.8k').exists()
+
+
+def test_namco2x_cyber_sled_links_both_bios_zips(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    emulator = _make_namco2x(tmp_path, monkeypatch, 'cybsled.zip', {})
+    bios_dir = tmp_path / 'bios'
+    bios_dir.mkdir()
+    for name in ('namcoc67.zip', 'namcoc68.zip'):
+        (bios_dir / name).write_bytes(b'')
+
+    command = asyncio.run(emulator.configure())
+
+    roms_dir = tmp_path / 'saves' / 'namco2x' / 'cybsled' / 'roms'
+    assert command.args == [Path('/usr/lib/namco2x/cs21'), 'extracted', '--fullscreen']
+    assert (roms_dir / 'namcoc67.zip').readlink() == bios_dir / 'namcoc67.zip'
+    assert (roms_dir / 'namcoc68.zip').readlink() == bios_dir / 'namcoc68.zip'
+
+
+@pytest.mark.parametrize(('rom', 'binary'), [('tokyowar', 'tw')])
+def test_namco2x_super22_host_games(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, rom: str, binary: str) -> None:
+    emulator = _make_namco2x(tmp_path, monkeypatch, f'{rom}.zip', {})
+
+    command = asyncio.run(emulator.configure())
+
+    assert command.args == [Path(f'/usr/lib/namco2x/{binary}'), '--fullscreen', 'extracted']
+    assert (tmp_path / 'saves' / 'namco2x' / rom / f'{binary}_controls.cfg').exists()

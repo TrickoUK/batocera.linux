@@ -8,9 +8,10 @@ config BR2_PACKAGE_NAMCO2X
 	select BR2_PACKAGE_ZLIB
 	select BR2_PACKAGE_BATOCERA_LAUNCH_NAMCO2X if BR2_PACKAGE_BATOCERA_LAUNCH
 	help
-	  Namco 2x Systems: decompiled/recompiled Namco System 22
-	  games (Time Crisis, Rave Racer, Ace Driver, Dirt Dash) and Time
-	  Crisis II (System 23) as native SDL2 + OpenGL binaries.
+	  Namco 2x Systems: decompiled/recompiled Namco System 21/22/23
+	  games (Time Crisis, Time Crisis II, Rave Racer, Ace Driver,
+	  Dirt Dash, Tokyo Wars, Cyber Commando, Prop Cycle, Cyber Sled)
+	  as native SDL2 + OpenGL binaries.
 	  Installs the prebuilt release binaries: they contain code
 	  translated from the MAME ROM sets, so this is fork-only and
 	  must never go upstream.

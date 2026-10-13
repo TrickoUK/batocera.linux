@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
@@ -20,6 +21,10 @@ class _Game:
     args: tuple[str, ...] = _PLAY_ARGS
     light_gun: bool = False
     bios_zips: tuple[str, ...] = ()  # other MAME zips the game unpacks beside its own
+    env: tuple[tuple[str, str], ...] = ()
+    # (current MAME name, the name the engine wants) for chips whose engine
+    # unpacker only knows an older spelling: the launcher unpacks those sets
+    chip_aliases: tuple[tuple[str, str], ...] = ()
 
 
 # MAME set name -> game. Each binary unzips its sets from roms/ on first run.
@@ -31,8 +36,24 @@ _GAMES: Final = {
     # any dirtdash*.zip, so a clone-only (non-merged) set works on its own
     'dirtdash': _Game('dd', 'dd_controls.cfg'),
     'dirtdasha': _Game('dd', 'dd_controls.cfg'),
+    'tokyowar': _Game('tw', 'tw_controls.cfg'),
+    'cybrcomm': _Game('cc', 'cc_controls.cfg', bios_zips=('namcoc74.zip',)),
+    # Prop Cycle's own host: no --fullscreen flag, the env var does it
+    # Prop Cycle's own host: no --fullscreen flag, the env var does it; its
+    # unpacker matches chips by name only and MAME renamed the program chips
+    'propcycl': _Game(
+        'propcycl',
+        'propcycl_controls.cfg',
+        ('extracted',),
+        env=(('PROPCYCL_FULLSCREEN', '1'), ('PROPCYCL_NO_AUTOSTART', '1')),
+        chip_aliases=tuple((f'pr2vera.{n}', f'pr2ver-a.{n}') for n in range(1, 5)),
+    ),
     # System 23, on its own host: '--window' selects play mode
     'timecrs2': _Game('tc2', 'tc2.cfg', ('--window', '--fullscreen'), light_gun=True),
+    # System 21, on its own host: the ROM folder comes first
+    'cybsled': _Game(
+        'cs21', 'cs21_controls.cfg', ('extracted', '--fullscreen'), bios_zips=('namcoc67.zip', 'namcoc68.zip')
+    ),
 }
 
 
@@ -120,12 +141,27 @@ class Namco2x(Emulator):
             else:
                 raise BatoceraException(f'namco2x: {name} is missing (put it in {BIOS})')
 
+    def _unpack_aliased_chips(self, game: _Game, /) -> None:
+        extracted = self.game_dir / 'extracted'
+        if all((extracted / wanted).exists() for _, wanted in game.chip_aliases):
+            return
+        extracted.mkdir(parents=True, exist_ok=True)
+        with zipfile.ZipFile(self.rom) as rom_zip:
+            for member in rom_zip.infolist():
+                if not member.is_dir():
+                    (extracted / Path(member.filename).name).write_bytes(rom_zip.read(member))
+        for current, wanted in game.chip_aliases:
+            if (extracted / current).exists():
+                (extracted / current).replace(extracted / wanted)
+
     async def configure(self) -> Command:
         if (game := _GAMES.get(self.rom.stem)) is None:
             raise BatoceraException(
                 f"namco2x: unsupported game '{self.rom.stem}' (supported: {', '.join(sorted(_GAMES))})"
             )
         self._link_roms(game)
+        if game.chip_aliases:
+            self._unpack_aliased_chips(game)
 
         managed = {
             'window_mode': '1',
@@ -143,4 +179,4 @@ class Namco2x(Emulator):
         existing_text = config_path.read_text() if config_path.exists() else ''
         config_path.write_text(_merge_cfg(existing_text, managed))
 
-        return Command([_BIN_DIR / game.binary, *game.args])
+        return Command([_BIN_DIR / game.binary, *game.args], dict(game.env))

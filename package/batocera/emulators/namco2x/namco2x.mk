@@ -20,7 +20,7 @@ NAMCO2X_DEPENDENCIES = sdl2 zlib
 NAMCO2X_EXTRACT_DEPENDENCIES = host-zstd
 
 # binaries to ship, one per supported game (the generator maps rom -> binary)
-NAMCO2X_BINARIES = tc rr ad dd tc2
+NAMCO2X_BINARIES = tc rr ad dd tc2 tw cc propcycl cs21
 
 define NAMCO2X_EXTRACT_CMDS
 	mkdir -p $(@D)/deb
