@@ -1,0 +1,22 @@
+config BR2_PACKAGE_NAMCO2X
+	bool "namco2x"
+	depends on BR2_x86_64
+	depends on BR2_PACKAGE_HAS_LIBGL
+	select BR2_PACKAGE_SDL2
+	select BR2_PACKAGE_SDL2_OPENGL
+	select BR2_PACKAGE_SDL2_WAYLAND if BR2_PACKAGE_WAYLAND
+	select BR2_PACKAGE_ZLIB
+	select BR2_PACKAGE_BATOCERA_LAUNCH_NAMCO2X if BR2_PACKAGE_BATOCERA_LAUNCH
+	help
+	  Namco 2x Systems: decompiled/recompiled Namco System 22
+	  games (Time Crisis, Rave Racer, Ace Driver, Dirt Dash) and Time
+	  Crisis II (System 23) as native SDL2 + OpenGL binaries.
+	  Installs the prebuilt release binaries: they contain code
+	  translated from the MAME ROM sets, so this is fork-only and
+	  must never go upstream.
+
+	  https://github.com/spacestate1/namco22-decompile
+
+comment "namco2x needs OpenGL"
+	depends on BR2_x86_64
+	depends on !BR2_PACKAGE_HAS_LIBGL

@@ -160,6 +160,13 @@ BR2_PACKAGE_LIBRETRO_GEOLITH=y
 # (n64) and snes9x/bsnes (snes) cores NINTENDO_SYSTEMS already selects.
 BR2_PACKAGE_ARES=y
 
+# namco2x: prebuilt release binaries of the Namco 2x decompilation
+# (github.com/spacestate1/namco22-decompile), registered as an extra
+# emulator for namco22 (Time Crisis 1+2, Rave Racer, Ace Driver, Dirt Dash);
+# MAME stays the default, pick it per game in ES.
+# Fork-only: the binaries contain code translated from the MAME ROM sets.
+BR2_PACKAGE_NAMCO2X=y
+
 # Note: Nvidia is force-selected via a Kconfig `select` for every x86_64
 # build (package/batocera/core/batocera-system/Config.in) and cannot be
 # disabled from this defconfig alone - apply

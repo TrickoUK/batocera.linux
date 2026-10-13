@@ -13,19 +13,20 @@ diff --git a/Config.in b/Config.in
        source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/retroarch/libretro/libretro-mrboom/Config.in"
        source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/retroarch/libretro/libretro-tyrquake/Config.in"
        source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/retroarch/libretro/libretro-beetle-ngp/Config.in"
-@@ -421,10 +422,11 @@
+@@ -419,10 +420,12 @@
      source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/nanoboyadvance/Config.in"
      source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/shadps4-qtlauncher/Config.in"
      source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/drastic/Config.in"
      source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/pcsx2x6/Config.in"
      source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/gametank-emulator/Config.in"
 +    source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/ares/Config.in"
++    source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/namco2x/Config.in"
    endmenu
  
    menu "WINE"
      source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/wine/d7vk/Config.in"
      source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/wine/dxvk/Config.in"
-@@ -728,10 +730,11 @@
+@@ -725,10 +728,11 @@
    source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/libraries/bgfx/Config.in"
    source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/libraries/miniz/Config.in"
    source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/libraries/lzma-sdk/Config.in"
@@ -37,10 +38,11 @@ diff --git a/Config.in b/Config.in
  menu "Audio"
    source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/audio/rtmidi/Config.in"
    source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/audio/chromebook-ucm-conf/Config.in"
-@@ -774,5 +777,6 @@
+@@ -771,5 +775,7 @@
  source "$BR2_EXTERNAL_BATOCERA_PATH/python-src/batocera-launch-openjkdf2/Config.in"
  source "$BR2_EXTERNAL_BATOCERA_PATH/python-src/batocera-launch-openmohaa/Config.in"
  source "$BR2_EXTERNAL_BATOCERA_PATH/python-src/batocera-launch-pcsx2/Config.in"
  source "$BR2_EXTERNAL_BATOCERA_PATH/python-src/batocera-launch-rpcs3/Config.in"
  source "$BR2_EXTERNAL_BATOCERA_PATH/python-src/batocera-launch-xemu-chihiro/Config.in"
 +source "$BR2_EXTERNAL_BATOCERA_PATH/python-src/batocera-launch-ares/Config.in"
++source "$BR2_EXTERNAL_BATOCERA_PATH/python-src/batocera-launch-namco2x/Config.in"

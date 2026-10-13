@@ -1,0 +1,53 @@
+shared_features:
+  - powermode
+  - cpucluster
+  - tdp
+  - videomode
+  - use_guns
+custom_features:
+  namco2x_widescreen:
+    group: GRAPHICS
+    prompt: WIDESCREEN
+    description: Draw the 3D scene in 16:9 instead of the original 4:3.
+    choices:
+      Off (Default): 0
+      'On': 1
+  namco2x_resolution:
+    group: GRAPHICS
+    prompt: INTERNAL RESOLUTION
+    description: Render size of the 3D scene.
+    choices:
+      Original 640x480 (Default): 640x480
+      Display resolution: native
+  namco2x_gun_flash:
+    group: LIGHTGUN
+    prompt: SHOT FLASH
+    description: The white screen flash after each gun shot.
+    choices:
+      On (Default): 1
+      'Off': 0
+  namco2x_gun_border:
+    group: LIGHTGUN
+    prompt: GUN BORDER
+    description: The game's own white border for light guns, in percent of the screen. Auto follows the Batocera border settings when a gun that needs one is connected.
+    choices:
+      Auto (Default): auto
+      'Off': 0
+      1%: 1
+      2%: 2
+      3%: 3
+      4%: 4
+      5%: 5
+      6%: 6
+  namco2x_crosshair:
+    group: LIGHTGUN
+    prompt: CROSSHAIR
+    description: Show the aiming crosshair. Auto hides it when a gun that does not need one is connected.
+    choices:
+      Auto (Default): auto
+      'On': 1
+      'Off': 0
+systems:
+  - name: namco22
+    file_extensions:
+      - zip
