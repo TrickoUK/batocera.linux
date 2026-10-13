@@ -44,9 +44,7 @@ class MednafenPsx(RACore):
         core_options.set_from_config('beetle_psx_hw_skip_bios', default='disabled')
 
         # CPU Frequency Scaling (Overclock)
-        core_options.set_from_config(
-            'beetle_psx_hw_cpu_freq_scale', default='110%'
-        )  # If not 110% NO options are working!
+        core_options.set_from_config('beetle_psx_hw_cpu_freq_scale', default='100%')
 
         # CD Access Method
         core_options.set_from_config('beetle_psx_hw_cd_access_method', default='sync')
