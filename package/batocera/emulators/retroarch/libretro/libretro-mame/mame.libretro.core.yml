@@ -103,21 +103,21 @@ custom_features:
       Opaque and Semi-Transparent (Default): all
       Opaque Only: opaque
       Disabled: disabled
-  mame_voodoo_tex_supersample:
+  mame_3d_supersample:
     group: ADVANCED OPTIONS
-    submenu: 3dfx Voodoo Hardware
-    prompt: VOODOO TEXTURE SUPERSAMPLING
-    description: Reduces shimmering on distant textures in 3dfx Voodoo games (Konami Viper, Midway Seattle/Vegas). Higher settings use more CPU. Requires restarting content to take effect.
+    submenu: 3D Enhancements
+    prompt: 3D SUPERSAMPLING
+    description: Improves image quality in supported 3D arcade games - 3dfx Voodoo games (Konami Viper, Midway Seattle/Vegas), Konami GTI Club hardware (GTI Club, Operation Thunder Hurricane, Solar Assault, ZR107 games) and Sega Model 2. On Voodoo games it reduces shimmering on distant textures; on the others the whole 3D layer is rendered at a higher size and averaged down, which also smooths polygon edges. The HUD and text are unchanged. Higher settings use more CPU/GPU. Requires restarting content to take effect.
     choices:
       Off (Default): disabled
-      2x2: 2x2
-      3x3 (Recommended): 3x3
-      4x4 (Slow): 4x4
-  mame_voodoo_edge_aa:
+      2x: 2x
+      3x (Recommended): 3x
+      4x (Slow): 4x
+  mame_3d_edge_aa:
     group: ADVANCED OPTIONS
-    submenu: 3dfx Voodoo Hardware
-    prompt: VOODOO EDGE ANTI-ALIASING
-    description: Smooths the stair-stepped outlines of 3D objects in 3dfx Voodoo games (Konami Viper, Midway Seattle/Vegas). Textures, HUD and text stay sharp. Low CPU cost. Requires restarting content to take effect.
+    submenu: 3D Enhancements
+    prompt: 3D EDGE ANTI-ALIASING
+    description: Smooths the stair-stepped outlines of 3D objects in supported 3D arcade games (currently 3dfx Voodoo games - Konami Viper, Midway Seattle/Vegas). Textures, HUD and text stay sharp. Low CPU cost. Requires restarting content to take effect.
     choices:
       Off (Default): disabled
       On: enabled

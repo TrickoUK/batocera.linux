@@ -70,11 +70,11 @@ class MAME(MAMEControllers, MAMECommand, MAMEBase):
             # PS1 GPU Exclude 2D Polygons from Filtering (Experimental)
             core_options.set_from_config('mame_psx_gpu_filter_exclude_2d_polygon', default='all')
 
-            # 3dfx Voodoo Texture Supersampling (Enhancement)
-            core_options.set_from_config('mame_voodoo_tex_supersample', default='disabled')
+            # 3D Supersampling (Enhancement: Voodoo, GTI Club, Model 2)
+            core_options.set_from_config('mame_3d_supersample', default='disabled')
 
-            # 3dfx Voodoo Edge Anti-Aliasing (Enhancement)
-            core_options.set_from_config('mame_voodoo_edge_aa', default='disabled')
+            # 3D Edge Anti-Aliasing (Enhancement: Voodoo)
+            core_options.set_from_config('mame_3d_edge_aa', default='disabled')
 
             # Gamepad steering assists for wheel games (override MAME's Machine Configuration)
             core_options.set_from_config('mame_steering_response', default='game')
