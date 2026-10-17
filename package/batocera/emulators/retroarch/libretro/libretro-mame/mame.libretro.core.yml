@@ -121,6 +121,14 @@ custom_features:
     choices:
       Off (Default): disabled
       On: enabled
+  mame_3d_texfilter:
+    group: ADVANCED OPTIONS
+    submenu: 3D Enhancements
+    prompt: 3D TEXTURE FILTERING
+    description: Smooths blocky magnified textures with bilinear filtering in Konami GTI Club hardware games (GTI Club, Operation Thunder Hurricane, Solar Assault, ZR107 games). Operation Thunder Hurricane and Solar Assault already filter on the real hardware; this turns it on for the other games. Other 3D hardware is unaffected. Requires restarting content to take effect.
+    choices:
+      Off (Default): disabled
+      Bilinear: bilinear
   altlayout:
     prompt: SPECIAL CONTROL LAYOUTS
     description: Controls for 5/6 button games and other unique controls

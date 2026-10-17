@@ -76,6 +76,9 @@ class MAME(MAMEControllers, MAMECommand, MAMEBase):
             # 3D Edge Anti-Aliasing (Enhancement: Voodoo)
             core_options.set_from_config('mame_3d_edge_aa', default='disabled')
 
+            # 3D Texture Filtering (Enhancement: GTI Club)
+            core_options.set_from_config('mame_3d_texfilter', default='disabled')
+
             # Gamepad steering assists for wheel games (override MAME's Machine Configuration)
             core_options.set_from_config('mame_steering_response', default='game')
             core_options.set_from_config('mame_steering_smoothing', default='game')
