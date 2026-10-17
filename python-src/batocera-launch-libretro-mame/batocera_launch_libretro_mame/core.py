@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Final
 
 from batocera_common.dataclasses import cached_dataclass, cached_property
 from batocera_launch_mame_common import precalibrate_mame_guns
@@ -13,6 +13,8 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from batocera_launch import Gun, LibretroConfig
+
+_AUX_B_KEYS: Final = {1: 'm', 2: 'comma', 3: 'period'}
 
 
 @cached_dataclass
@@ -139,5 +141,8 @@ class MAME(MAMEControllers, MAMECommand, MAMEBase):
     def set_gun_config_for_player(self, custom_config: LibretroConfig, player_number: int, gun: Gun, /) -> None:
         custom_config.set(f'input_player{player_number}_gun_offscreen_shot_mbtn', '')
         custom_config.set(f'input_player{player_number}_gun_aux_a_mbtn', 2)
+        # Aux B (BUTTON3) is fed by evmapy from the Sinden right front button, see mame.libretro.keys
+        if aux_b_key := _AUX_B_KEYS.get(player_number):
+            custom_config.set(f'input_player{player_number}_gun_aux_b', aux_b_key)
         custom_config.set(f'input_player{player_number}_start_mbtn', 3)
         custom_config.set(f'input_player{player_number}_select_mbtn', 4)
