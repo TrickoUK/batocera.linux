@@ -157,6 +157,10 @@ class Libretro(SpecialDecorationsMixin, Emulator):
                 'next_slot': ['KEY_LEFTSHIFT', 'KEY_F6'],
                 'rewind': ['KEY_LEFTSHIFT', 'KEY_F11'],
                 'fastforward': ['KEY_LEFTSHIFT', 'KEY_F12'],
+                'fastforward_toggle': [
+                    'KEY_LEFTSHIFT',
+                    'KEY_F12' if self.config.get_bool('toggle_fast_forward') else 'KEY_F8',
+                ],
                 'reset': ['KEY_LEFTSHIFT', 'KEY_F10'],
                 'translation': ['KEY_LEFTSHIFT', 'KEY_F9'],
             },
@@ -506,6 +510,10 @@ class Libretro(SpecialDecorationsMixin, Emulator):
         ff_action = 'toggle_fast_forward' if self.config.get_bool('toggle_fast_forward') else 'hold_fast_forward'
 
         custom_config.set(f'input_{ff_action}', 'f12')
+        # the "fastforward_toggle" hotkey action: F12 already toggles when the option is on,
+        # otherwise give the toggle its own key next to the hold binding
+        if ff_action == 'hold_fast_forward':
+            custom_config.set('input_toggle_fast_forward', 'f8')
         custom_config.set('input_screenshot', 'nul')
         custom_config.set('input_audio_mute', 'nul')
         custom_config.set('input_grab_mouse_toggle', 'nul')
