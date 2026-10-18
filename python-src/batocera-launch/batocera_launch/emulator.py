@@ -26,6 +26,7 @@ from .devices.evmapy import EvmapyManager
 from .devices.gun import Gun, GunList, guns_need_crosses
 from .devices.hotkeygen import HotkeygenManager
 from .devices.mouse import prepare_mouse
+from .devices.sinden import split_sinden_pump
 from .devices.video import get_screens, prepare_resolution
 from .devices.wheels import configure_wheels
 from .draw.bezel import bezel_overlay
@@ -797,6 +798,11 @@ class Emulator(AbstractAsyncContextManager['Emulator', bool | None], ABC):
         self.sdl_controller_db_path.parent.mkdir(parents=True, exist_ok=True)
         self.sdl_controller_db_path.write_text(self.get_sdl_game_controller_config())
 
+    @property
+    def split_pump(self) -> bool:
+        """Whether the Sinden front left button must be a separate button from the pump."""
+        return False
+
     async def before_run(self, command: Command, /) -> None:
         """Hook for subclasses or mixins to run code before the emulator is executed."""
 
@@ -806,6 +812,7 @@ class Emulator(AbstractAsyncContextManager['Emulator', bool | None], ABC):
 
         async with (
             script_caller(('gameStart', 'gameStop'), self.system, self.name, self.core, self.rom),
+            split_sinden_pump(self.guns, self.config.use_guns and self.split_pump),
             _exit_together(
                 EvmapyManager(self),
                 HotkeygenManager(

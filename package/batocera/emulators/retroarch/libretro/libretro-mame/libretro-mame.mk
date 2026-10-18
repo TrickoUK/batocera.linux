@@ -107,10 +107,6 @@ define LIBRETRO_MAME_INSTALL_TARGET_CMDS
     cp -R -u $(@D)/plugins $(TARGET_DIR)/usr/bin/mame/
     cp -R -u $(BR2_EXTERNAL_BATOCERA_PATH)/package/batocera/emulators/mame/coindrop \
         $(TARGET_DIR)/usr/bin/mame/plugins
-
-    # Sinden right front button (BTN_2) -> gun Aux B (MAME BUTTON3, e.g. a grenade)
-    $(INSTALL) -D -m 0644 $(BR2_EXTERNAL_BATOCERA_PATH)/package/batocera/emulators/retroarch/libretro/libretro-mame/mame.libretro.keys \
-        $(TARGET_DIR)/usr/share/evmapy/mame.libretro.keys
 endef
 
 $(eval $(generic-package))

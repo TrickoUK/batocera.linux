@@ -190,6 +190,13 @@ custom_features:
     choices:
       Enabled (Default): enabled
       Disabled: disabled
+  sinden_split_pump:
+    group: LIGHT GUN
+    prompt: SPLIT PUMP FROM BUTTON
+    description: Sinden only. Sends the front left button as a separate button (BUTTON3) from the pump action, which normally shares the right click. For games with both a pump and a third button (e.g. Beast Busters).
+    choices:
+      'On': 1
+      Off (Default): 0
   mame_steering_response:
     group: CONTROLS
     submenu: Driving Games

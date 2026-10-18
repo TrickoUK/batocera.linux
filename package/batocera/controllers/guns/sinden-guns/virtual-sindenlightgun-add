@@ -74,7 +74,8 @@ then
     DEV2=$(echo "${CHILDRENINPUTS}" | head -2 | tail -1 | cut -f 1)
 
 # Trigger                  : BTN_LEFT
-# Pump, front left         : BTN_RIGHT
+# Pump                     : BTN_RIGHT
+# Front left               : KEY_3, then BTN_RIGHT (default) or BTN_3 (split pump from button)
 # Rear left                : BTN_MIDDLE
 # Front right              : KEY_2
 # Rear right               : KEY_1
@@ -88,6 +89,8 @@ then
             --map key:down             btn:6           \
             --map key:left             btn:7           \
             --map key:right            btn:8           \
+            --toggle key:3 btn:right btn:3 id=frontleft \
+            --control-fifo "/var/run/${BASEFILE}.fifo" \
             --output name="Sinden lightgun" </dev/null >/dev/null 2>"${LOGFILE}" &
     echo $! > "${PIDFILE}"
 

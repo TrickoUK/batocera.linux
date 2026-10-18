@@ -40,6 +40,10 @@ class Core:
 
     emulator: Libretro
 
+    @property
+    def split_pump(self) -> bool:
+        return False
+
     @cached_property
     def library_prefix(self) -> str:
         return self.emulator.core

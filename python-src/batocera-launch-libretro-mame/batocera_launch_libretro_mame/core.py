@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING
 
 from batocera_common.dataclasses import cached_dataclass, cached_property
 from batocera_launch_mame_common import precalibrate_mame_guns
@@ -14,11 +14,13 @@ if TYPE_CHECKING:
 
     from batocera_launch import Gun, LibretroConfig
 
-_AUX_B_KEYS: Final = {1: 'm', 2: 'comma', 3: 'period'}
-
 
 @cached_dataclass
 class MAME(MAMEControllers, MAMECommand, MAMEBase):
+    @property
+    def split_pump(self) -> bool:
+        return self.config.get_bool('sinden_split_pump')
+
     @cached_property
     def rom_argument(self) -> str | Path | None:
         return self.cmd_filename
@@ -141,8 +143,7 @@ class MAME(MAMEControllers, MAMECommand, MAMEBase):
     def set_gun_config_for_player(self, custom_config: LibretroConfig, player_number: int, gun: Gun, /) -> None:
         custom_config.set(f'input_player{player_number}_gun_offscreen_shot_mbtn', '')
         custom_config.set(f'input_player{player_number}_gun_aux_a_mbtn', 2)
-        # Aux B (BUTTON3) is fed by evmapy from the Sinden right front button, see mame.libretro.keys
-        if aux_b_key := _AUX_B_KEYS.get(player_number):
-            custom_config.set(f'input_player{player_number}_gun_aux_b', aux_b_key)
+        # Aux B (BUTTON3) stays on the default BTN_3 (mbtn 6): with sinden_split_pump the Sinden front left button
+        # is BTN_3, see split_sinden_pump
         custom_config.set(f'input_player{player_number}_start_mbtn', 3)
         custom_config.set(f'input_player{player_number}_select_mbtn', 4)

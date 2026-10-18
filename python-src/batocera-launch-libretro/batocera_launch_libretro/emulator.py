@@ -115,6 +115,10 @@ def _get_input_value(input: Input, /) -> str | None:
 class Libretro(SpecialDecorationsMixin, Emulator):
     lr_core: Core = field(init=False)
 
+    @property
+    def split_pump(self) -> bool:
+        return self.lr_core.split_pump
+
     def __post_init__(self) -> None:
         super().__post_init__()
 
