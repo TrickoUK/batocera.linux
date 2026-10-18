@@ -65,6 +65,20 @@ class MAMEBase(MAMEPathsMixin, SpecialDecorationsMixin, Emulator):  # pyright: i
     def mame_control_scheme(self) -> MameControlScheme:
         return load_mame_control_scheme(self.config.get_str('altlayout', 'auto'), self.rom.stem)
 
+    @property
+    def split_pump(self) -> bool:
+        return self.config.get_bool('sinden_split_pump')
+
     @cached_property
     def all_mame_control_mappings(self) -> tuple[dict[str, str], dict[str, str], dict[str, str]]:
-        return load_all_mame_control_mappings(self.mame_control_scheme, self.config.use_guns, self.use_mouse)
+        control_mapping, gun_mapping, mouse_mapping = load_all_mame_control_mappings(
+            self.mame_control_scheme, self.config.use_guns, self.use_mouse
+        )
+
+        if self.split_pump and gun_mapping:
+            # with split_sinden_pump the Sinden front left button is BTN_3 (gun BUTTON6), not the front right BTN_2
+            # (gun BUTTON5): BTN_3 takes the game's BUTTON3 and BTN_2 moves to BUTTON4
+            gun_mapping['BUTTON3'] = 'BUTTON6'
+            gun_mapping['BUTTON4'] = 'BUTTON5'
+
+        return control_mapping, gun_mapping, mouse_mapping
