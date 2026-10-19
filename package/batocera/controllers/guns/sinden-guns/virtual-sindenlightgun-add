@@ -80,18 +80,25 @@ then
 # Front right              : KEY_2
 # Rear right               : KEY_1
 # D-pad                    : KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT
+#
+# The hand_* toggles are right hand (1, default) or left hand (2, set by batocera-launch while
+# a game runs): left hand mirrors the front and rear buttons, the front right button then takes
+# the front left KEY_3 path so it follows the frontleft toggle. Order matters: each toggle output
+# goes through the following arguments.
 
     nohup evsieve                                      \
             --input "${DEV1}" "${DEV2}" persist=exit   \
-            --map key:1                btn:1           \
-            --map key:2                btn:2           \
+            --toggle key:3      key:3      btn:2      id=hand_fl \
+            --toggle key:2      btn:2      key:3      id=hand_fr \
+            --toggle btn:middle btn:middle btn:1      id=hand_rl \
+            --toggle key:1      btn:1      btn:middle id=hand_rr \
             --map key:up               btn:5           \
             --map key:down             btn:6           \
             --map key:left             btn:7           \
             --map key:right            btn:8           \
             --toggle key:3 btn:right btn:3 id=frontleft \
             --control-fifo "/var/run/${BASEFILE}.fifo" \
-            --output name="Sinden lightgun" </dev/null >/dev/null 2>"${LOGFILE}" &
+            --output name="Sinden lightgun" create-link="/var/run/${BASEFILE}.event" </dev/null >/dev/null 2>"${LOGFILE}" &
     echo $! > "${PIDFILE}"
 
     # ttyACM

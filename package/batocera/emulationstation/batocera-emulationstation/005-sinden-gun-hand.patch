@@ -1,0 +1,159 @@
+diff -ruN a/es-app/src/guis/GuiControllersSettings.cpp b/es-app/src/guis/GuiControllersSettings.cpp
+--- a/es-app/src/guis/GuiControllersSettings.cpp	2026-10-19 11:37:41.239223931 +0100
++++ b/es-app/src/guis/GuiControllersSettings.cpp	2026-10-19 11:37:41.262006269 +0100
+@@ -95,7 +95,10 @@
+ 		steamdeckguns_menu |= mouse == "Steam Mouse";
+ 
+ 	if (sindenguns_menu)
++	{
+ 		addEntry(_("SINDEN GUN SETTINGS"), true, [this] { openControllersSpecificSettings_sindengun(); });
++		addEntry(_("SINDEN GUN HAND"), true, [this] { openControllersSpecificSettings_sindengunhand(); });
++	}
+ 
+ 	if (wiiguns_menu)
+ 		addEntry(_("WIIMOTE GUN SETTINGS"), true, [this] { openControllersSpecificSettings_wiigun(); });
+@@ -788,6 +791,19 @@
+ 		}));
+ }
+ 
++// read by batocera-launch (in-game button mirror) and the controller activity gun icon
++void GuiControllersSettings::openControllersSpecificSettings_sindengunhand()
++{
++	GuiSettings* s = new GuiSettings(mWindow, _("SINDEN GUN HAND").c_str());
++
++	for (int player = 1; player <= 4; player++)
++		s->addOptionList(Utils::String::format(_("PLAYER %i GUN HAND").c_str(), player),
++			_("Left hand mirrors the front and rear side buttons of this player's gun in games (the D-pad stays on the left)."),
++			{ { _("RIGHT"), "" }, { _("LEFT"), "left" } }, "global.sinden_hand_p" + std::to_string(player), false, nullptr);
++
++	mWindow->pushGui(s);
++}
++
+ void GuiControllersSettings::openControllersSpecificSettings_sindengun()
+ {
+ 	GuiSettings* s = new GuiSettings(mWindow, controllers_settings_label.c_str());
+diff -ruN a/es-app/src/guis/GuiControllersSettings.h b/es-app/src/guis/GuiControllersSettings.h
+--- a/es-app/src/guis/GuiControllersSettings.h	2026-10-19 11:37:41.239316934 +0100
++++ b/es-app/src/guis/GuiControllersSettings.h	2026-10-19 11:37:41.262105544 +0100
+@@ -31,6 +31,7 @@
+ 
+ private:
+ 	void openControllersSpecificSettings_sindengun();
++	void openControllersSpecificSettings_sindengunhand();
+ 	void openControllersSpecificSettings_wiigun();
+ 	void openControllersSpecificSettings_steamdeckgun();
+ 	void openControllersHotkeys();
+diff -ruN a/es-core/src/components/ControllerActivityComponent.cpp b/es-core/src/components/ControllerActivityComponent.cpp
+--- a/es-core/src/components/ControllerActivityComponent.cpp	2026-10-19 10:22:20.110040136 +0100
++++ b/es-core/src/components/ControllerActivityComponent.cpp	2026-10-19 10:22:34.074685720 +0100
+@@ -5,12 +5,44 @@
+ #include "ThemeData.h"
+ #include "InputManager.h"
+ #include "Settings.h"
++#include "SystemConf.h"
+ #include "utils/Platform.h"
+ #include "IExternalActivity.h"
+ 
+ #include "watchers/BatteryLevelWatcher.h"
+ #include "watchers/NetworkStateWatcher.h"
+ 
++// event number of a /dev/input/eventN gun, -1 if unknown
++static int gunEventNumber(Gun* gun)
++{
++	std::string path = gun->devicePath();
++	if (!Utils::String::startsWith(path, "/dev/input/event"))
++		return -1;
++
++	return Utils::String::toInteger(path.substr(16));
++}
++
++// Sinden gun set to left hand mode (sinden_hand_pN): batocera-launch numbers the players by gun event number
++static bool isLeftHandedGun(Gun* gun, std::vector<Gun*>& guns)
++{
++	if (gun->name() != "Sinden lightgun")
++		return false;
++
++	int eventNumber = gunEventNumber(gun);
++	if (eventNumber < 0)
++		return false;
++
++	int player = 1;
++	for (auto other : guns)
++	{
++		int otherNumber = gunEventNumber(other);
++		if (otherNumber >= 0 && otherNumber < eventNumber)
++			player++;
++	}
++
++	return SystemConf::getInstance()->get("global.sinden_hand_p" + std::to_string(player)) == "left";
++}
++
+ // #define DEVTEST
+ 
+ #define PLAYER_PAD_TIME_MS		 150
+@@ -348,7 +380,7 @@
+ 			unsigned int gunColor = gun->isLButtonDown() || gun->isRButtonDown() ? mActivityColor : mColorShift;
+ 
+ 			if (mGunTexture && mGunTexture->bind())
+-				x += renderTexture(x, szW, mGunTexture, gunColor);
++				x += renderTexture(x, szW, mGunTexture, gunColor, isLeftHandedGun(gun, guns));
+ 			else
+ 			{
+ 				Renderer::drawRect(x, 0.0f, szW, szH, gunColor);
+@@ -575,7 +607,7 @@
+ 	return imageSize;
+ }
+ 
+-int ControllerActivityComponent::renderTexture(float x, float w, std::shared_ptr<TextureResource> texture, unsigned int color)
++int ControllerActivityComponent::renderTexture(float x, float w, std::shared_ptr<TextureResource> texture, unsigned int color, bool flipX)
+ {
+ 	if (!texture->bind())
+ 		return 0;
+@@ -591,10 +623,13 @@
+ 
+ 	Renderer::Vertex vertices[4];
+ 
+-	vertices[0] = { { left, top },{ 0.0f, 1.0f }, clr };
+-	vertices[1] = { { left, sz.y() },{ 0.0f, 0.0f }, clr };
+-	vertices[2] = { { left + sz.x(), top },{ 1.0f, 1.0f }, clr };
+-	vertices[3] = { { left + sz.x(), sz.y() },{ 1.0f, 0.0f }, clr };
++	const float u0 = flipX ? 1.0f : 0.0f;
++	const float u1 = flipX ? 0.0f : 1.0f;
++
++	vertices[0] = { { left, top },{ u0, 1.0f }, clr };
++	vertices[1] = { { left, sz.y() },{ u0, 0.0f }, clr };
++	vertices[2] = { { left + sz.x(), top },{ u1, 1.0f }, clr };
++	vertices[3] = { { left + sz.x(), sz.y() },{ u1, 0.0f }, clr };
+ 
+ 	Renderer::drawTriangleStrips(&vertices[0], 4);
+ 	Renderer::bindTexture(0);
+diff -ruN a/es-core/src/components/ControllerActivityComponent.h b/es-core/src/components/ControllerActivityComponent.h
+--- a/es-core/src/components/ControllerActivityComponent.h	2026-10-19 10:22:20.110125987 +0100
++++ b/es-core/src/components/ControllerActivityComponent.h	2026-10-19 10:22:34.074237713 +0100
+@@ -55,7 +55,7 @@
+ 
+ protected:
+ 	Vector2f	getTextureSize(std::shared_ptr<TextureResource> texture);
+-	int			renderTexture(float x, float w, std::shared_ptr<TextureResource> texture, unsigned int color);
++	int			renderTexture(float x, float w, std::shared_ptr<TextureResource> texture, unsigned int color, bool flipX = false);
+ 
+ 	float mSpacing;
+ 	Alignment mHorizontalAlignment;
+diff -ruN a/es-core/src/GunManager.h b/es-core/src/GunManager.h
+--- a/es-core/src/GunManager.h	2026-10-19 10:22:20.107548883 +0100
++++ b/es-core/src/GunManager.h	2026-10-19 10:22:34.074158525 +0100
+@@ -89,6 +89,14 @@
+ 	bool needBorders() { return mNeedBorders; }
+ 	bool isMouse() { return m_isMouse; }
+ 
++#ifdef HAVE_UDEV
++	std::string devicePath() { return devpath; }
++#elif WIN32
++	std::string devicePath() { return mPath; }
++#else
++	std::string devicePath() { return ""; }
++#endif
++
+ 	Stabilizer* getStabilizer();
+ 
+ 	bool isLastTickElapsed();

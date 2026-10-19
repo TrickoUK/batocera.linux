@@ -26,7 +26,7 @@ from .devices.evmapy import EvmapyManager
 from .devices.gun import Gun, GunList, guns_need_crosses
 from .devices.hotkeygen import HotkeygenManager
 from .devices.mouse import prepare_mouse
-from .devices.sinden import split_sinden_pump
+from .devices.sinden import sinden_gun_modes
 from .devices.video import get_screens, prepare_resolution
 from .devices.wheels import configure_wheels
 from .draw.bezel import bezel_overlay
@@ -803,6 +803,15 @@ class Emulator(AbstractAsyncContextManager['Emulator', bool | None], ABC):
         """Whether the Sinden front left button must be a separate button from the pump."""
         return False
 
+    @property
+    def left_handed_gun_players(self) -> list[int]:
+        """1-based player numbers whose Sinden gun is set to left hand mode (front and rear buttons mirrored)."""
+        return [
+            player
+            for player in range(1, len(self.guns) + 1)
+            if self.config.get_str(f'sinden_hand_p{player}', 'right') == 'left'
+        ]
+
     async def before_run(self, command: Command, /) -> None:
         """Hook for subclasses or mixins to run code before the emulator is executed."""
 
@@ -812,7 +821,11 @@ class Emulator(AbstractAsyncContextManager['Emulator', bool | None], ABC):
 
         async with (
             script_caller(('gameStart', 'gameStop'), self.system, self.name, self.core, self.rom),
-            split_sinden_pump(self.guns, self.config.use_guns and self.split_pump),
+            sinden_gun_modes(
+                self.guns,
+                self.config.use_guns and self.split_pump,
+                self.left_handed_gun_players if self.config.use_guns else [],
+            ),
             _exit_together(
                 EvmapyManager(self),
                 HotkeygenManager(

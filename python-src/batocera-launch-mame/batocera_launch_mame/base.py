@@ -76,7 +76,7 @@ class MAMEBase(MAMEPathsMixin, SpecialDecorationsMixin, Emulator):  # pyright: i
         )
 
         if self.split_pump and gun_mapping:
-            # with split_sinden_pump the Sinden front left button is BTN_3 (gun BUTTON6), not the front right BTN_2
+            # with split pump (sinden_gun_modes) the Sinden front left is BTN_3 (gun BUTTON6), not front right BTN_2
             # (gun BUTTON5): BTN_3 takes the game's BUTTON3 and BTN_2 moves to BUTTON4
             gun_mapping['BUTTON3'] = 'BUTTON6'
             gun_mapping['BUTTON4'] = 'BUTTON5'

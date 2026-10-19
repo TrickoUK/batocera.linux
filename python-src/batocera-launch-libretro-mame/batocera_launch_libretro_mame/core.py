@@ -144,6 +144,6 @@ class MAME(MAMEControllers, MAMECommand, MAMEBase):
         custom_config.set(f'input_player{player_number}_gun_offscreen_shot_mbtn', '')
         custom_config.set(f'input_player{player_number}_gun_aux_a_mbtn', 2)
         # Aux B (BUTTON3) stays on the default BTN_3 (mbtn 6): with sinden_split_pump the Sinden front left button
-        # is BTN_3, see split_sinden_pump
+        # is BTN_3, see sinden_gun_modes
         custom_config.set(f'input_player{player_number}_start_mbtn', 3)
         custom_config.set(f'input_player{player_number}_select_mbtn', 4)
