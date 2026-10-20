@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import logging
@@ -9,7 +29,7 @@ import toml
 from batocera_common.dataclasses import cached_dataclass, cached_property
 from batocera_common.paths import SCREENSHOTS
 from batocera_common.vulkan import get_vulkan_info
-from batocera_launch import Command, Controller, Emulator, Gun, HotkeysContext
+from batocera_launch import Command, Controller, Emulator, Gun, HotkeysContext, get_device_info
 
 from .bindings import DEPRECATED, ControlsBuilder
 
@@ -226,5 +246,7 @@ class XemuChihiro(Emulator):
             for key in keys:
                 section.pop(key, None)
 
-        for path, values in ControlsBuilder(self.controllers[:4], self.wheel, guns).build().items():
+        wheels = set(self.wheels) | {path for path, device in get_device_info().items() if device.is_wheel}
+        pad = next((pad for pad in self.controllers[:4] if pad.device_path not in wheels), None)
+        for path, values in ControlsBuilder(self.controllers[:4], self.wheel, guns).build(pad).items():
             _section(config, path).update(values)

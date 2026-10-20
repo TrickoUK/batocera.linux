@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import logging
@@ -238,6 +258,8 @@ class Sm2Emu(Emulator):
             **{f'gun{gun}_button_{role}': str(code) for gun in (1, 2) for role, code in _GUN_BUTTONS.items()},
             'wheel_ffb': _ini_bool(self.config.get_bool('sm2_wheel_ffb', True)),
             'wheel_ffb_strength': str(round(self.config.get_float('sm2_wheel_ffb_strength', 50))),
+            'wheel_panel_spring': str(round(self.config.get_float('sm2_wheel_panel_spring', 20))),
+            'wheel_drive_dip': self.config.get_str('sm2_wheel_drive_dip', '0'),
             'wheel_ffb_invert': _ini_bool(self.config.get_bool('sm2_wheel_ffb_invert', False)),
             'wheel_rumble': _ini_bool(self.config.get_bool('sm2_wheel_rumble', True)),
             'wheel_rumble_strength': self.config.get_str('sm2_wheel_rumble_strength', '40'),
@@ -273,6 +295,7 @@ class Sm2Emu(Emulator):
             'crt_mask_strength': self.config.get_str('sm2_crt_mask_strength', '30'),
             'crt_glow_strength': self.config.get_str('sm2_crt_glow_strength', '20'),
             'crt_curvature': self.config.get_str('sm2_crt_curvature', '0'),
+            'bezel': 'false',  # batocera draws its own bezels
         }
 
         config_path = self.config_dir / 'sm2-emu.ini'
