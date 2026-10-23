@@ -107,7 +107,7 @@ custom_features:
     group: ADVANCED OPTIONS
     submenu: 3D Enhancements
     prompt: 3D SUPERSAMPLING
-    description: Improves image quality in supported 3D arcade games - 3dfx Voodoo games (Konami Viper, Midway Seattle/Vegas), Konami GTI Club hardware (GTI Club, Operation Thunder Hurricane, Solar Assault, ZR107 games) and Sega Model 2. On Voodoo games it reduces shimmering on distant textures; on the others the whole 3D layer is rendered at a higher size and averaged down, which also smooths polygon edges. The HUD and text are unchanged. Higher settings use more CPU/GPU. Requires restarting content to take effect.
+    description: '3D games with enhanced rendering: 3dfx Voodoo games (Konami Viper, Midway Seattle/Vegas and others), Konami GTI Club hardware (GTI Club, Operation Thunder Hurricane, Solar Assault, ZR107 games) and SNK Hyper Neo Geo 64. On Voodoo games it reduces shimmering on detailed textures seen at a distance, such as foliage and terrain, by averaging several texture samples across each pixel wherever a texture is shrunk; only texture colour is smoothed. On GTI Club hardware and Hyper Neo Geo 64 the whole 3D layer is rendered at 2x, 3x or 4x the native size and averaged down, which also smooths polygon edges; the HUD, text and 2D layers are unchanged. Each step costs more CPU: 2x is a good start, 4x can slow heavy scenes on slower machines. Save states made with it on, on GTI Club hardware, can only be loaded with it on. Requires restarting content to take effect.'
     choices:
       Off (Default): disabled
       2x: 2x
@@ -117,7 +117,7 @@ custom_features:
     group: ADVANCED OPTIONS
     submenu: 3D Enhancements
     prompt: 3D OUTPUT SCALE
-    description: Sega Model 2, Konami GTI Club hardware, SNK Hyper Neo Geo 64 and 3dfx Voodoo boards drawn on the host GPU (Midway Seattle/Vegas, Konami Viper). Normally 3D Supersampling renders the 3D layer larger and averages it back down to the native screen size. With Match Supersampling the screen is presented at the supersampling size instead (for example 2x of 496x384), so the 3D layer keeps all its extra detail; the 2D layers (tilemaps, sprites, text) are enlarged with sharp pixels. Needs 3D Supersampling set to 2x or higher; it has no effect otherwise. Requires restarting content to take effect.
+    description: Sega Model 2, Konami GTI Club hardware, SNK Hyper Neo Geo 64 and 3dfx Voodoo boards drawn on the host GPU (Midway Seattle/Vegas, Konami Viper). Normally 3D Supersampling renders the 3D layer larger and averages it back down to the native screen size. With this set to 'Match supersampling' the screen is presented at the supersampling size instead (for example 2x of 496x384), so the 3D layer keeps all its extra detail; the 2D layers (tilemaps, sprites, text) are enlarged with sharp pixels. Needs 3D Supersampling set to 2x or higher; it has no effect otherwise. Requires restarting content to take effect.
     choices:
       Native (Default): native
       Match Supersampling: match
@@ -125,15 +125,25 @@ custom_features:
     group: ADVANCED OPTIONS
     submenu: 3D Enhancements
     prompt: 3D GPU RENDERING
-    description: Sega Model 2, Konami GTI Club hardware (GTI Club, Thunder Hurricane, Solar Assault, Midnight Run), SNK Hyper Neo Geo 64 and 3dfx Voodoo 1/2/3 boards (Midway Seattle and Vegas games; Konami Viper games). Renders the 3D layer on the host GPU instead of the CPU. The picture matches the software renderer closely; 3D Supersampling sets the resolution (3D Output Scale presents it at that size). On Voodoo boards the software renderer runs alongside for the first seconds of start-up, and the GPU path falls back to it for features it does not cover. If no GPU context can be created the software renderer is used. Requires restarting content to take effect.
+    description: 'Sega Model 2, Konami GTI Club hardware (GTI Club, Thunder Hurricane, Solar Assault, Midnight Run), SNK Hyper Neo Geo 64 and 3dfx Voodoo 1/2/3 boards (Midway Seattle and Vegas games: San Francisco Rush, California Speed, Gauntlet Legends and others; Konami Viper games). Renders the 3D layer on the host GPU instead of the CPU. The picture matches the software renderer closely; 3D Supersampling sets the resolution (3D Output Scale presents it at that size). On Voodoo boards the software renderer runs alongside for the first seconds of start-up, and the GPU path falls back to it for features it does not cover. If no GPU context can be created the software renderer is used. Requires restarting content to take effect.'
     choices:
       Off (Default): disabled
       'On': enabled
+  mame_3d_msaa:
+    group: ADVANCED OPTIONS
+    submenu: 3D Enhancements
+    prompt: 3D MULTISAMPLE ANTI-ALIASING
+    description: 'Only with 3D GPU Rendering enabled (it has no effect on the software renderer): 3dfx Voodoo boards (Midway Seattle/Vegas, Konami Viper), Konami GTI Club hardware and Sega Model 2. SNK Hyper Neo Geo 64 is not covered. Smooths the stair-stepped outlines of 3D objects on the GPU by testing several coverage samples per pixel; it costs less GPU time than raising 3D Supersampling, but the multisampled buffers need extra video memory (4x MSAA about as much as 2x supersampling). It combines with 3D Supersampling and 3D Output Scale. HUD, text and other 2D content stay sharp. Textures and cut-out edges (fences, foliage) are not smoothed. Uses more video memory (4x costs about 4 times the colour and depth buffers, and the count is reduced automatically if the buffers would pass 1 GB). Requires restarting content to take effect.'
+    choices:
+      Off (Default): disabled
+      2x: 2x
+      4x: 4x
+      8x: 8x
   mame_3d_edge_aa:
     group: ADVANCED OPTIONS
     submenu: 3D Enhancements
     prompt: 3D EDGE ANTI-ALIASING
-    description: Smooths the stair-stepped outlines of 3D objects in supported 3D arcade games (currently 3dfx Voodoo games - Konami Viper, Midway Seattle/Vegas). Textures, HUD and text stay sharp. Low CPU cost. Requires restarting content to take effect.
+    description: '3dfx Voodoo games (Konami Viper, Midway Seattle/Vegas and others), software rendering only. Smooths the stair-stepped outlines of 3D objects. Only edges of depth-tested 3D geometry are touched; textures, HUD and text stay sharp, and emulation is unaffected. Low CPU cost. It has no effect while 3D GPU Rendering is enabled: on the GPU path, 3D Supersampling smooths the edges instead. Other 3D hardware is unaffected (3D Supersampling already smooths edges on GTI Club hardware). Requires restarting content to take effect.'
     choices:
       Off (Default): disabled
       'On': enabled
@@ -141,7 +151,7 @@ custom_features:
     group: ADVANCED OPTIONS
     submenu: 3D Enhancements
     prompt: 3D TEXTURE FILTERING
-    description: Smooths blocky magnified textures with bilinear filtering in Konami GTI Club hardware games (GTI Club, Operation Thunder Hurricane, Solar Assault, ZR107 games). Operation Thunder Hurricane and Solar Assault already filter on the real hardware; this turns it on for the other games. Other 3D hardware is unaffected. Requires restarting content to take effect.
+    description: Konami GTI Club hardware (GTI Club, Operation Thunder Hurricane, Solar Assault, ZR107 games). Smooths blocky magnified textures with bilinear filtering. Operation Thunder Hurricane and Solar Assault already filter on the real hardware; this turns it on for the other games. Other 3D hardware is unaffected. Requires restarting content to take effect.
     choices:
       Off (Default): disabled
       Bilinear: bilinear

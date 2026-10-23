@@ -103,6 +103,9 @@ class MAME(MAMEControllers, MAMECommand, MAMEBase):
             # 3D GPU Rendering (Model 2, GTI Club, Hyper Neo Geo 64, Voodoo)
             core_options.set_from_config('mame_3d_gpu', default='disabled')
 
+            # 3D Multisample Anti-Aliasing (GPU path: Voodoo, GTI Club, Model 2)
+            core_options.set_from_config('mame_3d_msaa', default='disabled')
+
             # 3D Edge Anti-Aliasing (Enhancement: Voodoo)
             core_options.set_from_config('mame_3d_edge_aa', default='disabled')
 
