@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
@@ -10,6 +30,8 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 _PATCH_FILE: Final = 'df_patch4.zip'
+# heights whose TFE preset width is not 4:3
+_RENDER_WIDTHS: Final = {200: 320, 400: 640, 1050: 1440}
 
 
 @cached_dataclass
@@ -63,13 +85,8 @@ class TheForceEngine(Emulator):
             force_config.add_section('Graphics')
 
         res_height = self.config.get_int('force_render_res', self.resolution.height)
-        res_width = int(res_height) * 4 / 3
-        res_width_int = int(res_width)
-        force_config.set(
-            'Graphics',
-            'gameWidth',
-            str(res_width_int if res_width == res_width_int else res_width),
-        )
+        res_width = _RENDER_WIDTHS.get(res_height, res_height * 4 // 3)
+        force_config.set('Graphics', 'gameWidth', str(res_width))
         force_config.set('Graphics', 'gameHeight', str(res_height))
         force_config.set(
             'Graphics',
@@ -127,7 +144,7 @@ class TheForceEngine(Emulator):
         force_config.set(
             'Sound',
             'disableSoundInMenus',
-            self.config.get_bool('force_menu_sound', return_values=('true', 'false')),
+            self.config.get_bool('force_menu_sound', True, return_values=('false', 'true')),
         )
         force_config.set(
             'Sound',
@@ -152,7 +169,7 @@ class TheForceEngine(Emulator):
         force_config.set(
             'Dark_Forces',
             'disableFightMusic',
-            self.config.get_bool('force_fight_music', return_values=('true', 'false')),
+            self.config.get_bool('force_fight_music', True, return_values=('false', 'true')),
         )
         force_config.set(
             'Dark_Forces',
@@ -193,9 +210,7 @@ class TheForceEngine(Emulator):
         args: list[str | Path] = ['theforceengine']
 
         skip_cutscenes = self.config.get_str('force_skip_cutscenes')
-        if skip_cutscenes == 'initial':
-            args.append('-c0')
-        elif skip_cutscenes == 'skip':
+        if skip_cutscenes in ('initial', 'skip'):
             args.append('-c')
 
         if mod_name is not None:

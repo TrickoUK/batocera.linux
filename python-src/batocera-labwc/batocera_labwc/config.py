@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import logging
@@ -24,9 +44,9 @@ LABWC_BIN: Final = Path('/usr/bin/labwc')
 # keyed by the batocera rotation a digitiser already reports in; each matrix undoes the wlroots output transform for it
 _TOUCH_CALIBRATION: Final = {
     0: '1 0 0 0 1 0',
-    1: '0 1 0 -1 0 1',
+    1: '0 -1 1 1 0 0',
     2: '-1 0 1 0 -1 1',
-    3: '0 -1 1 1 0 0',
+    3: '0 1 0 -1 0 1',
 }
 
 
@@ -138,12 +158,6 @@ class LabWCConfig:
             raise
 
         self._window_rules_cache = {}
-
-    def set_touchscreen(self, name: str | None = None, map_to_output_name: str | None = None) -> None:
-        if name is not None and map_to_output_name is not None:
-            self.set_touchscreens([(name, map_to_output_name, None)])
-        else:
-            self.set_touchscreens([])
 
     def set_touchscreens(self, mappings: Sequence[tuple[str, str, int | None]]) -> None:
         # Always strip any existing <touch> elements, and the calibration written for them, to keep a clean slate

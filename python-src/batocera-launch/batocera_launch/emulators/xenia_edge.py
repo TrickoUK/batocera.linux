@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import logging
@@ -116,12 +136,17 @@ class XeniaEdge(Emulator):
             GPU={
                 'gpu': 'vulkan',
                 'framerate_limit': self.config.get_int('xenia_edge_vsync_fps', 0),
-                'texture_cache_memory_limit_hard': self.config.get_int('xenia_edge_limit_hard', 768),
-                'texture_cache_memory_limit_render_to_texture': self.config.get_int(
-                    'xenia_edge_limit_render_to_texture', 24
-                ),
-                'texture_cache_memory_limit_soft': self.config.get_int('xenia_edge_limit_soft', 384),
-                'texture_cache_memory_limit_soft_lifetime': self.config.get_int('xenia_edge_limit_soft_lifetime', 30),
+                'Debug': {
+                    **config.get('GPU', {}).get('Debug', {}),
+                    'texture_cache_memory_limit_hard': self.config.get_int('xenia_edge_limit_hard', 768),
+                    'texture_cache_memory_limit_render_to_texture': self.config.get_int(
+                        'xenia_edge_limit_render_to_texture', 24
+                    ),
+                    'texture_cache_memory_limit_soft': self.config.get_int('xenia_edge_limit_soft', 384),
+                    'texture_cache_memory_limit_soft_lifetime': self.config.get_int(
+                        'xenia_edge_limit_soft_lifetime', 30
+                    ),
+                },
                 'render_target_path': self.config.get_str('xenia_edge_render_target_path', 'performance'),
                 'occlusion_query': self.config.get_str('xenia_edge_occlusion_query', 'fast'),
                 'precise_interpolation': self.config.get_bool('xenia_edge_precise_interpolation', True),
@@ -132,7 +157,6 @@ class XeniaEdge(Emulator):
                 'guest_display_refresh_cap': guest_refresh != 'uncapped',
             },
             HID={
-                'guide_button': False,
                 'hid': 'sdl',
                 'left_stick_deadzone_percentage': self.config.get_float('xenia_edge_deadzone_left', 0.0),
                 'right_stick_deadzone_percentage': self.config.get_float('xenia_edge_deadzone_right', 0.0),
@@ -148,6 +172,7 @@ class XeniaEdge(Emulator):
                 'mount_cache': self.config.get_bool('xenia_edge_cache', True),
             },
             UI={
+                'guide_button': False,
                 'show_achievement_notification': self.config.get_bool('xenia_edge_achievement'),
             },
             Vulkan={

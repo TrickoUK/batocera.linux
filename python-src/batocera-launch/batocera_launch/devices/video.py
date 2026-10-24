@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import asyncio
@@ -45,7 +65,7 @@ async def get_refresh_rate() -> str:  # noqa: RET503
 
 
 async def min_to_max_resolution() -> None:
-    await run('batocera-resolution', 'minToMaxResolution', shell=True)
+    await run('batocera-resolution', 'minTomaxResolution', shell=True)
 
 
 async def change_mode(video_mode: str) -> None:
@@ -268,6 +288,7 @@ async def prepare_resolution(limit_resolution: bool, target_mode: str, /) -> Asy
     current_mode = original_mode
 
     restore_resolution = False
+    game_resolution: Resolution | None = None
 
     if limit_resolution:
         # Limit the display resolution to the maximum supported resolution before starting the game
@@ -276,7 +297,12 @@ async def prepare_resolution(limit_resolution: bool, target_mode: str, /) -> Asy
 
         await min_to_max_resolution()
 
-        current_mode = await get_current_mode()
+        # no mode change follows, so both can be queried at once
+        if target_mode == 'default':
+            current_mode, game_resolution = await asyncio.gather(get_current_mode(), get_current_resolution())
+        else:
+            current_mode = await get_current_mode()
+
         if current_mode != original_mode:
             restore_resolution = True
 
@@ -287,7 +313,8 @@ async def prepare_resolution(limit_resolution: bool, target_mode: str, /) -> Asy
         await change_mode(target_mode)
         restore_resolution = True
 
-    game_resolution = await get_current_resolution()
+    if game_resolution is None:
+        game_resolution = await get_current_resolution()
 
     if is_resolution_reversed():
         game_resolution = Resolution(width=game_resolution.height, height=game_resolution.width)

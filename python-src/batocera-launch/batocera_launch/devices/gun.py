@@ -1,54 +1,38 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import logging
 import re
-import shutil
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, ClassVar, Final, Protocol, cast
-
-from batocera_common.paths import CONFIGS, SAVES
-
-from ..paths import PRECALIBRATION_DIR
+from typing import TYPE_CHECKING, ClassVar, Final, cast
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from ..config.config import SystemConfig
+    from ..rom import Rom
 
 _logger = logging.getLogger(__name__)
 _input_re: Final = re.compile(r'^/dev/input/event([0-9]*)$')
-
-
-def _copy_file(src: Path, dst: Path) -> None:
-    if src.exists() and not dst.exists():
-        dst.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(src, dst)
-
-
-def _copy_dir(src: Path, dst: Path) -> None:
-    if src.exists() and not dst.exists():
-        dst.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(src, dst)
-
-
-def _copy_files_in_dir(srcdir: Path, dstdir: Path, startWith: str, endWith: str) -> None:
-    for src in srcdir.iterdir():
-        if src.name.startswith(startWith):  # and src.endswith(endswith):
-            _copy_file(src, dstdir / src.name)
-
-
-class LegacyConfig(Protocol):
-    system: str
-
-    @property
-    def emulator(self) -> str: ...
-
-    @property
-    def core(self) -> str: ...
-
-    @property
-    def use_guns(self) -> bool: ...
 
 
 @dataclass(slots=True, kw_only=True)
@@ -149,67 +133,6 @@ class Gun:
 
         return guns
 
-    @classmethod
-    def get_and_precalibrate_all(cls, system_config: SystemConfig | LegacyConfig, rom: Path, /) -> GunList:
-        if not system_config.use_guns:
-            _logger.info('guns disabled.')
-            return []
-
-        dir = PRECALIBRATION_DIR / system_config.system
-
-        # TODO: move preconfiguration code to Emulator subclasses/mixins
-        if dir.exists():
-            emulator = system_config.emulator
-            core = system_config.core
-
-            if system_config.system == 'atomiswave':
-                for suffix in ['nvmem', 'nvmem2']:
-                    src = dir / 'reicast' / f'{rom.name}.{suffix}'
-                    dst = SAVES / 'atomiswave' / 'reicast' / f'{rom.name}.{suffix}'
-                    _copy_file(src, dst)
-
-            elif system_config.system == 'mame':
-                target_dir: str | None = None
-                if emulator == 'mame':
-                    target_dir = 'mame'
-                elif emulator == 'libretro':
-                    if core == 'mame078plus':
-                        target_dir = 'mame/mame2003-plus'
-                    elif core == 'mame':
-                        target_dir = 'mame/mame'
-
-                if target_dir is not None:
-                    src = dir / 'nvram' / rom.stem
-                    dst = SAVES / target_dir / 'nvram' / rom.stem
-                    _copy_dir(src, dst)
-                    srcdir = dir / 'diff'
-                    dstdir = SAVES / target_dir / 'diff'
-                    _copy_files_in_dir(srcdir, dstdir, rom.stem + '_', '.dif')
-
-            elif system_config.system == 'model2':
-                src = dir / 'NVDATA' / f'{rom.name}.DAT'
-                dst = SAVES / 'model2' / 'NVDATA' / f'{rom.name}.DAT'
-                _copy_file(src, dst)
-
-            elif system_config.system == 'naomi':
-                for suffix in ['nvmem', 'eeprom']:
-                    src = dir / 'reicast' / f'{rom.name}.{suffix}'
-                    dst = SAVES / 'naomi' / 'reicast' / f'{rom.name}.{suffix}'
-                    _copy_file(src, dst)
-
-            elif system_config.system == 'supermodel':
-                src = dir / 'NVDATA' / f'{rom.stem}.nv'
-                dst = SAVES / 'supermodel' / 'NVDATA' / f'{rom.stem}.nv'
-                _copy_file(src, dst)
-
-            elif system_config.system == 'namco2x6':  # noqa: SIM102
-                if emulator == 'play':
-                    src = dir / 'play' / rom.stem
-                    dst = CONFIGS / 'play' / 'Play Data Files' / 'arcadesaves' / f'{rom.stem}.backupram'
-                    _copy_file(src, dst)
-
-        return cls.get_all()
-
 
 def guns_need_crosses(guns: Guns, /) -> bool:
     # no gun, enable the cross for joysticks, mouses...
@@ -217,6 +140,22 @@ def guns_need_crosses(guns: Guns, /) -> bool:
         return True
 
     return any(gun.needs_cross for gun in guns)
+
+
+def precalibrate_reicast_guns(system: str, rom: Rom, precalibration_dir: Path, saves_dir: Path, /) -> None:
+    if system not in {'atomiswave', 'naomi'}:
+        return
+
+    suffixes = {'nvmem', 'nvmem2'} if system == 'atomiswave' else {'nvmem', 'eeprom'}
+
+    for suffix in suffixes:
+        filename = f'{rom.name}.{suffix}'
+        src = precalibration_dir / 'reicast' / filename
+        dest = saves_dir / filename
+
+        if src.exists() and not dest.exists():
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            src.copy(dest)
 
 
 type Guns = Sequence[Gun]

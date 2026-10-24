@@ -4,8 +4,8 @@ shared_features:
   - powermode
   - cpucluster
   - tdp
+  - platformprofile
   - videomode
-  - ratio
   - hud
 file_extensions:
   - sdlpop

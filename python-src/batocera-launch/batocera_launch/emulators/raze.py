@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import logging
@@ -101,13 +121,9 @@ def _build_config_defaults() -> dict[str, dict[str, object]]:
 _CONFIG_DEFAULTS: Final = _build_config_defaults()
 
 
-def _gl_es_line(raze_api: str | None, architecture: str, current: str, /) -> str:
-    if raze_api and raze_api != '2':
-        if raze_api == '0':
-            value = 'false' if architecture in _INTEL_ARCHES else 'true'
-            return f'gl_es={value}\n'
-        return current
-    return 'gl_es=true\n'
+# x86 builds have no GLES renderer, so an ES context would reach the desktop GL renderer and fail
+def _gl_es_line(architecture: str, /) -> str:
+    return f'gl_es={"false" if architecture in _INTEL_ARCHES else "true"}\n'
 
 
 @cached_dataclass
@@ -159,7 +175,7 @@ class Raze(Emulator):
                 if global_settings_found:
                     stripped = line.strip()
                     if stripped.startswith('gl_es='):
-                        line = _gl_es_line(raze_api, architecture, line)
+                        line = _gl_es_line(architecture)
                     elif stripped.startswith('vid_preferbackend='):
                         line = f'vid_preferbackend={raze_api or "2"}\n'
                     elif stripped.startswith('use_joystick='):
@@ -170,15 +186,7 @@ class Raze(Emulator):
             if not global_settings_found:
                 _logger.debug('Global Settings NOT found')
                 out.write('[GlobalSettings]\n')
-                # Preserve original first-boot quirk: gl_es is only derived when api is OpenGL.
-                if raze_api == '0':
-                    if architecture in _INTEL_ARCHES:
-                        _logger.debug('*** Architecture is intel; gl_es=false ***')
-                    else:
-                        _logger.debug(
-                            '*** Architecture is not intel (%s); gl_es=true ***',
-                            architecture,
-                        )
+                out.write(_gl_es_line(architecture))
                 out.write(f'vid_preferbackend={raze_api or "2"}\n')
                 out.write('use_joystick=true\n')
 

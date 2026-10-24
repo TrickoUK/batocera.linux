@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import logging
@@ -148,7 +168,7 @@ class Azahar(Emulator):
 
     @property
     def needs_mouse(self) -> bool:
-        return self.config.get_str('azahar_screen_layout') != '1-false'
+        return True
 
     async def configure_windows(self) -> None:
         # windows position is handled by coordonnates by the application (xorg) or the windows manager (wayland)
@@ -307,6 +327,12 @@ class Azahar(Emulator):
         # Texture Filter
         azahar_config.set('Renderer', 'texture_filter', self.config.get_str('azahar_texture_filter', '0'))
         azahar_config.set('Renderer', r'texture_filter\default', 'false')
+        azahar_config.set(
+            'Renderer',
+            'use_disk_shader_cache',
+            self.config.get_bool('azahar_use_disk_shader_cache', True, return_values=('true', 'false')),
+        )
+        azahar_config.set('Renderer', r'use_disk_shader_cache\default', 'false')
 
         ## [AUDIO]
         if not azahar_config.has_section('Audio'):
@@ -322,13 +348,6 @@ class Azahar(Emulator):
         ## [UTILITY]
         if not azahar_config.has_section('Utility'):
             azahar_config.add_section('Utility')
-        # Disk Shader Cache
-        azahar_config.set(
-            'Utility',
-            'use_disk_shader_cache',
-            self.config.get_bool('azahar_use_disk_shader_cache', return_values=('true', 'false')),
-        )
-        azahar_config.set('Utility', r'use_disk_shader_cache\default', 'false')
         # Custom Textures
         match self.config.get_str('azahar_custom_textures'):
             case None | '0':

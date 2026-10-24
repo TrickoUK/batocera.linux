@@ -54,7 +54,6 @@ custom_features:
       right/left: right/left
       top only: top only
       bottom only: bottom only
-      quick switch: quick switch
       hybrid/top: hybrid/top
       hybrid/bottom: hybrid/bottom
   frameskip_desmume:
@@ -73,6 +72,7 @@ custom_features:
       "9": 9
 file_extensions:
   - nds
+  - ids
   - bin
   - zip
   - 7z

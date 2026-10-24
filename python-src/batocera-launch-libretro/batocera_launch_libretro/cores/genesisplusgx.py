@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar
@@ -51,18 +71,18 @@ class GenesisPlusGX(SquashFSMixin, MegadriveControllerRemapMixin, RACore):
 
         # Sometimes needs to be forced to NTSC-U for MSU-MD to work (this is to avoid an intentionally coded lock-out screen):
         # https://arcadetv.github.io/msu-md-patches/wiki/Lockout-screen.html
-        core_options.set_from_config('genesis_plus_region_detect', 'gpgx_region', default='auto')
+        core_options.set_from_config('genesis_plus_gx_region_detect', 'gpgx_region', default='auto')
 
         # Reduce sprite flickering
         core_options.set_from_config('genesis_plus_gx_no_sprite_limit', 'gpgx_no_sprite_limit', default='disabled')
 
         # Blargg NTSC filter
         if self.system == 'megadrive':
-            ntsc_filter = self.config.get('gpgx_blargg_filter_md', 'Off')
+            ntsc_filter = self.config.get('gpgx_blargg_filter_md', 'disabled')
         elif self.system == 'mastersystem':
-            ntsc_filter = self.config.get('gpgx_blargg_filter_ms', 'Off')
+            ntsc_filter = self.config.get('gpgx_blargg_filter_ms', 'disabled')
         else:
-            ntsc_filter = 'Off'
+            ntsc_filter = 'disabled'
 
         core_options.set('genesis_plus_gx_blargg_ntsc_filter', ntsc_filter)
 

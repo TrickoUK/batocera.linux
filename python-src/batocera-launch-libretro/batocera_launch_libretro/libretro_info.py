@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 from configparser import UNNAMED_SECTION
@@ -17,11 +37,15 @@ class LibretroInfo:
 
     config: CaseSensitiveConfigParser
 
+    @staticmethod
+    def file(core: str, /) -> Path:
+        return _RETROARCH_INFO_DIR / f'{core}_libretro.info'
+
     @classmethod
     def load(cls, core: str, /) -> Self | None:
         # for each core, a file /usr/lib/<core>.info must exit, otherwise, info such as rewinding/netplay will not work
         # to do a global check : cd /usr/lib/libretro && for i in *.so; do INF=$(echo $i | sed -e s+/usr/lib/libretro+/usr/share/libretro/info+ -e s+\.so+.info+); test -e "$INF" || echo $i; done
-        if not (info_file := _RETROARCH_INFO_DIR / f'{core}_libretro.info').exists():
+        if not (info_file := cls.file(core)).exists():
             return None
 
         config = CaseSensitiveConfigParser(

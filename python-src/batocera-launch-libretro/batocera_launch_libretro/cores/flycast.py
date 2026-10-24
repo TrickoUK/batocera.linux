@@ -1,8 +1,29 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar
 
 from batocera_common.dataclasses import cached_dataclass
+from batocera_launch import precalibrate_reicast_guns
 from batocera_launch_libretro import DisableAnalogModeMixin, RACore
 
 if TYPE_CHECKING:
@@ -12,6 +33,17 @@ if TYPE_CHECKING:
 @cached_dataclass
 class FlycastVL(DisableAnalogModeMixin, RACore):
     gun_mapping: ClassVar = {'default': {'device': 4, 'p1': 0, 'p2': 1, 'p3': 2, 'p4': 3}}
+
+    def precalibrate_guns(self) -> None:
+        precalibrate_reicast_guns(
+            self.system, self.rom, self.emulator.gun_precalibration_dir, self.emulator.saves_dir / 'reicast'
+        )
+
+    def set_config(self, custom_config: LibretroConfig, /) -> None:
+        super().set_config(custom_config)
+
+        if self.system != 'dreamcast':
+            custom_config.set('input_player1_select', 'num5')
 
 
 @cached_dataclass
@@ -47,17 +79,11 @@ class Flycast(FlycastVL):
         # force vmu all, to save in saves (otherwise, it saves in game_dir, which is bios)
         core_options.set('reicast_per_content_vmus', 'All VMUs')
 
-        # Synchronous rendering
-        core_options.set_from_config('reicast_synchronous_rendering', default='enabled')
-
         # DSP audio
         core_options.set_from_config('reicast_enable_dsp', 'reicast_dsp', default='disabled')
 
         # Threaded Rendering
         core_options.set('reicast_threaded_rendering', 'enabled')
-
-        # Enable controller force feedback
-        core_options.set('reicast_enable_purupuru', 'enabled')
 
         # Crossbar Colors
         need_crosses = self.emulator.guns_need_crosses
@@ -75,14 +101,13 @@ class Flycast(FlycastVL):
         # Anisotropic Filtering
         core_options.set_from_config('reicast_anisotropic_filtering', default='off')
 
+        core_options.set_from_config('reicast_alpha_sorting', default='per-triangle (normal)')
+
         # Texture Upscaling (xBRZ)
         core_options.set_from_config('reicast_texupscale', default='1')
 
         # Frame Skip
         core_options.set_from_config('reicast_frame_skipping', default='disabled')
-
-        # Force Windows CE Mode
-        core_options.set_from_config('reicast_force_wince', default='disabled')
 
         # Widescreen Cheat
         if (
@@ -101,7 +126,7 @@ class Flycast(FlycastVL):
             self.config.get('reicast_widescreen_hack') == 'enabled'
             and self.config.get('ratio') == '16/9'
             and self.config.get('bezel') == 'none'
-            and self.config.get('reicast_widescreen_cheats') == 'disabled'
+            and self.config.get('reicast_widescreen_cheats') != 'enabled'
         ):
             widescreen_hack = 'enabled'
         else:

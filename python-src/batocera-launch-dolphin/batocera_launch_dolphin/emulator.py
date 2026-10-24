@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import logging
@@ -286,7 +306,7 @@ class Dolphin(Emulator):
         gfx.set('Hacks', 'VISkip', str(self.config.get_bool('vbi_hack')))
         gfx.set('Settings', 'InternalResolution', self.config.get('internal_resolution', '1'))
         gfx.set('Hardware', 'VSync', str(self.config.get_bool('vsync', True)))
-        gfx.set('Enhancements', 'MaxAnisotropy', self.config.get('anisotropic_filtering', '0'))
+        gfx.set('Enhancements', 'MaxAnisotropy', self.config.get('anisotropic_filtering', '-1'))
         gfx.set('Settings', 'MSAA', self.config.get('antialiasing', '0'))
         gfx.set('Settings', 'SSAA', str(self.config.get_bool('use_ssaa')))
         # Manual texture sampling: on = speed hack off. off = speed hack on
@@ -343,20 +363,19 @@ class Dolphin(Emulator):
             rac_config.set('Achievements', 'Username', self.config.get('retroachievements.username', ''))
             rac_config.set('Achievements', 'ApiToken', self.config.get('retroachievements.token', ''))
             rac_config.set('Achievements', 'HardcoreEnabled', self.config.get('retroachievements.hardcore', 'False'))
-            rac_config.set('Achievements', 'BadgesEnabled', self.config.get('retroachievements.verbose', 'False'))
             rac_config.set('Achievements', 'EncoreEnabled', self.config.get('retroachievements.encore', 'False'))
             rac_config.set(
-                'Achievements', 'ProgressEnabled', self.config.get('retroachievements.challenge_indicators', 'False')
+                'Achievements',
+                'ChallengeIndicatorsEnabled',
+                self.config.get('retroachievements.challenge_indicators', 'False'),
             )
             rac_config.set(
-                'Achievements', 'LeaderboardsEnabled', self.config.get('retroachievements.leaderboard', 'False')
-            )
-            rac_config.set(
-                'Achievements', 'RichPresenceEnabled', self.config.get('retroachievements.richpresence', 'False')
+                'Achievements', 'LeaderboardTrackerEnabled', self.config.get('retroachievements.leaderboards', 'False')
             )
             rac_config.set(
                 'Achievements', 'UnofficialEnabled', self.config.get('retroachievements.unofficial', 'False')
             )
+            rac_config.set('Achievements', 'ProgressEnabled', self.config.get('retroachievements.verbose', 'False'))
         else:
             rac_config.set('Achievements', 'Enabled', 'False')
         with (DOLPHIN_CONFIG / 'RetroAchievements.ini').open('w') as fp:

@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 from os import environ
@@ -119,13 +139,18 @@ def _language() -> str:
 
 def _rewrite_m3u_full_path(m3u: Path, /) -> Path:
     """Rewrite an m3u with absolute paths, working around DuckStation's handling of relative ones."""
-    first_line = m3u.read_text().splitlines()[0].rstrip()
-    rewritten = Path('/tmp') / Path(first_line).with_suffix('.m3u').name
+    entries = [line.strip() for line in m3u.read_text().splitlines()]
+    entries = [entry for entry in entries if entry and not entry.startswith('#')]
+    if not entries:
+        return m3u
 
-    with m3u.open() as source, rewritten.open('w') as target:
-        for line in source:
-            # handle both "/MGScd1.chd" and "MGScd1.chd"
-            target.write(str(m3u.parent / line.removeprefix('/')))
+    rewritten = Path('/tmp') / Path(entries[0]).with_suffix('.m3u').name
+    with rewritten.open('w') as target:
+        for entry in entries:
+            disc = Path(entry)
+            if not (disc.is_absolute() and disc.exists()):
+                disc = m3u.parent / entry.removeprefix('/')
+            target.write(f'{disc}\n')
 
     return rewritten
 
@@ -287,6 +312,7 @@ class Duckstation(Emulator):
         settings.set('GPU', 'PGXPCulling', pgxp)
         settings.set('GPU', 'PGXPTextureCorrection', pgxp)
         settings.set('GPU', 'PGXPPreserveProjFP', pgxp)
+        settings.set('GPU', 'PGXPDepthBuffer', self.config.get('duckstation_pgxp_depth', 'false'))
         settings.set('GPU', 'TrueColor', self.config.get('duckstation_truecolour', 'false'))
         settings.set('GPU', 'ScaledDithering', self.config.get('duckstation_dithering', 'true'))
         settings.set('GPU', 'DisableInterlacing', self.config.get('duckstation_interlacing', 'false'))
@@ -301,24 +327,37 @@ class Duckstation(Emulator):
 
         ## [Display]
         aspect_ratio = self.config.get_str('duckstation_ratio')
-        settings.set('Display', 'AspectRatio', aspect_ratio or 'Auto (Game Native)')
+        stretch = self.config.get('duckstation_stretch', 'false')
+        if self._legacy:
+            settings.set('Display', 'AspectRatio', aspect_ratio or 'Auto (Game Native)')
+        elif stretch == 'true' or aspect_ratio == 'Auto (Match Window)':
+            settings.set('Display', 'AspectRatio', 'Stretch To Fill')
+        else:
+            settings.set('Display', 'AspectRatio', aspect_ratio or 'Auto (Game Native)')
 
         if aspect_ratio is not None and aspect_ratio != '4:3':
             self.config['bezel'] = 'none'
 
         settings.set('Display', 'VSync', self.config.get('duckstation_vsync', 'false'))
         settings.set('Display', 'CropMode', self.config.get('duckstation_CropMode', 'Overscan'))
-        # Enable Frameskipping = option missing
-        settings.set('Display', 'DisplayAllFrames', 'false')
         settings.set('Display', 'ShowOSDMessages', self.config.get('duckstation_osd', 'false'))
-        # Optimal frame pacing
-        settings.set('Display', 'DisplayAllFrames', self.config.get('duckstation_ofp', 'false'))
-        settings.set('Display', 'IntegerScaling', self.config.get('duckstation_integer', 'false'))
-        settings.set('Display', 'LinearFiltering', self.config.get('duckstation_linear', 'false'))
-        stretch = self.config.get('duckstation_stretch', 'false')
-        settings.set('Display', 'Stretch', stretch)
+        integer = self.config.get_str('duckstation_integer')
+        linear = self.config.get_str('duckstation_linear')
+        if self._legacy:
+            settings.set('Display', 'DisplayAllFrames', self.config.get('duckstation_ofp', 'false'))
+            settings.set('Display', 'IntegerScaling', integer or 'false')
+            settings.set('Display', 'LinearFiltering', linear or 'false')
+            settings.set('Display', 'Stretch', stretch)
+        else:
+            settings.set('Display', 'OptimalFramePacing', self.config.get('duckstation_ofp', 'false'))
+            if integer is None and linear is None:
+                settings.remove_option('Display', 'Scaling')
+            elif integer == 'true':
+                settings.set('Display', 'Scaling', 'NearestInteger' if linear == 'false' else 'BilinearInteger')
+            else:
+                settings.set('Display', 'Scaling', 'Nearest' if linear == 'false' else 'BilinearSmooth')
 
-        if stretch == 'true' and self.config.get('duckstation_integer', 'false') == 'false':
+        if stretch == 'true' and integer != 'true':
             self.config['bezel'] = 'none'
 
         ## [Audio]
@@ -338,23 +377,38 @@ class Duckstation(Emulator):
                 'ChallengeMode',
                 self.config.get_bool('retroachievements.hardcore', return_values=('true', 'false')),
             )
-            # Rich presence information will be collected and sent to the server where supported
-            settings.set(
-                'Cheevos',
-                'RichPresence',
-                self.config.get_bool('retroachievements.richpresence', return_values=('true', 'false')),
-            )
-            settings.set(
-                'Cheevos',
-                'PrimedIndicators',
-                self.config.get_bool('retroachievements.challenge_indicators', return_values=('true', 'false')),
-            )
-            settings.set(
-                'Cheevos',
-                'Leaderboards',
-                self.config.get_bool('retroachievements.leaderboards', return_values=('true', 'false')),
-            )
-            if not self._legacy:
+            if self._legacy:
+                settings.set(
+                    'Cheevos',
+                    'RichPresence',
+                    self.config.get_bool('retroachievements.richpresence', return_values=('true', 'false')),
+                )
+                settings.set(
+                    'Cheevos',
+                    'PrimedIndicators',
+                    self.config.get_bool('retroachievements.challenge_indicators', return_values=('true', 'false')),
+                )
+                settings.set(
+                    'Cheevos',
+                    'Leaderboards',
+                    self.config.get_bool('retroachievements.leaderboards', return_values=('true', 'false')),
+                )
+            else:
+                settings.set(
+                    'Cheevos',
+                    'Overlays',
+                    self.config.get_bool('retroachievements.challenge_indicators', return_values=('true', 'false')),
+                )
+                settings.set(
+                    'Cheevos',
+                    'LeaderboardNotifications',
+                    self.config.get_bool('retroachievements.leaderboards', return_values=('true', 'false')),
+                )
+                settings.set(
+                    'Cheevos',
+                    'EncoreMode',
+                    self.config.get_bool('retroachievements.encore', return_values=('true', 'false')),
+                )
                 settings.set(
                     'Cheevos',
                     'UnofficialTestMode',
@@ -442,6 +496,9 @@ class Duckstation(Emulator):
             sdl = f'SDL-{pad.index}'
             controller_type = self.config.get_str(f'duckstation_Controller{player}')
 
+            # the legacy core has no rumble NeGcon
+            if self._legacy and controller_type == 'NeGconRumble':
+                controller_type = 'NeGcon'
             settings.set(section, 'Type', controller_type or 'DigitalController')
 
             for option, binding in _PAD_BINDINGS.items():
@@ -456,7 +513,7 @@ class Duckstation(Emulator):
                 # the legacy core needs a chord, the current one toggles on Guide alone
                 settings.set(section, 'Analog', f'{sdl}/Guide & {sdl}/+LeftTrigger' if self._legacy else f'{sdl}/Guide')
 
-            if controller_type == 'NeGcon':
+            if controller_type in ('NeGcon', 'NeGconRumble'):
                 for option, binding in _NEGCON_BINDINGS.items():
                     settings.set(section, option, f'{sdl}/{binding}')
 
@@ -470,7 +527,8 @@ class Duckstation(Emulator):
             if controller_type == 'PlayStationMouse':
                 settings.set(section, 'Right', f'{sdl}/B')
                 settings.set(section, 'Left', f'{sdl}/A')
-                settings.set(section, 'RelativeMouseMode', f'{sdl}true')
+                if self._legacy:
+                    settings.set(section, 'RelativeMouseMode', 'true')
 
     def _write_guns(self, settings: CaseSensitiveConfigParser, /) -> None:
         # Guns - configure based on detected guns, not controllers. The legacy core has no

@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -6,7 +26,7 @@ import pytest
 
 from batocera_common.key_value_config import KeyValueConfig
 from batocera_common.paths import BATOCERA_CONF, SYSCONFIG
-from batocera_common.settings import board_model, get_master_setting
+from batocera_common.settings import board_model, get_master_section, get_master_setting
 
 pytestmark = pytest.mark.usefixtures('fs')
 
@@ -73,3 +93,23 @@ class TestGetMasterSetting:
         config['global.powermode'] = 'balanced'
 
         assert get_master_setting('global.powermode', user_config=config) == 'balanced'
+
+
+class TestGetMasterSection:
+    def test_user_overrides_board_overrides_general(self) -> None:
+        _write(_DEVICETREE_MODEL, 'AYN Odin')
+        _write(SYSCONFIG, 'display.touchscreen.DSI-1=general\ndisplay.touchscreen.HDMI-A-1=general\n')
+        _write(
+            SYSCONFIG.with_name('batocera.conf.AYN_Odin'),
+            'display.touchscreen.DSI-1=board\ndisplay.touchrotate.DSI-1=3\n',
+        )
+        _write(BATOCERA_CONF, 'display.touchscreen.Lontium=user\ndisplay.touchscreen.HDMI-A-1=\n')
+
+        assert get_master_section('display.touchscreen') == {
+            'DSI-1': 'board',
+            'HDMI-A-1': 'general',
+            'Lontium': 'user',
+        }
+
+    def test_without_any_file(self) -> None:
+        assert get_master_section('display.touchscreen', user_config=KeyValueConfig()) == {}

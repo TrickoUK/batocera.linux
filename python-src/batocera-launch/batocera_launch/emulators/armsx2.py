@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import logging
@@ -341,14 +361,15 @@ class Armsx2(Emulator):
             )
             pcsx2_ini_config.set(
                 'Achievements',
-                'PrimedIndicators',
+                'Overlays',
                 self.config.get_bool('retroachievements.challenge_indicators', return_values=('true', 'false')),
             )
-            pcsx2_ini_config.set(
-                'Achievements',
-                'Leaderboards',
-                self.config.get_bool('retroachievements.leaderboards', return_values=('true', 'false')),
-            )
+            for key in ('LeaderboardNotifications', 'LBOverlays'):
+                pcsx2_ini_config.set(
+                    'Achievements',
+                    key,
+                    self.config.get_bool('retroachievements.leaderboards', return_values=('true', 'false')),
+                )
             pcsx2_ini_config.set(
                 'Achievements',
                 'EncoreMode',
@@ -360,7 +381,6 @@ class Armsx2(Emulator):
                 self.config.get_bool('retroachievements.unofficial', return_values=('true', 'false')),
             )
         # set other settings
-        pcsx2_ini_config.set('Achievements', 'UnofficialTestMode', 'false')
         pcsx2_ini_config.set('Achievements', 'Notifications', 'true')
         pcsx2_ini_config.set('Achievements', 'SoundEffects', 'true')
 
@@ -377,37 +397,24 @@ class Armsx2(Emulator):
             pcsx2_ini_config.add_section('EmuCore/Speedhacks')
 
         # Renderer
-        # Check Vulkan first to be sure
-        if vulkan_info := await get_vulkan_info():
-            _logger.debug('Vulkan driver is available on the system.')
-            renderer = '-1'
-
-            if gfxbackend := self.config.get('armsx2_gfxbackend'):
-                if gfxbackend == '12':
-                    _logger.debug('User selected OpenGL')
-                if gfxbackend == '13':
-                    _logger.debug('User selected Software! Man you must have a fast CPU!')
-                elif gfxbackend == '14':
-                    _logger.debug('User selected Vulkan')
-                    if discrete_gpu := vulkan_info.active_discrete_gpu:
-                        _logger.debug('A discrete GPU is available on the system. We will use that for performance')
-                        if discrete_gpu.name:
-                            _logger.debug('Using Discrete GPU Name: %s for PCSX2', discrete_gpu.name)
-                            pcsx2_ini_config.set('EmuCore/GS', 'Adapter', discrete_gpu.name)
-                        else:
-                            _logger.debug("Couldn't get discrete GPU Name")
-                            pcsx2_ini_config.set('EmuCore/GS', 'Adapter', '(Default)')
-                    else:
-                        _logger.debug('Discrete GPU is not available on the system. Using default.')
-                        pcsx2_ini_config.set('EmuCore/GS', 'Adapter', '(Default)')
-                renderer = gfxbackend
-            else:
-                _logger.debug('User selected to Automatic')
-
-            pcsx2_ini_config.set('EmuCore/GS', 'Renderer', renderer)
-        else:
+        renderer = self.config.get('armsx2_gfxbackend', '-1')
+        vulkan_info = await get_vulkan_info()
+        if renderer == '14' and not vulkan_info:
             _logger.debug('Vulkan driver is not available on the system. Falling back to Automatic')
-            pcsx2_ini_config.set('EmuCore/GS', 'Renderer', '-1')
+            renderer = '-1'
+        if renderer == '14' and vulkan_info:
+            if discrete_gpu := vulkan_info.active_discrete_gpu:
+                _logger.debug('A discrete GPU is available on the system. We will use that for performance')
+                if discrete_gpu.name:
+                    _logger.debug('Using Discrete GPU Name: %s for PCSX2', discrete_gpu.name)
+                    pcsx2_ini_config.set('EmuCore/GS', 'Adapter', discrete_gpu.name)
+                else:
+                    _logger.debug("Couldn't get discrete GPU Name")
+                    pcsx2_ini_config.set('EmuCore/GS', 'Adapter', '(Default)')
+            else:
+                _logger.debug('Discrete GPU is not available on the system. Using default.')
+                pcsx2_ini_config.set('EmuCore/GS', 'Adapter', '(Default)')
+        pcsx2_ini_config.set('EmuCore/GS', 'Renderer', renderer)
 
         # Ratio
         pcsx2_ini_config.set('EmuCore/GS', 'AspectRatio', self.config.get('armsx2_ratio', 'Auto 4:3/3:2'))
@@ -422,16 +429,12 @@ class Armsx2(Emulator):
         pcsx2_ini_config.set('EmuCore/GS', 'fxaa', self.config.get('armsx2_fxaa', 'false'))
 
         # FMV Ratio
-        pcsx2_ini_config.set('EmuCore/GS', 'FMVAspectRatioSwitch', self.config.get('armsx2_fmv_ratio', 'Auto 4:3/3:2'))
+        pcsx2_ini_config.set('EmuCore/GS', 'FMVAspectRatioSwitch', self.config.get('armsx2_fmv_ratio', 'Off'))
 
-        # Mipmapping
-        # Upstream collapsed the old 3-way "mipmap_hw" (Off/Basic/Full) setting into a plain
-        # on/off "hw_mipmap" boolean (PCSX2 v2.8.x) -- the "Basic" vs "Full" distinction this
-        # custom_feature's choices still expose no longer has an upstream equivalent, so any
-        # non-"Off" choice just enables hardware mipmapping.
-        pcsx2_ini_config.set(
-            'EmuCore/GS', 'hw_mipmap', 'false' if self.config.get('armsx2_mipmapping') == '0' else 'true'
-        )
+        # Mipmapping (software and hardware renderers have separate keys)
+        mipmap = 'false' if self.config.get('armsx2_mipmapping') == '0' else 'true'
+        pcsx2_ini_config.set('EmuCore/GS', 'mipmap', mipmap)
+        pcsx2_ini_config.set('EmuCore/GS', 'hw_mipmap', mipmap)
 
         # Trilinear Filtering
         pcsx2_ini_config.set('EmuCore/GS', 'TriFilter', self.config.get('armsx2_trilinear_filtering', '-1'))
@@ -484,7 +487,7 @@ class Armsx2(Emulator):
         pcsx2_ini_config.set('EmuCore/GS', 'OsdPerformancePos', self.config.get('armsx2_osd_performance_position', '0'))
 
         # Crop Overscan
-        crop_overscan = '3' if self.config.get_bool('armsx2_overscan') else '0'
+        crop_overscan = '3' if self.config.get_bool('armsx2_crop_overscan') else '0'
 
         pcsx2_ini_config.set('EmuCore/GS', 'CropLeft', crop_overscan)
         pcsx2_ini_config.set('EmuCore/GS', 'CropTop', crop_overscan)
@@ -492,7 +495,7 @@ class Armsx2(Emulator):
         pcsx2_ini_config.set('EmuCore/GS', 'CropBottom', crop_overscan)
 
         # TV Shader
-        pcsx2_ini_config.set('EmuCore', 'TVShader', self.config.get('armsx2_shaderset', '0'))
+        pcsx2_ini_config.set('EmuCore/GS', 'TVShader', self.config.get('armsx2_shaderset', '0'))
 
         pcsx2_ini_config.set(
             'EmuCore',
@@ -755,7 +758,7 @@ class Armsx2(Emulator):
             # only configure the number of controllers set
             if nplayer <= multi_tap:
                 pad_index = nplayer
-                if multi_tap == 4 and pad.index != 0:
+                if multi_tap == 4 and nplayer != 1:
                     # Skip Pad2 in the ini file when MultitapPort1 only
                     pad_index = nplayer + 1
                 pad_num = f'Pad{pad_index}'

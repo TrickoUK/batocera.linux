@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import json
@@ -187,7 +207,7 @@ class Shadps4(Emulator):
 
         # Options - GRAPHICS
         gpu_config['fsr_enabled'] = self.config.get_bool('shadps4_fsr')
-        gpu_config['rcas_enabled'] = self.config.get_bool('shadps4_rcas')
+        gpu_config['rcas_enabled'] = self.config.get_bool('shadps4_rcas', True)
         gpu_config['hdr_allowed'] = self.config.get_bool('shadps4_hdr')
 
         # Options - DISPLAY
@@ -197,7 +217,7 @@ class Shadps4(Emulator):
 
         # Options - SYSTEM
         general_config['neo_mode'] = self.config.get_bool('shadps4_neo_mode')
-        general_config['console_language'] = self.config.get_int('shadps4_console_lang') or 1
+        general_config['console_language'] = self.config.get_int('shadps4_console_lang', 1)
 
         # Options - ADVANCED
         gpu_config['copy_gpu_buffers'] = self.config.get_bool('shadps4_copy_gpu_buffers')

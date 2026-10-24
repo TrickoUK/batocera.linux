@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import logging
@@ -348,7 +368,7 @@ class Cemu(Emulator):
         # Graphical backend
         api_value = self.config.get_str('cemu_gfxbackend', '1')  # 1 = Vulkan
         _set_xml_value(config, graphic_root, 'api', api_value)
-        # Only set the graphics `device` if Vulkan
+        # Only set the graphics `vkDevice` if Vulkan
         if api_value == '1':
             # Check if we have a discrete GPU & if so, set the UUID
             if vulkan_info := await get_vulkan_info():
@@ -357,7 +377,7 @@ class Cemu(Emulator):
                     if discrete_gpu.uuid:
                         discrete_uuid_num = discrete_gpu.uuid.replace('-', '')
                         _logger.debug('Using Discrete GPU UUID: %s for Cemu', discrete_uuid_num)
-                        _set_xml_value(config, graphic_root, 'device', discrete_uuid_num)
+                        _set_xml_value(config, graphic_root, 'vkDevice', discrete_uuid_num)
                     else:
                         _logger.debug("Couldn't get discrete GPU UUID!")
                 else:
@@ -503,6 +523,9 @@ class Cemu(Emulator):
                 case _:  # '0' or None
                     if nplayer == 0:
                         controller_type = _GAMEPAD
+
+            if _is_wiimote(pad):
+                controller_type = _WIIMOTE
 
             ET.SubElement(root, 'type').text = controller_type
 

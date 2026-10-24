@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
@@ -28,7 +48,7 @@ class DXXRebirth(Emulator):
                 'menu': 'KEY_F2',
                 'pause': 'KEY_F2',
                 'save_state': ['KEY_LEFTALT', 'KEY_F2'],
-                'restore_state': ['KEY_LEFTALT', 'KEY_LEFTSHIFT', 'KEY_F2'],
+                'restore_state': ['KEY_LEFTALT', 'KEY_F3'],
             },
         }
 
@@ -55,40 +75,24 @@ class DXXRebirth(Emulator):
         config_file = self.config_dir / 'descent.cfg'
         self.config_dir.mkdir(parents=True, exist_ok=True)
 
-        replacements = {
-            'ResolutionX=': f'ResolutionX={self.resolution.width}',
-            'ResolutionY=': f'ResolutionY={self.resolution.height}',
-            'WindowMode=': 'WindowMode=0',
-            'VSync=': f'VSync={self.config.get_str("rebirth_vsync", "0")}',
-            'TexFilt=': f'TexFilt={self.config.get_str("rebirth_filtering", "0")}',
-            'TexAnisotropy=': f'TexAnisotropy={self.config.get_str("rebirth_anisotropy", "0")}',
-            'Multisample=': f'Multisample={self.config.get_str("rebirth_multisample", "0")}',
+        options = {
+            'ResolutionX': str(self.resolution.width),
+            'ResolutionY': str(self.resolution.height),
+            'WindowMode': '0',
+            'VSync': self.config.get_str('rebirth_vsync', '0'),
+            'TexFilt': self.config.get_str('rebirth_filtering', '0'),
+            'TexAnisotropy': self.config.get_str('rebirth_anisotropy', '0'),
+            'Multisample': self.config.get_str('rebirth_multisample', '0'),
         }
 
-        if config_file.is_file():
-            lines = config_file.read_text().splitlines(keepends=True)
-
-            for i, line in enumerate(lines):
-                for prefix, replacement in replacements.items():
-                    if line.startswith(prefix):
-                        lines[i] = f'{replacement}\n'
-                        break
-
-            config_file.write_text(''.join(lines))
-        else:
-            config_file.write_text(
-                '\n'.join(
-                    [
-                        f'ResolutionX={self.resolution.width}',
-                        f'ResolutionY={self.resolution.height}',
-                        'WindowMode=0',
-                        'VSync=0',
-                        'TexFilt=0',
-                        'TexAnisotropy=0',
-                        'Multisample=0',
-                        '',
-                    ]
-                ),
-            )
+        lines = config_file.read_text().splitlines() if config_file.is_file() else []
+        found: set[str] = set()
+        for i, line in enumerate(lines):
+            key = line.split('=', 1)[0]
+            if key in options:
+                lines[i] = f'{key}={options[key]}'
+                found.add(key)
+        lines.extend(f'{key}={value}' for key, value in options.items() if key not in found)
+        config_file.write_text('\n'.join(lines) + '\n')
 
         return Command([self.rom_binary, '-hogdir', self.rom.parent])

@@ -1,9 +1,31 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
 from batocera_common.dataclasses import cached_dataclass
 from batocera_launch_libretro import Core
+
+from .vice_x64 import jiffydos_option
 
 if TYPE_CHECKING:
     from batocera_launch import LibretroConfig
@@ -13,7 +35,7 @@ if TYPE_CHECKING:
 class ViceX128(Core):
     def set_core_options(self, core_options: LibretroConfig, /) -> None:
         # Activate Jiffydos
-        core_options.set('vice_jiffydos', 'enabled')
+        core_options.set('vice_jiffydos', jiffydos_option('JiffyDOS_C64.bin', 'JiffyDOS_C128.bin'))
         # Enable Automatic Load Warp
         core_options.set('vice_autoloadwarp', 'enabled')
         # Disable Datasette Hotkeys
@@ -47,6 +69,9 @@ class ViceX128(Core):
 
         # Select Controller Type
         core_options.set_from_config('vice_joyport_type', default='1')
+
+        # RAM Expansion Unit
+        core_options.set_from_config('vice_c128_ram_expansion_unit', default='none')
 
         # Keyboard Pass-through for Pad2Key
         core_options.set_from_config(

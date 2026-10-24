@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import logging
@@ -161,7 +181,8 @@ class Supermodel(Emulator):
                 'reset': ['KEY_LEFTALT', 'KEY_R'],
                 'save_state': 'KEY_F5',
                 'restore_state': 'KEY_F7',
-                'next_state': 'KEY_F6',
+                'next_slot': 'KEY_F6',
+                'coin': 'KEY_3',
             },
         }
 
@@ -393,10 +414,10 @@ class Supermodel(Emulator):
             outputs_lf = 'true' if self.config.get_bool('m3_outputs_lf') else 'false'
             target_config.set('Global', 'OutputsWithLF', outputs_lf)
 
-            tcp_port = self.config.get_str('m3_outputs_tcp', '0')
+            tcp_port = self.config.get_str('m3_outputs_tcp', '8000')
             target_config.set('Global', 'OutputsTCPPort', tcp_port)
 
-            udp_port = self.config.get_str('m3_outputs_udp', '0')
+            udp_port = self.config.get_str('m3_outputs_udp', '8001')
             target_config.set('Global', 'OutputsUDPBroadcastPort', udp_port)
         else:
             target_config.set('Global', 'Outputs', 'none')

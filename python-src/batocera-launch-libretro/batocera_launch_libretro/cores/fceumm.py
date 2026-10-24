@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar
@@ -24,7 +44,7 @@ class Fceumm(RACore):
     def set_core_options(self, core_options: LibretroConfig, /) -> None:
         # gun
         core_options.set(
-            'fceumm_zapper_mode', 'lightgun' if self.config.use_guns and self.guns else 'mouse'
+            'fceumm_zapper_mode', 'clightgun' if self.config.use_guns and self.guns else 'mouse'
         )  # FCEumm Mouse mode for Zapper
 
         # gun cross
@@ -56,7 +76,8 @@ class Fceumm(RACore):
         core_options.set('fceumm_overscan_v_bottom', overscan_v)
 
         # Palette Choice
-        core_options.set_from_config('fceumm_palette', default='default')
+        palette = self.config.get('fceumm_palette', 'default')
+        core_options.set('fceumm_palette', 'wii-vc' if palette == 'nintendo-vc' else palette)
 
         # NTSC Filter
         core_options.set_from_config('fceumm_ntsc_filter', default='disabled')

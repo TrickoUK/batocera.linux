@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import logging
@@ -7,7 +27,7 @@ from pathlib import Path
 from typing import Final
 
 from batocera_common.dataclasses import cached_dataclass
-from batocera_common.paths import BIOS, ROMS, SAVES
+from batocera_common.paths import BIOS, ROMS
 from batocera_launch.paths import USER_DECORATIONS
 from batocera_launch_mame_common import (
     MessSystemInfo,
@@ -24,7 +44,7 @@ _logger = logging.getLogger(__name__)
 
 _SUBDIR_SOFT_LIST: Final = ['mac_hdd', 'bbc_hdd', 'cdi', 'archimedes_hdd', 'fmtowns_cd']
 _SOFT_DIR: Final = Path('/var/run/mame_software')
-_MAC_FLOPPY_DISKS: Final = {'macos30', 'macos608', 'macos701', 'macos75'}
+_MAC_FLOPPY_DISKS: Final = {'macos3', 'macos608', 'macos701', 'macos75'}
 
 
 def _quote(value: str | Path, /) -> str:
@@ -152,10 +172,15 @@ class MAMECommand(MAMEBase):
             if self.config.get_bool('ti99_32kram'):
                 args.extend(['-ioport:peb:slot2', '32kmem'])
             if self.config.get_bool('ti99_speech', True):
-                args.extend(['-ioport', 'speechsyn'])
+                args.extend(['-ioport:peb:slot3', 'speechadapter'])
 
         if self.system == 'laser310':
             args.extend(['-io', 'joystick', '-mem', self.config.get('memslot', 'laser_64k')])
+
+        if self.system == 'cgenie' and (
+            self.config.get_str('altromtype', '').startswith('flop') or self.config.get('softList') == 'cgenie_flop_rom'
+        ):
+            args.extend(['-exp', 'floppy'])
 
         if self.system == 'bbcmicro' and (stick_type := self.config.get('sticktype', 'none')) != 'none':
             args.extend(['-analogue', stick_type])
@@ -178,8 +203,6 @@ class MAMECommand(MAMEBase):
                     ram_size = 4
                 if self.mess_model == 'maclc3' and ram_size > 80:
                     ram_size = 80
-                if self.mess_model == 'maciix' and ram_size == 16:
-                    ram_size = 32
                 if self.mess_model == 'maciix' and ram_size == 48:
                     ram_size = 64
                 args.extend(['-ramsize', f'{ram_size}M'])
@@ -300,16 +323,6 @@ class MAMECommand(MAMEBase):
                     ini_file.write_text(
                         f'autoboot_command          {autorun_command}\nautoboot_delay            {autorun_delay}'
                     )
-
-                if self.config.get_bool('addblankdisk'):
-                    lr_mess_dsk = SAVES / 'lr-mess' / self.system / self.rom.stem
-                    if not lr_mess_dsk.exists():
-                        lr_mess_dsk.parent.mkdir(parents=True, exist_ok=True)
-                        shutil.copy2('/usr/share/mame/blank.dsk', lr_mess_dsk)
-                    if alt_rom_type == 'flop2':
-                        command_line.extend(['-flop1', _quote(lr_mess_dsk)])
-                    else:
-                        command_line.extend(['-flop2', _quote(lr_mess_dsk)])
 
         # Art paths - lr-mame displays artwork in the game area and not in the bezel area,
         # so using regular MAME artwork + shaders is not recommended.

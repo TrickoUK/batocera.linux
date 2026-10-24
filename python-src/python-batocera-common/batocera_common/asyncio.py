@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import asyncio
@@ -303,22 +323,6 @@ async def create_ready_task[**P, R](
     await ready.wait()
 
     return task
-
-
-async def is_connected_to_internet() -> bool:
-    import aiohttp
-
-    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=1)) as session:
-        try:
-            async with session.head('https://one.one.one.one'):
-                return True
-        except aiohttp.ClientError, TimeoutError:
-            try:
-                async with session.head('https://dns.google'):
-                    return True
-            except aiohttp.ClientError, TimeoutError:
-                _logger.error('Not connected to the internet')
-                return False
 
 
 async def iterate_queue[T](queue: asyncio.Queue[T], /) -> AsyncIterator[T]:

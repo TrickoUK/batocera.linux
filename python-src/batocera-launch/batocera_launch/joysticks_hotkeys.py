@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import argparse
@@ -209,16 +229,17 @@ def _update_hotkeys(
     new_keys: dict[str, Any],
     user_config_file: Path,
     default_config: dict[str, Any],
+    debug: bool,
     /,
 ) -> None:
     # update keys
     for new_key in new_keys:
-        if gdebug:
+        if debug:
             print(f'updating key {new_key}', file=sys.stderr)
         found = False
         for index, key in enumerate(config['actions_player1']):
             if _is_simple_key(key) and key['trigger'][1] == new_key:
-                if gdebug:
+                if debug:
                     print(f'key {new_key} already set. reaffecting it.', file=sys.stderr)
                 found = True
                 if new_keys[new_key] == 'none':
@@ -233,7 +254,7 @@ def _update_hotkeys(
                         config['actions_player1'][index]['target'] = [new_keys[new_key]]
         # the key was removed, add it back from default config
         if not found:
-            if gdebug:
+            if debug:
                 print(f'key {new_key} is not defined. affecting it.', file=sys.stderr)
             if new_keys[new_key] != 'none':
                 found = False
@@ -321,8 +342,6 @@ def main() -> None:
     if args.r3:
         new_keys['r3'] = args.r3
 
-    global gdebug
-    gdebug = args.debug
     hotkeys_mapping = _read_hotkey_mapping(_HOTKEYGEN_MAPPING)
 
     if args.values:
@@ -340,7 +359,7 @@ def main() -> None:
     if len(new_keys) == 0:
         _list_hotkeys(config, default_config, hotkeys_mapping)
     else:
-        _update_hotkeys(config, new_keys, _USER_HOTKEYS_FILE, default_config)
+        _update_hotkeys(config, new_keys, _USER_HOTKEYS_FILE, default_config, args.debug)
 
 
 if __name__ == '__main__':

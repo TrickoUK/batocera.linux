@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import logging
@@ -161,9 +181,8 @@ def add_tattoo_image(input_path: StrPath, output_path: StrPath, config: SystemCo
 
     tattoo_image = tattoo_file.convert('RGBA')
 
-    # Quickly grab the sizes.
-    width, height = get_image_size(input_path)
-    tattoo_width, tattoo_height = get_image_size(tattoo_path)
+    width, height = back_image.size
+    tattoo_width, tattoo_height = tattoo_image.size
 
     if not config.get_bool('bezel.resize_tattoo', True):
         # Maintain the image's original size.
@@ -174,6 +193,7 @@ def add_tattoo_image(input_path: StrPath, output_path: StrPath, config: SystemCo
             tattoo_height = int(float(tattoo_height) * percent)
             # Resize the tattoo to the calculated size.
             tattoo_image = tattoo_image.resize((width, tattoo_height), Image.Resampling.BICUBIC)  # pyright: ignore[reportUnknownMemberType]
+            tattoo_width = width
     else:
         # Resize to be slightly smaller than the bezel's column.
         tattoo_width_tmp = int((225 / 1920) * width)

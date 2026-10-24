@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import logging
@@ -23,6 +43,7 @@ _MODEL_DETAIL: Final[dict[str, tuple[str, str, str]]] = {
     '2': ('0.45', '0.35', '0.45'),
     '3': ('0.55', '0.5', '0.55'),
     '4': ('0.9', '0.9', '0.9'),
+    '5': ('1.0', '1.0', '1.0'),
 }
 
 _EFFECTS_DETAIL: Final[dict[str, tuple[str, str]]] = {
@@ -116,8 +137,8 @@ class OpenMOHAA(Emulator):
             'seta r_fullscreen': '1',
             'seta r_allowResize': '0',
             'seta r_centerWindow': '1',
-            'seta r_customheight': f'"{self.resolution.height}"',
-            'seta r_customwidth': f'"{self.resolution.width}"',
+            'seta r_customheight': str(self.resolution.height),
+            'seta r_customwidth': str(self.resolution.width),
             'seta r_customaspect': '1',
             'bind [': 'weapprev',
             'bind ]': 'weapnext',

@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import asyncio
@@ -88,8 +108,7 @@ def get_device_mapping(device: evdev.InputDevice[str] | None, debug: bool) -> di
         if debug:
             print(f'using mapping {mapping_path}')
 
-        data = json.loads(mapping_path.read_text())
-        return _load_mapping(data)
+        return _load_mapping(json.loads(mapping_path.read_text()))
 
     data: dict[str, str] = {}
 
@@ -119,24 +138,6 @@ async def reset_pointer_position(target_device: evdev.UInput, /) -> None:
         target_device.syn()
 
         await asyncio.sleep(0.10)
-
-
-async def reset_mouse() -> None:
-    # Create temporary device
-    import evdev
-    from evdev import ecodes
-
-    sender = evdev.UInput(
-        name='batocera-mouse-reset',
-        events={ecodes.EV_REL: [ecodes.REL_X, ecodes.REL_Y], ecodes.EV_KEY: [ecodes.BTN_LEFT]},
-    )
-
-    try:
-        await asyncio.sleep(0.2)
-
-        await reset_pointer_position(sender)
-    finally:
-        sender.close()
 
 
 def get_common_context_keys() -> KeysDict:

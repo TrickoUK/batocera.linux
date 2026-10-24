@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import logging
@@ -177,6 +197,7 @@ def _generate_controller_config(controls_ini: Path, controls_init: Path, control
     config.set(section, 'Next Slot', '1-136')
     config.set(section, 'Screenshot', '1-137')
     config.set(section, 'Pause', '1-139')
+    config.set(section, 'Exit App', '1-140')
 
     controls_ini.parent.mkdir(parents=True, exist_ok=True)
     with controls_ini.open('w+') as fp:
@@ -193,7 +214,7 @@ class PPSSPP(Emulator):
         return {
             'name': 'ppsspp',
             'keys': {
-                'exit': ['KEY_LEFTALT', 'KEY_F4'],
+                'exit': 'KEY_F10',
                 'menu': 'KEY_F9',
                 'pause': 'KEY_F9',
                 'rewind': 'KEY_F1',
@@ -260,6 +281,9 @@ class PPSSPP(Emulator):
 
         # Resolution
         ini_config.set('Graphics', 'InternalResolution', self.config.get_str('internal_resolution', '1'))
+
+        # MSAA, Vulkan only
+        ini_config.set('Graphics', 'MultiSampleLevel', self.config.get_str('msaa', '0'))
 
         # Software rendering (always false)
         ini_config.set('Graphics', 'SoftwareRenderer', 'False')
@@ -360,6 +384,8 @@ class PPSSPP(Emulator):
         ini_config.set('General', 'EnableCheats', str(self.config.get_bool('enable_cheats', False)))
         # Don't check for a new version
         ini_config.set('General', 'CheckForNewVersion', 'False')
+        # the exit hotkey uses Exit App, which otherwise asks to confirm after 5 minutes of unsaved play
+        ini_config.set('General', 'AskForExitConfirmationAfterSeconds', '0')
 
         # SaveState
         ini_config.set('General', 'StateSlot', self.config.get_str('state_slot', '0'))
@@ -415,7 +441,9 @@ class PPSSPP(Emulator):
 
             # proAdhocServer is always controlled by the ADHOC SERVER choice
             adhoc_server = self.config.get_str('adhoc_server', '')
-            if adhoc_server and adhoc_server != '__manual__':
+            if not adhoc_server:
+                ini_config.remove_option('Network', 'proAdhocServer')
+            elif adhoc_server != '__manual__':
                 ini_config.set('Network', 'proAdhocServer', adhoc_server)
 
             # Common settings
@@ -470,7 +498,7 @@ class PPSSPP(Emulator):
             args.extend(['--dpi', '0.5'])
 
         # state_slot option
-        if state_filename := self.config.state_filename:
+        if state_filename := self.config.get_str('state_filename'):
             args.append(f'--state={state_filename}')
 
         return Command(

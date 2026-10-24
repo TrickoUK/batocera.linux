@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import logging
@@ -7,23 +27,22 @@ from typing import TYPE_CHECKING, Any, Final
 import toml
 
 from batocera_common.dataclasses import cached_dataclass, cached_property
-from batocera_common.paths import BIOS, SCREENSHOTS
+from batocera_common.paths import SCREENSHOTS
 from batocera_common.vulkan import get_vulkan_info
-from batocera_launch import Command, Emulator, HotkeysContext
+from batocera_launch import Command, Controller, Emulator, Gun, HotkeysContext, get_device_info
 
 from .bindings import DEPRECATED, ControlsBuilder
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from batocera_launch import Controller
-    from batocera_launch.devices.gun import Gun
-
 _logger: Final = logging.getLogger(__name__)
 
 _XEMU_BIN: Final = Path('/usr/bin/xemu-chihiro')
 _CROSSHAIRS: Final = Path('/usr/share/xemu-chihiro/crosshairs')
-_BIOS_DIR: Final = BIOS / 'chihiro'
+
+# xemu-chihiro names a save after the parent game, so its revisions share it
+_CHIHIRO_SAVE_NAMES: Final = {'ghostsqo': 'ghostsqu', 'vcop3a': 'vcop3'}
 
 # SDL scancode, with Shift, Ctrl and Alt in bits 16-18; kept in step with the hotkeygen keys below
 _HOTKEYS: Final = {
@@ -77,6 +96,20 @@ class XemuChihiro(Emulator):
         if not self.config.use_wheels:
             return None
         return next((pad for pad in self.controllers[:4] if pad.device_path in self.wheels), None)
+
+    def get_sdl_game_controller_config(self) -> str:
+        return '\n'.join(pad.generate_sdl_game_db_line() for pad in self.controllers if pad is not self.wheel)
+
+    def precalibrate_guns(self) -> None:
+        if self.system != 'chihiro':
+            return
+
+        src = self.gun_precalibration_dir / 'saves' / f'{self.rom.stem}.sav'
+        dest = self.saves_dir / 'saves' / f'{_CHIHIRO_SAVE_NAMES.get(self.rom.stem, self.rom.stem)}.sav'
+
+        if src.exists() and not dest.exists():
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            src.copy(dest)
 
     async def configure(self) -> Command:
         config_file = self.config_dir / 'xemu.toml'
@@ -146,10 +179,10 @@ class XemuChihiro(Emulator):
     def _configure_chihiro(self, config: dict[str, Any], /) -> None:
         # the media board flash and the EEPROMs are found next to the BIOS
         roms = _section(config, 'chihiro.roms')
-        roms['bios_path'] = str(_BIOS_DIR / 'chihiro_xbox_bios.bin')
+        roms['bios_path'] = str(self.bios_dir / 'chihiro_xbox_bios.bin')
         for key in ('mediaboard_path', 'ic10_path', 'ic11_path', 'pc20_path'):
             roms[key] = ''
-        net_firmware = _BIOS_DIR / 'ver1305.bin'
+        net_firmware = self.bios_dir / 'ver1305.bin'
         roms['net_firmware_path'] = str(net_firmware) if net_firmware.is_file() else ''
 
         settings = _section(config, 'chihiro.settings')
@@ -213,5 +246,7 @@ class XemuChihiro(Emulator):
             for key in keys:
                 section.pop(key, None)
 
-        for path, values in ControlsBuilder(self.controllers[:4], self.wheel, guns).build().items():
+        wheels = set(self.wheels) | {path for path, device in get_device_info().items() if device.is_wheel}
+        pad = next((pad for pad in self.controllers[:4] if pad.device_path not in wheels), None)
+        for path, values in ControlsBuilder(self.controllers[:4], self.wheel, guns).build(pad).items():
             _section(config, path).update(values)

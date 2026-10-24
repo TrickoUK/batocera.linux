@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -18,14 +38,15 @@ class VbaM(RACore):
 
         if self.system == 'gb':
             # GB: Colorisation of GB games
-            core_options.set_from_config('vbam_palettes', 'palettes', default='black and white')
+            palette = self.config.get('palettes', 'black and white')
+            core_options.set('vbam_palettes', 'wierd colors' if palette == 'weird colors' else palette)
 
             # GB: Color Correction
-            core_options.set_from_config('vbam_gbcoloroption', 'gbcoloroption_gb', default='disabled')
+            core_options.set_from_config('vbam_lcdfilter', 'gbcoloroption_gb', default='disabled')
 
         if self.system == 'gbc':
             # GBC: Color Correction
-            core_options.set_from_config('vbam_gbcoloroption', 'gbcoloroption_gbc', default='disabled')
+            core_options.set_from_config('vbam_lcdfilter', 'gbcoloroption_gbc', default='disabled')
 
         if self.system == 'gba':
             # GBA: Solar sensor level, Boktai 1: The Sun is in Your Hand

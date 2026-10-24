@@ -1,6 +1,27 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import logging
+from fractions import Fraction
 from typing import TYPE_CHECKING, Final, TypedDict, cast
 
 import toml
@@ -239,7 +260,7 @@ class Ymir(Emulator):
 
     @cached_property
     def in_game_ratio(self) -> float:
-        if self.config.get_float('ymir_aspect') == 1.3333333333333333:
+        if self.config.get_float('ymir_aspect', 4 / 3) == 4 / 3:
             return 4 / 3
         return 16 / 9
 
@@ -269,7 +290,7 @@ class Ymir(Emulator):
         if not config:
             _logger.info('Creating default ymir config at %s', toml_file)
             config = {
-                'ConfigVersion': 5,  # pyright: ignore[reportAssignmentType]
+                'ConfigVersion': 6,  # pyright: ignore[reportAssignmentType]
                 'Cartridge': {
                     'AutoLoadGameCarts': True,
                     'Type': 'None',
@@ -306,7 +327,7 @@ class Ymir(Emulator):
         # "Change history" comment); always keep the ConfigVersion current so Ymir reads
         # our writes from the locations we actually write them to below, rather than
         # falling back to (and never updating) the pre-v4/v5 flat key layout.
-        config['ConfigVersion'] = 5  # pyright: ignore[reportArgumentType]
+        config['ConfigVersion'] = 6  # pyright: ignore[reportArgumentType]
 
         # --- Apply Batocera Specific Overrides ---
 
@@ -316,6 +337,7 @@ class Ymir(Emulator):
             {
                 'CheckForUpdates': False,
                 'IncludeNightlyBuilds': False,
+                'EnableDiscordPresence': False,
             }
         )
 
@@ -382,10 +404,13 @@ class Ymir(Emulator):
             }
         )
 
+        # ConfigVersion 6 stores the aspect as a ratio, e.g. 16:9
+        aspect = Fraction(self.config.get_float('ymir_aspect', 4 / 3)).limit_denominator(100)
+
         # Options
         video_config.update(
             {
-                'ForcedAspect': self.config.get_float('ymir_aspect', 1.5),
+                'ForcedAspect': f'{aspect.numerator}:{aspect.denominator}',
                 'Rotation': self.config.get_str('ymir_rotation', 'Normal'),
             }
         )

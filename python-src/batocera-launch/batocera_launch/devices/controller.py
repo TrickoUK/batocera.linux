@@ -1,13 +1,33 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import xml.etree.ElementTree as ET
-from collections.abc import Container, Iterable, Mapping, Sequence
+from collections.abc import Container, Iterable, Iterator, Mapping, Sequence
 from dataclasses import InitVar, dataclass, field, replace
 from pathlib import Path
 from typing import TYPE_CHECKING, Final, Literal, Self, TypedDict, Unpack, cast
 
 from ..exceptions import BatoceraException
-from ..paths import SYSTEM_ES_DIR, USER_ES_DIR
+from ..paths import ES_PLAYERS_INPUT, SYSTEM_ES_DIR, USER_ES_DIR
 from .input import Input, InputDict, InputMapping
 
 if TYPE_CHECKING:
@@ -71,6 +91,19 @@ def _key_to_sdl_game_controller_config(keyname: str, input: Input, /) -> str | N
         return None
 
     raise BatoceraException(f'Unknown controller input type: {input.type!r}')
+
+
+@dataclass(slots=True)
+class _InputConfigRoots:
+    # each file is only parsed once an earlier one has no exact match; the system file is large
+    paths: Sequence[Path]
+    _roots: dict[Path, ET.Element] = field(init=False, default_factory=dict[Path, ET.Element])
+
+    def __iter__(self) -> Iterator[ET.Element]:
+        for path in self.paths:
+            if (root := self._roots.get(path)) is None:
+                root = self._roots[path] = ET.parse(path).getroot()
+            yield root
 
 
 def _find_input_config(roots: Iterable[ET.Element], name: str, guid: str, /) -> ET.Element:
@@ -206,14 +239,36 @@ class Controller:
                 res[x] = {'centered': 0.44 < frac < 0.56, 'reversed': frac > 0.56}
         return res
 
+    def get_evdev_axis_numbers(self, *, skip_flat: bool = False) -> dict[int, int] | None:
+        """Maps ABS codes to the axis numbers of apps that count every code below ABS_MISC, hats included."""
+        import evdev
+
+        try:
+            input_device = evdev.InputDevice(self.device_path)
+        except OSError:
+            return None
+        try:
+            absinfo_by_code = dict(input_device.capabilities().get(evdev.ecodes.EV_ABS, []))
+        finally:
+            input_device.close()
+
+        codes = sorted(
+            code
+            for code, info in absinfo_by_code.items()
+            if code < evdev.ecodes.ABS_MISC and not (skip_flat and info.max <= info.min)
+        )
+        return {code: number for number, code in enumerate(codes)}
+
     # Create a controller array with the player id as a key
     @classmethod
     def load_for_players(cls, player_args: Iterable[PlayerArguments | None], /) -> ControllerList:
-        cfg_roots = [
-            ET.parse(conffile).getroot()
-            for conffile in (USER_ES_DIR / 'es_input.cfg', SYSTEM_ES_DIR / 'es_input.cfg')
-            if conffile.exists()
-        ]
+        cfg_roots = _InputConfigRoots(
+            [
+                conffile
+                for conffile in (ES_PLAYERS_INPUT, USER_ES_DIR / 'es_input.cfg', SYSTEM_ES_DIR / 'es_input.cfg')
+                if conffile.exists()
+            ]
+        )
 
         return [
             controller

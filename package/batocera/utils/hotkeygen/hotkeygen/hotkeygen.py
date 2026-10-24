@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import argparse
@@ -6,13 +26,17 @@ import argparse
 async def _client(args: argparse.Namespace) -> None:
     import json
 
-    from .dbus.client import Client
+    from batocera_common.dbus import Bus
 
-    async with Client() as client:
+    from .dbus.client import HotkeygenClient
+
+    async with Bus() as bus:
+        client = HotkeygenClient(bus)
+
         if args.list:
             await client.list_config()
         elif args.reset_mouse:
-            await client.reset_mouse()
+            await client.reset_mouse_position()
         elif args.send is not None:
             await client.send_hotkey(args.send, args.send_delay or 0)
         elif args.new_context is not None:

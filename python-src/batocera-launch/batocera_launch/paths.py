@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -21,6 +41,8 @@ USER_ES_DIR: Final = CONFIGS / 'emulationstation'
 SYSTEM_ES_DIR: Final = Path('/usr/share/emulationstation')
 
 ES_SETTINGS: Final = USER_ES_DIR / 'es_settings.cfg'
+# written by ES at each launch with the configs it resolved for the players
+ES_PLAYERS_INPUT: Final = Path('/tmp/es_input_players.cfg')
 
 ES_RESOURCES_DIR: Final = SYSTEM_ES_DIR / 'resources'
 
@@ -37,7 +59,7 @@ SYSTEM_DECORATIONS: Final = DATAINIT_DIR / 'decorations'
 
 USER_SCRIPTS: Final = HOME / 'scripts'
 
-PRECALIBRATION_DIR: Final = BATOCERA_SHARE_DIR / 'guns-precalibration'
+PRECALIBRATION_DIR: Final = BATOCERA_SHARE_DIR / 'guns-precalibrations'
 
 
 def configure_emulator(rom: Path, /) -> bool:

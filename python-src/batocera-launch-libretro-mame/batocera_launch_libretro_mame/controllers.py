@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
@@ -61,7 +81,7 @@ def _get_input_definition(
     if input.find('AXIS') != -1:
         if altButtons == 'qbert':  # Q*Bert Joystick
             if key == 'joystick1up' or key == 'up':
-                return f'JOYCODE_{joycode}_{_RETRO_PAD_MAPPINGS["joystick1up"]}_{joycode}_{_RETRO_PAD_MAPPINGS["joystick1right"]} OR \
+                return f'JOYCODE_{joycode}_{_RETRO_PAD_MAPPINGS["joystick1up"]} JOYCODE_{joycode}_{_RETRO_PAD_MAPPINGS["joystick1right"]} OR \
                     JOYCODE_{joycode}_{_RETRO_PAD_MAPPINGS["up"].format(joycode)} JOYCODE_{joycode}_{_RETRO_PAD_MAPPINGS["right"].format(joycode)}'
             if key == 'joystick1down' or key == 'down':
                 return f'JOYCODE_{joycode}_{_RETRO_PAD_MAPPINGS["joystick1down"]} JOYCODE_{joycode}_{_RETRO_PAD_MAPPINGS["joystick1left"]} OR \
@@ -137,7 +157,7 @@ def _generate_special_port_element(
     # Special button input (ie mouse button to gamepad)
     sequence = _get_input_definition(controller, key, input, controller.index + 1, reversed, 0)
     if mapping == f'COIN{nplayer}' and nplayer == 1:
-        sequence = sequence + f' OR KEYCODE_{nplayer}_F{nplayer + 11}'  # f12 for player 1
+        sequence = sequence + f' OR KEYCODE_{nplayer}_5'
 
     config.add_sequence_port(
         mapping,
@@ -348,8 +368,8 @@ class MAMEControllers(MAMEBase):
                         'standard',
                         'UI_SELECT',
                         'ENTER',
-                        'a',
-                        _RETRO_PAD_MAPPINGS['a'],
+                        'b',
+                        _RETRO_PAD_MAPPINGS['b'],
                     )
 
                 if mess_controls is not None:

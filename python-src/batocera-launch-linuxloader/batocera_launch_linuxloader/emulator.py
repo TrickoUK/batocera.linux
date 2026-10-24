@@ -271,15 +271,11 @@ class LinuxLoader(ControllersMixin, ParallelStartupTaskMixin, Emulator):
         )
         conf.set('DEBUG_MSGS', 'true' if self.config.get_bool('linuxloader_debug') else 'false')
         conf.set('HUMMER_FLICKER_FIX', 'true' if self.config.get_bool('linuxloader_hummer') else 'false')
-        conf.set(
-            'OUTRUN_LENS_GLARE_ENABLED',
-            'true' if self.config.get_bool('linuxloader_lens', True) else 'false',
-        )
         conf.set('BOOST_RENDER_RES', 'true' if self.config.get_bool('linuxloader_boost') else 'false')
         # disable by default, otherwise no FFB
         conf.set(
             'SKIP_OUTRUN_CABINET_CHECK',
-            'false' if 'outrun' in rom_name.lower() or 'outr2sdx' in rom_name.lower() else 'true',
+            'true' if self.config.get_bool('linuxloader_cabinet_skip') else 'false',
         )
         conf.set('SRAM_PATH', f'"{self.saves_dir}/sram.bin.{Path(rom_name).stem.lower()}"')
         conf.set('EEPROM_PATH', f'"{self.saves_dir}/eeprom.bin.{Path(rom_name).stem.lower()}"')
@@ -326,23 +322,14 @@ class LinuxLoader(ControllersMixin, ParallelStartupTaskMixin, Emulator):
         if 'harley' in rom_name.lower() or 'hdkotr' in rom_name.lower():
             conf.set('ENABLE_NETWORK_PATCHES', 'false')
 
-        # Virtua Tennis / R-Tuned / Initial D - Card Reader
-        if ('tennis' in rom_name.lower() or 'rtuned' in rom_name.lower()) and self.config.get_bool(
-            'linuxloader_card', True
-        ):
-            conf.set('EMULATE_HW210_CARDREADER', 'true')
-            conf.set('CARDFILE_01', 'Card_01.crd')
-            conf.set('CARDFILE_02', 'Card_02.crd')
-            conf.set('ID_CARDFOLDER', f'"{self.saves_dir}"')
-        else:
-            conf.set('EMULATE_HW210_CARDREADER', 'false')
-
-        if 'initiad' in rom_name.lower() and self.config.get_bool('linuxloader_card', True):
-            conf.set('EMULATE_ID_CARD_READER', 'true')
-            conf.set('ID_CARDFILE_AUTOLOAD', 'true')
-            conf.set('ID_CARDFOLDER', f'"{self.saves_dir}"')
-        else:
-            conf.set('EMULATE_ID_CARD_READER', 'false')
+        # Card readers: AUTO leaves them on for the games that have one (VT3, VF5, R-Tuned, ID4/5)
+        card_reader = 'AUTO' if self.config.get_bool('linuxloader_card', True) else 'false'
+        conf.set('EMULATE_HW210_CARDREADER', card_reader)
+        conf.set('EMULATE_ID_CARDREADER', card_reader)
+        conf.set('CARDFILE_01', 'Card_01.crd')
+        conf.set('CARDFILE_02', 'Card_02.crd')
+        conf.set('ID_CARDFILE_AUTOLOAD', 'true')
+        conf.set('ID_CARDFOLDER', f'"{self.saves_dir}"')
 
         # Rambo switch
         if 'rambo' in rom_name.lower():

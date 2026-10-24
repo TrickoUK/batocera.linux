@@ -90,6 +90,17 @@ draw_logo () {
         fi
     fi
 
+    # firmware framebuffers have no connector and show the built-in panel
+    if [ -z "${video_rotation}" ] && [ -z "${effectiveDrmOutput}" ]; then
+        for conf in "${BOOT_CONF}" "${MODEL_CONF}"; do
+            [ -f "${conf}" ] && video_rotation=$(grep -iE '^display\.rotate\.(DSI|EDP)[^=]*=' "${conf}" | head -1 | cut -d'=' -f2)
+            [ -n "${video_rotation}" ] && break
+        done
+    fi
+    if [ -z "${video_rotation}" ] && [ -z "${effectiveDrmOutput}" ] && [ -r /sys/class/graphics/fbcon/rotate ]; then
+        read -r video_rotation < /sys/class/graphics/fbcon/rotate
+    fi
+
     video_rotation=$(echo "${video_rotation}" | tr -d '[:space:]')
     echo "${DAEMON} Active DRM Output: [${effectiveDrmOutput}]"
     echo "${DAEMON} Final Rotation Value: [${video_rotation}]"
@@ -117,12 +128,18 @@ draw_logo () {
             fi
 
             # Automatically crops and centers the master logo to target aspect ratio
-            cropped_image="/tmp/boot-logo-cropped.bmp"
+            logo_filter="scale=w=${CROP_WIDTH}:h=${CROP_HEIGHT}:force_original_aspect_ratio=increase,crop=${CROP_WIDTH}:${CROP_HEIGHT}"
+            # a rotated landscape screen is portrait, fit the logo rather than keep a sliver of it
+            if { [ "${video_rotation}" = "1" ] || [ "${video_rotation}" = "3" ]; } && [ "${WIDTH}" -gt "${HEIGHT}" ]; then
+                logo_filter="scale=w=${CROP_WIDTH}:h=${CROP_HEIGHT}:force_original_aspect_ratio=decrease,pad=${CROP_WIDTH}:${CROP_HEIGHT}:(ow-iw)/2:(oh-ih)/2:black"
+            fi
+            # png, not bmp: fbv reads png faster than bmp on slow devices
+            cropped_image="/tmp/boot-logo-cropped.png"
             if [ -f "${image}" ]; then
                 echo "${DAEMON} Pre-cropping logo to logical size ${CROP_WIDTH}x${CROP_HEIGHT} via FFmpeg..."
                 if ffmpeg -y -threads 1 -sws_flags fast_bilinear \
                     -i "${image}" \
-                    -vf "scale=w=${CROP_WIDTH}:h=${CROP_HEIGHT}:force_original_aspect_ratio=increase,crop=${CROP_WIDTH}:${CROP_HEIGHT}" \
+                    -vf "${logo_filter}" \
                     "${cropped_image}" >/dev/null 2>&1 \
                    && [ -f "${cropped_image}" ]; then
                     image="${cropped_image}"

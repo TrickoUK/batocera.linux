@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import logging
@@ -152,6 +172,9 @@ def _floppies_from_rom(rom: Path, /) -> list[Path]:
         while (floppy := rom.with_name(f'{fileprefix}{n}{rom.suffix}')).is_file():
             floppies.append(floppy)
             n += 1
+
+        if rom not in floppies:
+            return [rom]
     # (Disk 1 of 2) format
     elif index_disk != -1:
         floppies.append(rom)
@@ -341,11 +364,6 @@ class Amiberry(Emulator):
         amiberryconf['retroarch_config'] = retroarch_custom
         amiberryconf['default_vkbd_enabled'] = self.config.get_bool('amiberry_virtual_keyboard', return_values=(1, 0))
 
-        # NOTE: as of amiberry v8.3.0 upstream treats default_vkbd_hires as a legacy,
-        # accepted-but-never-applied key (the bitmap "hi-res keyboard" concept was dropped
-        # from the rewritten virtual keyboard) -- amiberry_hires_keyboard is effectively a
-        # no-op now. Kept as a harmless write pending a decision on removing the .yml option.
-        amiberryconf['default_vkbd_hires'] = self.config.get_bool('amiberry_hires_keyboard', return_values=(1, 0))
         amiberryconf['default_vkbd_transparency'] = self.config.get_str('amiberry_vkbd_transparency', '60')
         amiberryconf['default_vkbd_language'] = self.config.get_str('amiberry_vkbd_language', 'US')
         amiberryconf['default_vkbd_toggle'] = 'leftstick'
@@ -458,7 +476,7 @@ class Amiberry(Emulator):
         # auto_crop (previously auto_height)
         if amiberry_auto_crop := self.config.get_str('amiberry_auto_crop'):
             args.append('-s')
-            args.append(f'gfx_auto_crop={amiberry_auto_crop}')
+            args.append(f'amiberry.gfx_auto_crop={amiberry_auto_crop}')
 
         # keep aspect ratio: this is a per-config UAE key (gfx_keep_aspect), there's no
         # amiberry.conf-level default for it upstream

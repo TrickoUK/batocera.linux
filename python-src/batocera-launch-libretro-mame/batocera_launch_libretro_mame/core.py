@@ -1,8 +1,29 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
 from batocera_common.dataclasses import cached_dataclass, cached_property
+from batocera_launch_mame_common import precalibrate_mame_guns
 
 from .base import MAMEBase
 from .command import MAMECommand
@@ -20,6 +41,12 @@ class MAME(MAMEControllers, MAMECommand, MAMEBase):
     def rom_argument(self) -> str | Path | None:
         return self.cmd_filename
 
+    def precalibrate_guns(self) -> None:
+        if self.system != 'mame' or self.emulator.core != 'mame':
+            return
+
+        precalibrate_mame_guns(self.rom, self.emulator.gun_precalibration_dir, self.saves_dir / 'mame')
+
     def generate_special_configs(self) -> None:
         super().generate_special_configs()
 
@@ -29,7 +56,7 @@ class MAME(MAMEControllers, MAMECommand, MAMEBase):
     def set_core_options(self, core_options: LibretroConfig, /) -> None:
         if self.config.core != 'same_cdi':
             # Lightgun mode
-            core_options.set('mame_lightgun_mode', 'lightgun')
+            core_options.set('mame_lightgun_mode', 'lightgun' if self.config.use_guns and self.guns else 'disabled')
 
             # Enable cheats
             core_options.set('mame_cheats_enable', 'enabled')
@@ -38,7 +65,12 @@ class MAME(MAMEControllers, MAMECommand, MAMEBase):
             core_options.set_from_config('mame_cpu_overclock', default='default')
 
             # Video Resolution
-            core_options.set_from_config('mame_altres', default='640x480')
+            altres = self.config.get('mame_altres', '640x480')
+            if altres == '1600x800':
+                altres = '1600x900'
+            core_options.set('mame_altres', altres)
+            # The core ignores altres unless the alternate renderer is on
+            core_options.set('mame_alternate_renderer', 'disabled' if altres == '640x480' else 'enabled')
 
             # Disable controller profiling
             core_options.set('mame_buttons_profiles', 'disabled')
@@ -69,7 +101,12 @@ class MAME(MAMEControllers, MAMECommand, MAMEBase):
             core_options.set_from_config('same_cdi_cpu_overclock', default='default')
 
             # Video Resolution
-            core_options.set_from_config('same_cdi_altres', default='640x480')
+            altres = self.config.get('same_cdi_altres', '640x480')
+            if altres == '1600x800':
+                altres = '1600x900'
+            core_options.set('same_cdi_altres', altres)
+            # The core ignores altres unless the alternate renderer is on
+            core_options.set('same_cdi_alternate_renderer', 'disabled' if altres == '640x480' else 'enabled')
 
             # Disable controller profiling
             core_options.set('same_cdi_buttons_profiles', 'disabled')

@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -32,7 +52,8 @@ class Atari800(Core):
             core_options.set_from_config('atari800_sioaccel', default='enabled')
 
             # Hi-Res Artifacting
-            core_options.set_from_config('atari800_artifacting', default='disabled')
+            legacy = 'blue/brown 1' if self.config.get('atari800_artifacting') == 'enabled' else 'none'
+            core_options.set_from_config('atari800_artifacting_mode', default=legacy)
 
             # Internal resolution
             core_options.set_from_config('atari800_resolution')  # Default : 336x240
@@ -45,9 +66,6 @@ class Atari800(Core):
         else:
             # Select Atari 5200
             core_options.set('atari800_system', '5200')
-
-            # Autodetect A5200 CartType (Off/On)
-            core_options.set('atari800_CartType', 'enabled')
 
             # Joy Hack (for robotron)
             core_options.set_from_config('atari800_opt2', default='disabled')

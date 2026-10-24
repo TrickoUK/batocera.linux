@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 from collections import defaultdict
@@ -48,6 +68,7 @@ class _BaseCustomFeatureDict(TypedDict):
     group: NotRequired[str]
     submenu: NotRequired[str]
     order: NotRequired[int]
+    requires: NotRequired[str]
     # only for extensions
     before: NotRequired[str]
 
@@ -105,6 +126,7 @@ class _FeatureBase:
     group: str | None
     submenu: str | None
     order: int | None
+    requires: str | None
 
     def _get_translatable_strings(self) -> Iterator[str]:
         if self.description is not None:
@@ -132,6 +154,7 @@ class PresetFeature(_FeatureBase):
             group=data.get('group'),
             submenu=data.get('submenu'),
             order=data.get('order'),
+            requires=data.get('requires'),
             preset=data['preset'],
             preset_parameters=data.get('preset_parameters'),
         )
@@ -153,6 +176,7 @@ class ChoiceFeature(_FeatureBase):
             group=data.get('group'),
             submenu=data.get('submenu'),
             order=data.get('order'),
+            requires=data.get('requires'),
             choices=dict(data['choices']),
         )
 

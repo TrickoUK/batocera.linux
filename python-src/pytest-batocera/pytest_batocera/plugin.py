@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import os
@@ -200,6 +220,7 @@ def launch_config(
         user_config=MockKeyValueConfig(data=launch_config_user_settings),
         system_settings=launch_config_system_settings,
         global_settings=launch_config_global_settings,
+        system_defaults={'emulator': launch_config_emulator, 'core': launch_config_core},
         system=launch_config_system,
         rom=launch_rom,
         emulator=launch_config_emulator,
@@ -209,13 +230,5 @@ def launch_config(
         core_forced=False,
         ui_mode='Full',
         show_fps=False,
-        netplay_mode=None,
-        netplay_password=None,
-        netplay_server_ip=None,
-        netplay_server_port=None,
-        netplay_server_session=None,
-        state_slot=None,
-        autosave=None,
-        state_filename=None,
         render_config_data=launch_config_render_config,
     )

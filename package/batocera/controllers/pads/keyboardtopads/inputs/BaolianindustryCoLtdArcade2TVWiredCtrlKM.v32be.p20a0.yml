@@ -1,6 +1,6 @@
 # X-Arcade XArcade2TV-XR
 target_devices:
-  - name: X-Arcade Player 1
+  - name: XArcade2TV-XR Player 1
     type: joystick
     mapping:
       "key:up":        "abs:hat0y:-1"
@@ -11,13 +11,13 @@ target_devices:
       "key:z":         "btn:east"
       "key:leftctrl":  "btn:west"
       "key:leftalt":   "btn:north"
-      "key:space":     "btn:tr"
-      "key:x":         "btn:tl"
+      "key:space":     "btn:tl"
+      "key:x":         "btn:tr"
       "key:5":         "btn:tr2"
       "key:c":         "btn:tl2"
-      "key:1":         "btn:start"
-      "key:3":         "btn:select"
-  - name: X-Arcade Player 2
+      "key:3":         "btn:tl"
+      "key:4":         "btn:tr"
+  - name: XArcade2TV-XR Player 2
     type: joystick
     mapping:
       "key:r":          "abs:hat0y:-1"
@@ -28,9 +28,12 @@ target_devices:
       "key:e":          "btn:east"
       "key:a":          "btn:west"
       "key:s":          "btn:north"
-      "key:q":          "btn:tr"
-      "key:leftbrace":  "btn:tl"
+      "key:q":          "btn:tl"
+      "key:leftbrace":  "btn:tr"
       "key:6":          "btn:tr2"
       "key:rightbrace": "btn:tl2"
-      "key:2":          "btn:start"
-      "key:4":          "btn:select"
+  - name: XArcade2TV-XR hotkeys
+    type: hotkeys
+    mapping:
+      "key:1":         "key:brightness_cycle"
+      "key:2":         "key:exit"

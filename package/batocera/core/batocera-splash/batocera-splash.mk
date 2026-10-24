@@ -23,6 +23,10 @@ ifeq ($(BR2_PACKAGE_BATOCERA_SPLASH_MPV),y)
     # Baseline for modern boards using gpu-next
     BATOCERA_SPLASH_PLAYER_OPTIONS = --vo=gpu-next,drm,sdl --gpu-context=drm --hwdec=auto
 
+    ifeq ($(BR2_x86_64),y)
+        BATOCERA_SPLASH_PLAYER_OPTIONS = --vo=gpu-next,drm,sdl --gpu-context=drm --hwdec=vaapi,auto
+    endif
+
     # Legacy Rockchip boards requiring custom fallback (MPP / RGA)
     ifeq ($(BR2_PACKAGE_ROCKCHIP_RGA),y)
         BATOCERA_SPLASH_PLAYER_OPTIONS = --vo=drm,sdl --hwdec=auto
@@ -60,6 +64,7 @@ endif
 BATOCERA_SPLASH_POST_INSTALL_TARGET_HOOKS += BATOCERA_SPLASH_INSTALL_SCRIPT
 
 ifeq ($(BATOCERA_SPLASH_MEDIA),image)
+    BATOCERA_SPLASH_DEPENDENCIES += host-imagemagick dejavu
     BATOCERA_SPLASH_POST_INSTALL_TARGET_HOOKS += BATOCERA_SPLASH_INSTALL_IMAGE
 endif
 
@@ -118,26 +123,22 @@ define BATOCERA_SPLASH_INSTALL_VIDEO_CAPCOM
         "${TARGET_DIR}/usr/share/batocera/splash/splash.srt"
 endef
 
+# $(1) source image, $(2) point size, $(3) text position, $(4) output image
+define BATOCERA_SPLASH_ANNOTATE
+    $(HOST_DIR)/bin/magick "$(BATOCERA_SPLASH_PKGDIR)/images/$(1)" \
+        -font $(DEJAVU_DIR)/ttf/DejaVuSans.ttf -fill white -pointsize $(2) \
+        -annotate $(3) "$(BATOCERA_SPLASH_TGVERSION)" \
+        "$(TARGET_DIR)/usr/share/batocera/splash/$(4)"
+endef
+
 define BATOCERA_SPLASH_INSTALL_IMAGE
     mkdir -p $(TARGET_DIR)/usr/share/batocera/splash
-    convert "$(BR2_EXTERNAL_BATOCERA_PATH)/package/batocera/core/batocera-splash/images/logo.png" \
-        -fill white -pointsize 30 -annotate +50+1020 "$(BATOCERA_SPLASH_TGVERSION)" \
-        "${TARGET_DIR}/usr/share/batocera/splash/logo-version.png"
-    convert "$(BR2_EXTERNAL_BATOCERA_PATH)/package/batocera/core/batocera-splash/images/logo-3-2-480-rotate.png" \
-        -fill white -pointsize 15 -annotate 270x270+300+440 "$(BATOCERA_SPLASH_TGVERSION)" \
-        "${TARGET_DIR}/usr/share/batocera/splash/logo-version-320x480.png"
-    convert "$(BR2_EXTERNAL_BATOCERA_PATH)/package/batocera/core/batocera-splash/images/logo-16-9-480-rotate.png" \
-        -fill white -pointsize 20 -annotate 270x270+440+814 "$(BATOCERA_SPLASH_TGVERSION)" \
-        "${TARGET_DIR}/usr/share/batocera/splash/logo-version-480x854.png"
-    convert "$(BR2_EXTERNAL_BATOCERA_PATH)/package/batocera/core/batocera-splash/images/logo-480p.png" \
-        -fill white -pointsize 20 -annotate +40+440 "$(BATOCERA_SPLASH_TGVERSION)" \
-        "${TARGET_DIR}/usr/share/batocera/splash/logo-version-640x480.png"
-    convert "$(BR2_EXTERNAL_BATOCERA_PATH)/package/batocera/core/batocera-splash/images/logo-240.png" \
-        -fill white -pointsize 15 -annotate +20+220 "$(BATOCERA_SPLASH_TGVERSION)" \
-        "${TARGET_DIR}/usr/share/batocera/splash/logo-version-320x240.png"
-    convert "$(BR2_EXTERNAL_BATOCERA_PATH)/package/batocera/core/batocera-splash/images/logo-480-dmg.png" \
-        -fill white -pointsize 20 -annotate +40+440 "$(BATOCERA_SPLASH_TGVERSION)" \
-        "${TARGET_DIR}/usr/share/batocera/splash/logo-version-640x480-dmg.png"
+    $(call BATOCERA_SPLASH_ANNOTATE,logo.png,30,+50+1020,logo-version.png)
+    $(call BATOCERA_SPLASH_ANNOTATE,logo-3-2-480-rotate.png,15,270x270+300+440,logo-version-320x480.png)
+    $(call BATOCERA_SPLASH_ANNOTATE,logo-16-9-480-rotate.png,20,270x270+440+814,logo-version-480x854.png)
+    $(call BATOCERA_SPLASH_ANNOTATE,logo-480p.png,20,+40+440,logo-version-640x480.png)
+    $(call BATOCERA_SPLASH_ANNOTATE,logo-240.png,15,+20+220,logo-version-320x240.png)
+    $(call BATOCERA_SPLASH_ANNOTATE,logo-480-dmg.png,20,+40+440,logo-version-640x480-dmg.png)
 endef
 
 $(eval $(generic-package))

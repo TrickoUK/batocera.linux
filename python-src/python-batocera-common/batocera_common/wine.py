@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import logging
@@ -72,7 +92,7 @@ class Runner:
 
     def __run_wine_process(
         self, cmd: Sequence[str | Path], /, *, environment: Mapping[str, str | Path] | None = None
-    ) -> None:
+    ) -> int:
         env = {
             'LD_LIBRARY_PATH': f'/lib32:{self.__lib}',
             'WINEPREFIX': self.bottle_dir,
@@ -92,13 +112,19 @@ class Runner:
         _logger.debug(out.decode())
         _logger.error(err.decode())
 
+        return proc.returncode
+
     def install_wine_trick(self, name: str, /, *, environment: Mapping[str, str | Path] | None = None) -> None:
         done_file = self.bottle_dir / f'{name}.done'
 
         if done_file.exists():
             return
 
-        self.__run_wine_process([_WINETRICKS, '-q', name], environment=environment)
+        if returncode := self.__run_wine_process([_WINETRICKS, '-q', name], environment=environment):
+            _logger.error(
+                'winetricks %s failed with exit code %s, it will be retried on the next launch', name, returncode
+            )
+            return
 
         done_file.write_text('done')
 

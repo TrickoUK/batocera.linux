@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 from argparse import ArgumentParser
@@ -19,7 +39,7 @@ class EmulatorInfo(TypedDict):
 
 
 def _main(info_path_file: Path, destination_dir: Path, /) -> None:
-    info_files = (
+    for info_file in (
         Path(str_path)
         for str_path in info_path_file.read_text().strip().split()
         if (info_file := Path(str_path))
@@ -27,9 +47,7 @@ def _main(info_path_file: Path, destination_dir: Path, /) -> None:
         and (parts := info_file.stem.split('.'))
         and len(parts) == 2
         and parts[-1] == 'emulator'
-    )
-
-    for info_file in info_files:
+    ):
         emulator_info = safe_load_yaml12(info_file, EmulatorInfo) or {}
 
         if 'labwc' in emulator_info and 'window_rules' in emulator_info['labwc']:

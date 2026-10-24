@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import shutil
@@ -49,42 +69,26 @@ class ETLegacy(Emulator):
         language = self.config.get_str('etlegacy_language', 'en')
 
         options_to_set = {
-            'seta r_mode': '-1',
-            'seta r_fullscreen': '1',
-            'seta r_allowResize': '0',
-            'seta r_centerWindow': '1',
-            'seta r_customheight': str(self.resolution.height),
-            'seta r_customwidth': str(self.resolution.width),
-            'seta cg_scopeReticleStyle': self.config.get_str('etlegacy_scope_style', '0'),
-            'seta cg_scopeReticleColor': scope_color,
-            'seta cg_scopeReticleDotColor': scope_color,
-            'seta cg_weapzoomSensitivityScale': self.config.get_str('etlegacy_zoom_sens', '1.0'),
-            'seta cl_lang': language,
-            'seta ui_cl_lang': language,
+            'r_mode': '-1',
+            'r_fullscreen': '1',
+            'r_allowResize': '0',
+            'r_centerWindow': '1',
+            'r_customheight': str(self.resolution.height),
+            'r_customwidth': str(self.resolution.width),
+            'cg_scopeReticleStyle': self.config.get_str('etlegacy_scope_style', '0'),
+            'cg_scopeReticleColor': scope_color,
+            'cg_scopeReticleDotColor': scope_color,
+            'cg_weapzoomSensitivityScale': self.config.get_str('etlegacy_zoom_sens', '1.0'),
+            'cl_lang': language,
+            'ui_cl_lang': language,
         }
-
-        lines: list[str] = []
-        config_file = self.config_dir / 'etconfig.cfg'
-
-        if config_file.is_file():
-            lines = config_file.read_text().splitlines()
-
-            for key, value in options_to_set.items():
-                option_line = f'{key} "{value}"'
-                if any(key in line for line in lines):
-                    lines = [option_line if key in line else line for line in lines]
-                else:
-                    lines.append(option_line)
-        else:
-            lines = [f'{key} "{value}"' for key, value in options_to_set.items()]
-
-        if not lines or lines[-1] != '':
-            # Ensure the file ends with a newline
-            lines.append('')
-
-        config_file.write_text('\n'.join(lines))
 
         if not _LEGACY_DEST.exists() or _LEGACY_SOURCE.stat().st_mtime > _LEGACY_DEST.stat().st_mtime:
             shutil.copy(_LEGACY_SOURCE, _LEGACY_DEST)
 
-        return Command(['etl'])
+        # +set is applied after the profile config is executed, so it wins over profiles/<name>/etconfig.cfg
+        args: list[str | Path] = ['etl']
+        for key, value in options_to_set.items():
+            args.extend(['+set', key, value])
+
+        return Command(args)

@@ -1,6 +1,26 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Final
+from typing import TYPE_CHECKING, Any, Final, cast
 
 import toml
 
@@ -30,6 +50,14 @@ _MELONDS_MAPPING: Final = {
     'x': 'X',
     'y': 'Y',
 }
+
+
+def _merge(target: dict[str, Any], source: dict[str, Any], /) -> None:
+    for key, value in source.items():
+        if isinstance(value, dict) and isinstance(target.get(key), dict):
+            _merge(target[key], cast('dict[str, Any]', value))
+        else:
+            target[key] = value
 
 
 @cached_dataclass
@@ -157,7 +185,7 @@ class MelonDS(Emulator):
         resolution = self.config.get_int('melonds_resolution')
         if resolution is not None:
             base_config['3D']['GL']['ScaleFactor'] = resolution
-            base_config['3D']['GL']['HiresCoordinates'] = resolution == 2
+            base_config['3D']['GL']['HiresCoordinates'] = True
 
         # Polygons
         if polygons := self.config.get_bool('melonds_polygons'):
@@ -228,8 +256,9 @@ class MelonDS(Emulator):
                         val = 258
                 base_config['Instance0']['Joystick'][option] = int(val)
 
-        # Update base_config with any existing values
-        config.update(base_config)
+        # merge so settings made in melonDS itself survive, the pad bindings are rewritten every launch
+        _merge(config, base_config)
+        config['Instance0']['Joystick'] = base_config['Instance0']['Joystick']
 
         with config_file.open('w') as fp:
             toml.dump(config, fp)

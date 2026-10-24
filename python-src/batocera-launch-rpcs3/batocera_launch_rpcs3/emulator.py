@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import asyncio
@@ -435,6 +455,8 @@ class RPCS3Command(Command):
 
 @cached_dataclass
 class RPCS3(ParallelStartupTaskMixin, Emulator):
+    needs_sdl_game_controller_config = True
+
     _firmware_update: asyncio.Task[None] | None = field(init=False, default=None)
 
     async def __aexit__(
@@ -649,9 +671,10 @@ class RPCS3(ParallelStartupTaskMixin, Emulator):
         if config_file_path.is_file():
             rpcs3_yml_config = safe_load_yaml12(config_file_path, dict[str, dict[str, Any]]) or {}
 
-        # VFS is no longer stored in config.yml: RPCS3 reads it from a dedicated vfs.yml
-        # file. Drop any stale VFS section that older versions may have written here.
-        rpcs3_yml_config.pop('VFS', None)
+        # VFS mount points moved to vfs.yml, drop the stale ones but keep the VFS settings RPCS3 still reads here
+        if isinstance(vfs := rpcs3_yml_config.get('VFS'), dict):
+            for mount in [key for key in vfs if key.startswith(('/', '$('))]:
+                del vfs[mount]
 
         # Add Nodes if not in the file
         if 'Core' not in rpcs3_yml_config:
@@ -690,16 +713,7 @@ class RPCS3(ParallelStartupTaskMixin, Emulator):
                 second_frame_limit = 0
             # Check for valid Frame Limit value, if it's not a Frame Limit value apply to Second Frame Limit
             case (
-                'Off'
-                | '30'
-                | '50'
-                | '59.94'
-                | '60'
-                | '120'
-                | 'Display'
-                | 'Auto'
-                | 'PS3 Native'
-                | 'Infinite' as rpcs3_framelimit
+                'Off' | '30' | '50' | '60' | '120' | 'Display' | 'Auto' | 'PS3 Native' | 'Infinite' as rpcs3_framelimit
             ):
                 frame_limit = rpcs3_framelimit
                 second_frame_limit = 0
@@ -774,7 +788,7 @@ class RPCS3(ParallelStartupTaskMixin, Emulator):
                 # Stretch to display area
                 'Stretch To Display Area': self.config.get_bool('rpcs3_stretchdisplay'),
                 # Frame Limit
-                # Frame limit checks for specific values("Auto", "Off", "30", "50", "59.94", "60", "120", "Display", "PS3 Native", "Infinite")
+                # Frame limit checks for specific values("Auto", "Off", "30", "50", "60", "120", "Display", "PS3 Native", "Infinite")
                 # Second Frame Limit can be any float/integer. 0 = disabled.
                 'Frame limit': frame_limit,
                 'Second Frame Limit': second_frame_limit,
@@ -874,8 +888,7 @@ class RPCS3(ParallelStartupTaskMixin, Emulator):
 
             vulkan_config['Asynchronous Texture Streaming'] = self.config.get_bool('rpcs3_async_texture')
             # Asynchronous Queue Scheduler
-            if self.config.get('rpcs3_vk_async_scheduler'):
-                vulkan_config['Asynchronous Queue Scheduler'] = self.config.get('rpcs3_vk_async_scheduler')
+            vulkan_config['Asynchronous Queue Scheduler'] = self.config.get('rpcs3_vk_async_scheduler', 'Safe')
 
         merge(rpcs3_yml_config, config)
 

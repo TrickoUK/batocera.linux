@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import json
@@ -492,8 +512,6 @@ class OpenGOAL(Emulator):
             'ps2-lod-dist?': _goal_bool(self.config.get_bool('opengoal_ps2_lod', False)),
             'ps2-parts?': _goal_bool(self.config.get_bool('opengoal_ps2_parts', False)),
             'ps2-shadow?': _goal_bool(self.config.get_bool('opengoal_ps2_shadow', False)),
-            'ps2-read-speed?': _goal_bool(self.config.get_bool('opengoal_ps2_read_speed', False)),
-            'ps2-hints?': _goal_bool(self.config.get_bool('opengoal_ps2_hints', True)),
             'force-envmap?': _goal_bool(self.config.get_bool('opengoal_force_envmap', True)),
             'hinttitles?': _goal_bool(self.config.get_bool('opengoal_hinttitles', False)),
             'subtitle-speaker': self._subtitle_speaker,

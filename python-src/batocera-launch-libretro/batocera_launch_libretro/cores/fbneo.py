@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar
@@ -21,6 +41,11 @@ class Fbneo(RACore):
 
         return None
 
+    def set_config(self, custom_config: LibretroConfig, /) -> None:
+        super().set_config(custom_config)
+
+        custom_config.set('input_player1_select', 'num5')
+
     def set_core_options(self, core_options: LibretroConfig, /) -> None:
         # Diagnostic input
         core_options.set('fbneo-diagnostic-input', 'Start + L + R')
@@ -32,7 +57,9 @@ class Fbneo(RACore):
         core_options.set_from_config('fbneo-cpu-speed-adjust', 'fbneo-cpu-speed-adjust', default='100%')
 
         # Frameskip
-        core_options.set_from_config('fbneo-frameskip', 'fbneo-frameskip', default='0')
+        frameskip = self.config.get('fbneo-frameskip', '0')
+        core_options.set('fbneo-frameskip-type', 'Fixed' if frameskip != '0' else 'disabled')
+        core_options.set('fbneo-fixed-frameskip', frameskip)
 
         # Crosshair (Lightgun)
         core_options.set_from_config(
@@ -54,8 +81,8 @@ class Fbneo(RACore):
                     core_options.set(f'fbneo-dipswitch-{self.rom.id}-BIOS', 'MVS USA ver. 5 (2 slot)')
                 elif mode_switch == 'MVS Japan':
                     core_options.set(f'fbneo-dipswitch-{self.rom.id}-BIOS', 'MVS Japan ver. 5 (? slot)')
-                elif mode_switch == 'AES Asia':
-                    core_options.set(f'fbneo-dipswitch-{self.rom.id}-BIOS', 'AES Asia')
+                elif mode_switch in ('AES World', 'AES Asia'):
+                    core_options.set(f'fbneo-dipswitch-{self.rom.id}-BIOS', 'AES World')
                 elif mode_switch == 'AES Japan':
                     core_options.set(f'fbneo-dipswitch-{self.rom.id}-BIOS', 'AES Japan')
                 else:

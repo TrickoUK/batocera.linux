@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import logging
@@ -83,6 +103,9 @@ def _floppies_from_rom(rom: Path, /) -> list[Path]:
         floppies.append(floppy)
         n += 1
 
+    if rom not in floppies:
+        return [rom]
+
     return floppies
 
 
@@ -154,7 +177,7 @@ class Fsuae(Emulator):
             f'--kickstarts_dir={FSUAE_BIOS_DIR!s}',
             f'--save_states_dir={FSUAE_SAVES / self.core / _file_prefix(self.rom)}',
             '--zoom=auto',
-            '--bezel=1',
+            f'--bezel={0 if self.config.get_str("bezel") == "none" else 1}',
             '--theme=fsemu-classic',
         ]
 

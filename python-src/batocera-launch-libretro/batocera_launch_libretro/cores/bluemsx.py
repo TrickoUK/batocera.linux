@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
@@ -33,12 +53,15 @@ class BlueMSX(RACore):
             core_options.set('bluemsx_msxtype', 'MSX2+')
         elif self.system == 'msxturbor':
             core_options.set('bluemsx_msxtype', 'MSXturboR')
-
-        # Forces cropping of overscanned frames
-        core_options.set('bluemsx_overscan', 'enabled' if self.system in {'colecovision', 'msx1'} else 'MSX2')
+        elif self.system == 'spectravideo':
+            core_options.set('bluemsx_msxtype', 'SVI - Spectravideo SVI-328')
+        else:
+            core_options.set('bluemsx_msxtype', 'Auto')
 
         # Reduce Sprite Flickering
         core_options.set_bool_from_config('bluemsx_nospritelimits', default=True, values=('ON', 'OFF'))
 
         # Zoom, Hide Video Border
-        core_options.set_from_config('bluemsx_overscan', default='MSX2')
+        core_options.set_from_config(
+            'bluemsx_overscan', default='enabled' if self.system in {'colecovision', 'msx1'} else 'MSX2'
+        )

@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar
@@ -25,29 +45,6 @@ class Opera(RACore):
 
         # Active Input Devices Fix
         core_options.set_from_config('opera_active_devices', 'active_devices', default='1')
-
-        # Additional game fixes
-        timing_1 = 'disabled'
-        timing_3 = 'disabled'
-        timing_5 = 'disabled'
-        timing_6 = 'disabled'
-
-        match self.config.get('game_fixes_opera'):
-            case 'timing_hack1':
-                timing_1 = 'enabled'
-            case 'timing_hack3':
-                timing_3 = 'enabled'
-            case 'timing_hack5':
-                timing_5 = 'enabled'
-            case 'timing_hack6':
-                timing_6 = 'enabled'
-            case _:
-                pass
-
-        core_options.set('opera_hack_timing_1', timing_1)
-        core_options.set('opera_hack_timing_3', timing_3)
-        core_options.set('opera_hack_timing_5', timing_5)
-        core_options.set('opera_hack_timing_6', timing_6)
 
         # Shared nvram
         # If ROM includes the word Disc, assume it's a multi disc game, and enable shared nvram if the option isn't set.

@@ -1,14 +1,33 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import logging
 import shutil
-from dataclasses import field
+from dataclasses import field, replace
 from pathlib import Path
 from typing import TYPE_CHECKING, Final
 
-from batocera_common.asyncio import is_connected_to_internet
 from batocera_common.dataclasses import cached_dataclass, cached_property
-from batocera_common.paths import CONFIGS, OVERLAYS
+from batocera_common.paths import CONFIGS, OVERLAYS, existing_files_in_directories
 from batocera_common.vulkan import get_vulkan_info
 from batocera_launch import (
     BezelInfo,
@@ -42,8 +61,15 @@ if TYPE_CHECKING:
 
 _logger = logging.getLogger(__name__)
 
+
+def _slang_only_shader(shader: str, /) -> bool:
+    def exists(ext: str, /) -> bool:
+        return any(path for path in existing_files_in_directories(f'{shader}.{ext}', (USER_SHADERS, BATOCERA_SHADERS)))
+
+    return exists('slangp') and not exists('glslp')
+
+
 _RETROARCH_BIN: Final = Path('/usr/bin/retroarch')
-_RETROARCH_CORES_DIR: Final = Path('/usr/lib/libretro')
 _RETROARCH_SHARE_DIR: Final = Path('/usr/share/libretro')
 _RETROARCH_INFO_DIR: Final = _RETROARCH_SHARE_DIR / 'info'
 
@@ -114,24 +140,40 @@ class Libretro(SpecialDecorationsMixin, Emulator):
 
         # Fix for the removed MESS/MAMEVirtual cores
         if self.config.core in {'mess', 'mamevirtual'}:
+            self.config = replace(self.config, core='mame')
             self.config['core'] = 'mame'
 
         self.lr_core = load_core(self)
 
+        # A core removed from the image can still be selected in batocera.conf
+        if not self.lr_core.exists:
+            defaults = self.config.system_defaults
+            default_core = defaults['core']
+            if defaults['emulator'] == 'libretro' and default_core and default_core != self.core:
+                _logger.warning('libretro core %s is not installed, using %s instead', self.core, default_core)
+                self.config.remove_user_setting('core', self.core)
+                self.config = replace(self.config, core=default_core)
+                self.config['core'] = default_core
+                self.lr_core = load_core(self)
+
+        # Load the `.info` file right away to ensure that the core is installed
+        # NOTE: keep this assert here, as it will raise a `MissingCore` exception if
+        # the `.info` file is not installed, but we want to load this file early
+        assert self.lr_core.info
+
     @cached_property
     def hotkeygen_context(self) -> HotkeysContext:
-        # f12 for coin : set in libretroMameConfig.py, others in libretroControllers.py
         return {
             'name': 'retroarch',
             'keys': {
                 'exit': ['KEY_LEFTSHIFT', 'KEY_ESC'],
                 'menu': ['KEY_LEFTSHIFT', 'KEY_F1'],
                 'pause': ['KEY_LEFTSHIFT', 'KEY_P'],
-                'coin': 'KEY_F12',
+                'coin': 'KEY_5',
                 'save_state': ['KEY_LEFTSHIFT', 'KEY_F3'],
                 'restore_state': ['KEY_LEFTSHIFT', 'KEY_F4'],
-                'previous_slot': ['KEY_LEFTSHIFT', 'KEY_F6'],
-                'next_slot': ['KEY_LEFTSHIFT', 'KEY_F5'],
+                'previous_slot': ['KEY_LEFTSHIFT', 'KEY_F5'],
+                'next_slot': ['KEY_LEFTSHIFT', 'KEY_F6'],
                 'rewind': ['KEY_LEFTSHIFT', 'KEY_F11'],
                 'fastforward': ['KEY_LEFTSHIFT', 'KEY_F12'],
                 'reset': ['KEY_LEFTSHIFT', 'KEY_F10'],
@@ -193,9 +235,10 @@ class Libretro(SpecialDecorationsMixin, Emulator):
     def overlay_config_path(self) -> Path:
         return self.config_dir / 'overlay.cfg'
 
-    async def configure(self) -> Command:
-        gfx_backend = await self.get_gfx_backend()
+    def precalibrate_guns(self) -> None:
+        self.lr_core.precalibrate_guns()
 
+    async def configure(self) -> Command:
         game_shader: str | None = None
         shader_bezel = False
         video_shader: Path | None = None
@@ -208,6 +251,8 @@ class Libretro(SpecialDecorationsMixin, Emulator):
                 game_shader = self.render_config.get(f'shader-{self.decoration_id}')
             elif 'shader' in self.render_config:
                 game_shader = self.render_config.get('shader')
+
+        gfx_backend = await self.get_gfx_backend(game_shader)
 
         if 'shader' in self.render_config and game_shader is not None:
             shader_filename = f'{game_shader}.{
@@ -271,7 +316,7 @@ class Libretro(SpecialDecorationsMixin, Emulator):
             _RETROARCH_BIN,
             '-L',
             # Retroarch core on the filesystem
-            _RETROARCH_CORES_DIR / f'{self.lr_core.library_prefix}_libretro.so',
+            self.lr_core.library,
             '--config',
             config_file,
         ]
@@ -331,7 +376,7 @@ class Libretro(SpecialDecorationsMixin, Emulator):
 
         return Command(args, {'XDG_CONFIG_HOME': CONFIGS})
 
-    async def get_gfx_backend(self) -> str:
+    async def get_gfx_backend(self, game_shader: str | None = None) -> str:
         # Start with the selected option
         # Pick glcore or gl based on drivers if not selected
         backend = self.config.get('gfxbackend')
@@ -342,7 +387,11 @@ class Libretro(SpecialDecorationsMixin, Emulator):
             set_manually = False
             gl_info = await get_gl_info()
             # glvendor check first, to avoid a 2nd testing on intel boards
-            if gl_info.vendor in {'nvidia', 'amd'} and gl_info.version >= 3.1:
+            # slang-only shaders (mega bezel) need glcore; intel on wayland skips glxinfo so has no version
+            slang_only = game_shader is not None and _slang_only_shader(game_shader)
+            if (gl_info.version >= 3.1 and (gl_info.vendor in {'nvidia', 'amd'} or slang_only)) or (
+                slang_only and gl_info.vendor == 'intel'
+            ):
                 backend = 'glcore'
             else:
                 backend = 'gl'
@@ -374,7 +423,7 @@ class Libretro(SpecialDecorationsMixin, Emulator):
             custom_config.set('content_show_video', False)
             custom_config.set('content_show_history', False)
             custom_config.set('content_show_playlists', False)
-            custom_config.set('content_show_add', False)
+            custom_config.set('content_show_add_entry', 0)
             custom_config.set('menu_show_load_core', False)
             custom_config.set('menu_show_load_content', False)
             custom_config.set('menu_show_online_updater', False)
@@ -599,9 +648,7 @@ class Libretro(SpecialDecorationsMixin, Emulator):
         custom_config.set('recording_output_directory', '/userdata/screenshots/')
         custom_config.set('savestate_directory', '/userdata/saves/')
         custom_config.set('savefile_directory', '/userdata/saves/')
-        custom_config.set('extraction_directory', '/userdata/extractions/')
         custom_config.set('cheat_database_path', '/userdata/cheats/cht/')
-        custom_config.set('cheat_settings_path', '/userdata/cheats/saves/')
         custom_config.set('system_directory', '/userdata/bios/')
         custom_config.set('joypad_autoconfig_dir', '/userdata/system/configs/retroarch/inputs/')
         custom_config.set('video_shader_dir', '/usr/share/batocera/shaders/')
@@ -833,7 +880,6 @@ class Libretro(SpecialDecorationsMixin, Emulator):
         custom_config.set_from_config('state_slot', default=0)
 
         # in case of the auto state_filename, do an autoload
-        self.config.get_str('state_filename', 'foo')
         if (state_filename := self.config.get_str('state_filename')) and state_filename.endswith('.auto'):
             custom_config.set('savestate_auto_load', True)
 
@@ -870,7 +916,9 @@ class Libretro(SpecialDecorationsMixin, Emulator):
             # retroarchievements_unofficial
             custom_config.set_bool_from_config('cheevos_test_unofficial', 'retroachievements.unofficial')
 
-            if not await is_connected_to_internet():
+            from batocera_common import connman
+
+            if not await connman.is_connected(self.bus):
                 cheevos_enable = False
 
         custom_config.set('cheevos_enable', cheevos_enable)
@@ -881,18 +929,12 @@ class Libretro(SpecialDecorationsMixin, Emulator):
         if (netplay_mode := self.config.get('netplay.mode')) in {'host', 'client', 'spectator'}:
             # Security : hardcore mode disables save states, which would kill netplay
             custom_config.set('cheevos_hardcore_mode_enable', False)
-            # Quite strangely, host mode requires netplay_mode to be set to false when launched from command line
-            custom_config.set('netplay_mode', False)
             custom_config.set_from_config('netplay_ip_port', 'netplay.port')
-            custom_config.set_from_config('netplay_delay_frames', 'netplay.frames')
+            custom_config.set_from_config('netplay_input_latency_frames_min', 'netplay.frames')
             custom_config.set_from_config('netplay_nickname', 'netplay.nickname')
-            custom_config.set('netplay_client_swap_input', False)
             if netplay_mode == 'client' or self.config['netplay.mode'] == 'spectator':
-                # But client needs netplay_mode = true ... bug ?
-                custom_config.set('netplay_mode', True)
                 custom_config.set_from_config('netplay_ip_address', 'netplay.server.ip')
                 custom_config.set_from_config('netplay_ip_port', 'netplay.server.port')
-                custom_config.set('netplay_client_swap_input', True)
 
             # Connect as client
             if netplay_mode == 'client':
@@ -913,9 +955,6 @@ class Libretro(SpecialDecorationsMixin, Emulator):
             # Netplay hide the gameplay
             custom_config.set_bool_from_config('netplay_public_announce', 'netplay_public_announce', default=True)
 
-            # Enable or disable server spectator mode
-            custom_config.set_bool_from_config('netplay_spectator_mode_enable', 'netplay.spectator')
-
             # Relay
             if (netplay_relay := self.config.get('netplay.relay')) and netplay_relay != 'none':
                 custom_config.set('netplay_use_mitm_server', True)
@@ -934,9 +973,6 @@ class Libretro(SpecialDecorationsMixin, Emulator):
         # rumble (to reduce force feedback on devices like RG552)
         custom_config.set_from_config('input_rumble_gain', 'rumble_gain')
 
-        # On-Screen Display
-        custom_config.set('width', self.resolution.width)  # default value
-        custom_config.set('height', self.resolution.height)  # default value
         # force the assets directory while it was wrong in some beta versions
         custom_config.set('assets_directory', '/usr/share/libretro/assets')
 
@@ -1013,7 +1049,7 @@ class Libretro(SpecialDecorationsMixin, Emulator):
                 guns_length = len(self.guns)
                 max_gun_index = guns_length - 1
 
-                for player_number in range(1, 4):
+                for player_number in range(1, 5):
                     if max_gun_index >= (gun_index := gun_custom_config.get(f'p{player_number}', guns_length)):
                         device_p_value: int | None = gun_custom_config.get(f'device_p{player_number}')
 
@@ -1134,7 +1170,7 @@ class Libretro(SpecialDecorationsMixin, Emulator):
 
         game_ratio = self.resolution.width / self.resolution.height
         bezel_need_adaptation = False
-        aspect_ratio_index: str | int = ''
+        aspect_ratio_index: int | None = None
 
         if viewport_used:
             if self.resolution.width != info_width or self.resolution.height != info_height:
@@ -1144,7 +1180,7 @@ class Libretro(SpecialDecorationsMixin, Emulator):
 
                 bezel_need_adaptation = True
 
-            aspect_ratio_index = str(_RATIOS.index('custom'))
+            aspect_ratio_index = _RATIOS.index('custom')
             custom_config.set('aspect_ratio_index', aspect_ratio_index)
             if (ratio := self.config.get_str('ratio')) and ratio in _RATIOS:
                 aspect_ratio_index = _RATIOS.index(ratio)
@@ -1177,7 +1213,7 @@ class Libretro(SpecialDecorationsMixin, Emulator):
             ):
                 bezel_need_adaptation = False
             if not shader_bezel:
-                aspect_ratio_index = str(_RATIOS.index('custom'))
+                aspect_ratio_index = _RATIOS.index('custom')
                 custom_config.set('aspect_ratio_index', aspect_ratio_index)
                 if (ratio := self.config.get_str('ratio')) and ratio in _RATIOS:
                     aspect_ratio_index = _RATIOS.index(ratio)
@@ -1187,13 +1223,12 @@ class Libretro(SpecialDecorationsMixin, Emulator):
         if not shader_bezel:
             custom_config.set('input_overlay_enable', True)
 
-        custom_config.set('input_overlay_scale', '1.0')
         custom_config.set('input_overlay', str(self.overlay_config_path))
         custom_config.set('input_overlay_hide_in_menu', True)
 
         custom_config.set('input_overlay_opacity', opacity)
 
-        if aspect_ratio_index == str(_RATIOS.index('custom')):
+        if aspect_ratio_index == _RATIOS.index('custom'):
             custom_config.set('video_viewport_bias_x', '0.000000')
             custom_config.set('video_viewport_bias_y', '0.000000')
         else:

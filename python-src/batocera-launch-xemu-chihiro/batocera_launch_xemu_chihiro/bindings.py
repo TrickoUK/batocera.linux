@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
@@ -5,8 +25,7 @@ from typing import TYPE_CHECKING, Final
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from batocera_launch import Controller
-    from batocera_launch.devices.gun import Gun
+    from batocera_launch import Controller, Gun
 
 # xemu-chihiro's JVS binding namespaces (ui/xemu-input.h)
 _MOUSE_BUTTON: Final = 1001
@@ -154,10 +173,16 @@ class ControlsBuilder:
         self._wheel = wheel
         self._guns = guns
 
-    def build(self) -> dict[str, dict[str, int]]:
+    def build(self, pad: Controller | None, /) -> dict[str, dict[str, int]]:
         bindings = {path: dict(values) for path, values in _PAD.items()}
         if self._wheel is not None:
             self._bind_wheel(bindings, self._wheel)
+        panel = pad or self._wheel
+        if panel is not None and (panel is self._wheel or panel is not self._controllers[0]):
+            port = self._controllers.index(panel) * _JOY_PORT_STRIDE
+            for key, name in (('service', 'l3'), ('test', 'r3')):
+                if (input := panel.inputs.get(name)) is not None and input.type == 'button':
+                    bindings['chihiro.jvs'][key] = port + _JOY_BUTTON + int(input.id)
         if len(self._controllers) > 1:
             card = self._controllers[1].inputs.get('x')
             if card is not None and card.type == 'button':

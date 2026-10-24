@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import logging
@@ -9,7 +29,7 @@ from batocera_common.dataclasses import cached_dataclass
 from batocera_common.paths import BIOS, CONFIGS, ROMS, SAVES, SCREENSHOTS
 from batocera_launch import Command
 from batocera_launch.paths import USER_DECORATIONS
-from batocera_launch_mame_common import MessSystemInfo, get_autorun_command
+from batocera_launch_mame_common import MessSystemInfo, get_autorun_command, precalibrate_mame_guns
 from batocera_launch_mame_common.paths import MAME_BIN_DIR
 
 from .base import MAMEBase
@@ -25,6 +45,12 @@ _SUBDIR_SOFT_LIST: Final = ['mac_hdd', 'bbc_hdd', 'cdi', 'archimedes_hdd', 'fmto
 
 @cached_dataclass
 class MAME(MAMEControllers, MAMEBezels, MAMEBase):
+    def precalibrate_guns(self) -> None:
+        if self.system != 'mame':
+            return
+
+        precalibrate_mame_guns(self.rom, self.gun_precalibration_dir, self.saves_dir)
+
     async def configure(self) -> Command:
         for path in [
             self.config_dir,
@@ -128,6 +154,8 @@ class MAME(MAMEControllers, MAMEBezels, MAMEBase):
                 f'{self.config_dir};{self.config_dir / "ini"}',
                 '-crosshairpath',
                 self.bios_dir / 'artwork' / 'crosshairs',
+                '-joystickprovider',
+                'sdljoy',
             ]
         )
 
@@ -162,8 +190,8 @@ class MAME(MAMEControllers, MAMEBezels, MAMEBase):
                 ]
             )
         # Other video modes
-        elif video == 'accel':
-            args.extend(['-video', 'accel'])
+        elif video in ('accel', 'opengl'):
+            args.extend(['-video', video])
         else:
             args.extend(['-video', 'auto'])
 
@@ -314,7 +342,7 @@ class MAME(MAMEControllers, MAMEBezels, MAMEBase):
                 args.extend(['-ioport:peb:slot2', '32kmem'])
 
             if self.config.get_bool('ti99_speech', True):
-                args.extend(['-ioport', 'speechsyn'])
+                args.extend(['-ioport:peb:slot3', 'speechadapter'])
 
         # Laser 310 Memory Expansion & Joystick
         if self.system == 'laser310':
@@ -328,6 +356,12 @@ class MAME(MAMEControllers, MAMEBezels, MAMEBase):
         # Enterprise
         if self.system == 'enterprise':
             args.extend(['-exp', 'exdos'])
+
+        # Colour Genie floppy controller
+        if self.system == 'cgenie' and (
+            self.config.get_str('altromtype', '').startswith('flop') or soft_list == 'cgenie_flop_rom'
+        ):
+            args.extend(['-exp', 'floppy'])
 
         # Apple II
         if self.system == 'apple2':
@@ -354,8 +388,6 @@ class MAME(MAMEControllers, MAMEBezels, MAMEBase):
                     ram_size = 4
                 if mess_model == 'maclc3' and ram_size > 80:
                     ram_size = 80
-                if mess_model == 'maciix' and ram_size == 16:
-                    ram_size = 32
                 if mess_model == 'maciix' and ram_size == 48:
                     ram_size = 64
 
@@ -374,7 +406,7 @@ class MAME(MAMEControllers, MAMEBezels, MAMEBase):
             # Will use Floppy 1 or Hard Drive, depending on the disk.
             boot_disk = self.config.get('bootdisk')
             if self.system == 'macintosh' and boot_disk:
-                if boot_disk in ['macos30', 'macos608', 'macos701', 'macos75']:
+                if boot_disk in ['macos3', 'macos608', 'macos701', 'macos75']:
                     bootType = '-flop1'
                     bootDisk = f'/userdata/bios/{boot_disk}.img'
                 else:
@@ -426,7 +458,7 @@ class MAME(MAMEControllers, MAMEBezels, MAMEBase):
             else:
                 if boot_disk:
                     if (alt_rom_type == 'flop1' or not alt_rom_type) and boot_disk in [
-                        'macos30',
+                        'macos3',
                         'macos608',
                         'macos701',
                         'macos75',

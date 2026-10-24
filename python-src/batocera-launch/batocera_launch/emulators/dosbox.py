@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -43,9 +63,12 @@ class DosBox(Emulator):
         if not ini_settings.has_section('cpu'):
             ini_settings.add_section('cpu')
 
-        ini_settings.set('cpu', 'core', self.config.get_str('dosbox_cpu_core', 'auto'))
-        ini_settings.set('cpu', 'cputype', self.config.get_str('dosbox_cpu_cputype', 'auto'))
-        ini_settings.set('cpu', 'cycles', self.config.get_str('dosbox_cpu_cycles', 'auto'))
+        # loaded after the game's dosbox.cfg, so only override it when an option is set
+        for key in ('core', 'cputype', 'cycles'):
+            if value := self.config.get_str(f'dosbox_cpu_{key}'):
+                ini_settings.set('cpu', key, value)
+            else:
+                ini_settings.remove_option('cpu', key)
 
         with custom_config_path.open('w') as config:
             ini_settings.write(config)

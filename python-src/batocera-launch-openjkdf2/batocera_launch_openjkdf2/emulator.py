@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import json
@@ -158,7 +178,7 @@ _JSON_SETTINGS_MAP: Final = {
     'jkdf2_cross_size': ('crosshairScale', 1.0),
     'jkdf2_bloom': ('enablebloom', False),
     'jkdf2_ssao': ('enablessao', 0),
-    'jkdf2_vsync': ('enablevsync', False),
+    'jkdf2_vsync': ('enablevsync', True),
     'jkdf2_fov': ('fov', 90),
     'jkdf2_fov_vert': ('fovisvertical', True),
     'jkdf2_fps': ('fpslimit', 0),
@@ -192,7 +212,7 @@ _CVAR_SETTINGS_MAP: Final = {
     'jkdf2_aspect': ('r_enableOrigAspect', False),
     'jkdf2_ssao': ('r_enableSSAO', False),
     'jkdf2_texture': ('r_enableTextureFilter', False),
-    'jkdf2_vsync': ('r_enableVsync', False),
+    'jkdf2_vsync': ('r_enableVsync', True),
     'jkdf2_fov': ('r_fov', 90),
     'jkdf2_fov_vert': ('r_fovIsVertical', True),
     'jkdf2_fps': ('r_fpslimit', 0),

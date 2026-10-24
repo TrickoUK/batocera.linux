@@ -1,3 +1,23 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
 import argparse
@@ -16,7 +36,7 @@ if TYPE_CHECKING:
     import evdev
     import pyudev
 
-    from .dbus.client import Client
+    from .dbus.client import HotkeygenClient
 
 
 class _KeyInfo(TypedDict):
@@ -197,7 +217,7 @@ def _get_config_fancy_name(file: str, /) -> str:
 
 # to avoid listing all systems hotkeys (like almost nobody want to see the steamdeck hotkeys)
 # filter list to existing devices
-async def _do_list(client: Client, /) -> None:
+async def _do_list(client: HotkeygenClient, /) -> None:
     if not sys.stdout.isatty():
         print('<hotkeys>')
 
@@ -226,7 +246,7 @@ def _udev_to_ev_code(code: str, /) -> str:
     return code
 
 
-async def _list_values(client: Client, /) -> None:
+async def _list_values(client: HotkeygenClient, /) -> None:
     _, by_names = await client.get_system_default_mapping_config()
 
     print('<mapping>')
@@ -239,9 +259,12 @@ async def _list_values(client: Client, /) -> None:
 
 
 async def _do_dbus_actions(args: argparse.Namespace, /) -> None:
-    from .dbus.client import Client
+    from batocera_common.dbus import Bus
 
-    async with Client() as client:
+    from .dbus.client import HotkeygenClient
+
+    async with Bus() as bus:
+        client = HotkeygenClient(bus)
         if args.values:
             await _list_values(client)
         elif args.remove:

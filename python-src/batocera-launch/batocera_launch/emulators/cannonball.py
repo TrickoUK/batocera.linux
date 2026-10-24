@@ -1,5 +1,26 @@
+# This file is part of The Batocera Linux Distribution (https://batocera.org).
+# Copyright (c) 2026 The Batocera Team.
+#
+# The Batocera Linux Distribution is free software: you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# The Batocera Linux Distribution is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with The Batocera Linux Distribution. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+# YOU MUST RETAIN THE LICENSE AND COPYRIGHT NOTICES ABOVE IN ANY
+# REDISTRIBUTED VERSION OF THIS FILE.
+
 from __future__ import annotations
 
+import re
 import xml.etree.ElementTree as ET
 from typing import TYPE_CHECKING
 
@@ -9,6 +30,18 @@ from batocera_launch import Command, Emulator, HotkeysContext
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+
+def _existing_controls(config_file: Path, /) -> ET.Element:
+    """The user's <controls> (key and pad bindings) from a previous config.xml."""
+    try:
+        text = re.sub(r'^\s*<\?xml[^>]*\?>', '', config_file.read_text(encoding='utf-8'))
+        # Several top-level sections, so wrap them in a root to parse.
+        root = ET.fromstring(f'<root>{text}</root>')
+    except ET.ParseError, OSError:
+        return ET.Element('controls')
+    controls = root.find('controls')
+    return controls if controls is not None else ET.Element('controls')
 
 
 @cached_dataclass
@@ -24,7 +57,7 @@ class Cannonball(Emulator):
     def hotkeygen_context(self) -> HotkeysContext:
         return {
             'name': 'cannonball',
-            'keys': {'exit': ['KEY_LEFTALT', 'KEY_F4']},
+            'keys': {'exit': ['KEY_LEFTALT', 'KEY_F4'], 'coin': 'KEY_5'},
         }
 
     async def configure(self) -> Command:
@@ -43,10 +76,12 @@ class Cannonball(Emulator):
         window = ET.SubElement(video, 'window')
         ET.SubElement(window, 'scale').text = '2'
         ET.SubElement(video, 'fps_counter').text = '1' if self.config.show_fps else '0'
-        ET.SubElement(video, 'widescreen').text = self.config.get('ratio', '0')
+        ratio = self.config.get('ratio', '0')
+        ET.SubElement(video, 'widescreen').text = '1' if ratio in ('1', '16/9') else '0'
         ET.SubElement(video, 'hires').text = self.config.get('highResolution', '0')
         ET.SubElement(video, 'vsync').text = self.config.get('vsync', '1')  # default vsync to 1
-        ET.SubElement(video, 'scanlines').text = self.config.get('scanlines', '0')
+        scanlines = self.config.get('scanlines', '0')
+        ET.SubElement(video, 'scanlines').text = '35' if scanlines == '1' else scanlines
         ET.SubElement(video, 'fps').text = self.config.get('fps', '2')  # 60 FPS default
 
         # Sound Section
@@ -74,9 +109,14 @@ class Cannonball(Emulator):
         ET.SubElement(engine, 'turbo').text = self.config.get('cheats_turbo', '0')
         ET.SubElement(engine, 'car_color').text = self.config.get('car_colour', '0')
 
+        config_file = self.config_dir / 'config.xml'
+
         # Controls Section
-        controls = ET.Element('controls')
-        ET.SubElement(controls, 'gear').text = self.config.get('gear_mode', '3')  # default, automatic
+        controls = _existing_controls(config_file)
+        if (gear := controls.find('gear')) is None:
+            gear = ET.SubElement(controls, 'gear')
+        if 'gear_mode' in self.config or not gear.text:
+            gear.text = self.config.get('gear_mode', '3')  # default, automatic
 
         # Function to convert XML to pretty-printed
         def prettify(element: ET.Element) -> bytes:
@@ -84,7 +124,6 @@ class Cannonball(Emulator):
             return ET.tostring(element, encoding='unicode').encode('utf-8')
 
         # Save the config file with multiple sections
-        config_file = self.config_dir / 'config.xml'
         with config_file.open('wb') as cannonballXml:
             cannonballXml.write(b'<?xml version="1.0" encoding="utf-8"?>\n')
             cannonballXml.write(prettify(data))
