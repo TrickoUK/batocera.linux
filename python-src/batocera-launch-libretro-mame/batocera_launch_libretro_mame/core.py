@@ -106,6 +106,9 @@ class MAME(MAMEControllers, MAMECommand, MAMEBase):
             # 3D Multisample Anti-Aliasing (GPU path: Voodoo, GTI Club, Model 2)
             core_options.set_from_config('mame_3d_msaa', default='disabled')
 
+            # 3D Anisotropic Filtering (GPU path: Voodoo, GTI Club, Model 2, Namco System 22/23)
+            core_options.set_from_config('mame_3d_aniso', default='disabled')
+
             # 3D Edge Anti-Aliasing (Enhancement: Voodoo)
             core_options.set_from_config('mame_3d_edge_aa', default='disabled')
 
