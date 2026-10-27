@@ -119,7 +119,7 @@ custom_features:
     choices:
       Off (Default): disabled
       2x: 2x
-      3x (Recommended): 3x
+      3x: 3x
       4x (Slow): 4x
   mame_3d_output_scale:
     group: ADVANCED OPTIONS
@@ -150,14 +150,6 @@ custom_features:
       4x: 4x
       8x: 8x
       16x: 16x
-  mame_3d_edge_aa:
-    group: ADVANCED OPTIONS
-    submenu: 3D Enhancements
-    prompt: 3D EDGE ANTI-ALIASING
-    description: '3dfx Voodoo games (Konami Viper, Midway Seattle/Vegas and others), software rendering only. Smooths the stair-stepped outlines of 3D objects. Only edges of depth-tested 3D geometry are touched; textures, HUD and text stay sharp, and emulation is unaffected. Low CPU cost. It has no effect while 3D GPU Rendering is enabled: on the GPU path, 3D Supersampling smooths the edges instead. Other 3D hardware is unaffected (3D Supersampling already smooths edges on GTI Club hardware). Requires restarting content to take effect.'
-    choices:
-      Off (Default): disabled
-      'On': enabled
   mame_3d_texfilter:
     group: ADVANCED OPTIONS
     submenu: 3D Enhancements
