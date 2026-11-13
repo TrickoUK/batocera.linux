@@ -316,8 +316,8 @@ hcl:
   options:
     bezel: none
 hikaru:
-  emulator: demul
-  core:     demul
+  emulator: odin
+  core:     odin
 hurrican:
   emulator: hurrican
   core:     hurrican
@@ -397,6 +397,9 @@ megadrive-msu:
 megaduck:
   emulator: libretro
   core:     sameduck
+model1:
+  emulator: sm2-emu
+  core:     sm2-emu
 model2:
   emulator: sm2-emu
   core:     sm2-emu

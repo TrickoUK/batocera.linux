@@ -207,3 +207,6 @@ tvc:
 uzebox:
   emulator: libretro
   core:     mame
+gaelco:
+  emulator: odin
+  core:     odin
