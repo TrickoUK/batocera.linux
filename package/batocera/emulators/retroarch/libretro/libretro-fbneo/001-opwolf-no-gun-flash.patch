@@ -1,5 +1,5 @@
---- a/src/burn/drv/taito/d_taitomisc.cpp	2026-08-03 07:10:25.407668555 +0100
-+++ b/src/burn/drv/taito/d_taitomisc.cpp	2026-08-03 07:10:25.390712630 +0100
+--- a/src/burn/drv/taito/d_taitomisc.cpp
++++ b/src/burn/drv/taito/d_taitomisc.cpp
 @@ -34,6 +34,12 @@
  static INT32 OpWolfGunXOffset;
  static INT32 OpWolfGunYOffset;
@@ -13,7 +13,7 @@
  static INT32 bUseShifter = 0;
  
  static UINT8 DariusADPCMCommand;
-@@ -2421,6 +2427,8 @@
+@@ -2423,6 +2429,8 @@
  
  	nCyclesExtra[0] = nCyclesExtra[1] = nCyclesExtra[2] = nCyclesExtra[3] = 0;
  
@@ -22,9 +22,9 @@
  	return 0;
  }
  
-@@ -4604,6 +4612,15 @@
- 	OpWolfGunXOffset = 0xec - (Rom[0x03ffb0 / 2] & 0xff);
- 	OpWolfGunYOffset = 0x1c - (Rom[0x03ffae / 2] & 0xff);
+@@ -4608,6 +4616,15 @@
+ 	OpWolfGunXOffset = 0xec - (BURN_ENDIAN_SWAP_INT16(Rom[0x03ffb0 / 2]) & 0xff);
+ 	OpWolfGunYOffset = 0x1c - (BURN_ENDIAN_SWAP_INT16(Rom[0x03ffae / 2]) & 0xff);
  
 +	// The no-gun-flash HACK (see TaitoMiscFrame()) can't be applied here at ROM-load
 +	// time: the maincpu runs its own boot-time ROM checksum and reports "BAD ROM" if
@@ -38,7 +38,7 @@
  	cchip_init();
  
  	// Reset the driver
-@@ -5803,7 +5820,22 @@
+@@ -5811,7 +5828,22 @@
  	for (INT32 i = 0; i < nInterleave; i++) {
  		SekOpen(0);
  		CPU_RUN(0, Sek);
