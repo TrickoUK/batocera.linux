@@ -4,7 +4,7 @@
 #
 ################################################################################
 # Version: TrickoUK fork, custom branch
-LIBRETRO_FBNEO_VERSION = 2da48555c13ce5d011edf2d6ec829b7393c070af
+LIBRETRO_FBNEO_VERSION = 4e1446a3e23fda1d8b2f833ad147a3670adcee3a
 LIBRETRO_FBNEO_SITE = $(call github,TrickoUK,FBNeo,$(LIBRETRO_FBNEO_VERSION))
 LIBRETRO_FBNEO_LICENSE = Non-commercial
 LIBRETRO_FBNEO_DEPENDENCIES += retroarch
