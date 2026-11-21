@@ -154,6 +154,7 @@ for BIN in \
 "${G_TARGETDIR}/usr/lib/libFAudio.so"* \
 "${G_TARGETDIR}/usr/lib/libXrender.so"* \
 "${G_TARGETDIR}/usr/lib/libXcursor.so"* \
+"${G_TARGETDIR}/usr/lib/libxkbregistry.so"* \
 "${G_TARGETDIR}/usr/lib/libSDL2"*"so"* \
 "${G_TARGETDIR}/usr/lib/libSDL3"*"so"* \
 "${G_TARGETDIR}/usr/lib/lib"*"krb5"*"so"* \
@@ -181,6 +182,7 @@ cp -prv "${G_TARGETDIR}/usr/lib/libXcomposite.so"*  "${TMPOUT}/lib32/" || exit 1
 cp -prv "${G_TARGETDIR}/usr/lib/libgnutls"*"so"*  "${TMPOUT}/lib32/" || exit 1
 cp -prv "${G_TARGETDIR}/usr/lib/libFAudio.so"*  "${TMPOUT}/lib32/" || exit 1
 cp -prv "${G_TARGETDIR}/usr/lib/libXrender.so"*  "${TMPOUT}/lib32/" || exit 1
+cp -prv "${G_TARGETDIR}/usr/lib/libxkbregistry.so"*  "${TMPOUT}/lib32/" || exit 1
 cp -prv "${G_TARGETDIR}/usr/lib/libSDL2"*"so"*  "${TMPOUT}/lib32/" || exit 1
 cp -prv "${G_TARGETDIR}/usr/lib/libSDL3"*"so"*  "${TMPOUT}/lib32/" || exit 1
 cp -prv "${G_TARGETDIR}/usr/lib/lib"*"krb5"*"so"*  "${TMPOUT}/lib32/" || exit 1
@@ -284,6 +286,16 @@ cp -av "${G_TARGETDIR}/usr/share/vulkan/icd.d/intel_hasvk_icd.i686.json" "${TMPO
 cp -av "${G_TARGETDIR}/usr/share/vulkan/icd.d/intel_icd.i686.json" "${TMPOUT}/usr/share/vulkan/icd.d/intel_icd.i686.json" || exit 1
 cp -av "${G_TARGETDIR}/usr/share/vulkan/icd.d/radeon_icd.i686.json" "${TMPOUT}/usr/share/vulkan/icd.d/radeon_icd.i686.json" || exit 1
 sed -i "s@/usr/lib/@/lib32/@g" "${TMPOUT}/usr/share/vulkan/icd.d/"*i686.json || exit 1
+
+# gamescope wsi layer
+echo
+echo "gamescope wsi layer..."
+echo
+mkdir -p "${TMPOUT}/usr/share/vulkan/implicit_layer.d" || exit 1
+cp -pv "${G_TARGETDIR}/usr/lib/libVkLayer_FROG_gamescope_wsi_x86.so" "${TMPOUT}/lib32/" || exit 1
+findDeps "${G_TARGETDIR}/usr/lib/libVkLayer_FROG_gamescope_wsi_x86.so" "${TMPOUT}/lib32" || exit 1
+cp -av "${G_TARGETDIR}/usr/share/vulkan/implicit_layer.d/VkLayer_FROG_gamescope_wsi.x86.json" "${TMPOUT}/usr/share/vulkan/implicit_layer.d/" || exit 1
+sed -i "s@/usr/lib/@/lib32/@g" "${TMPOUT}/usr/share/vulkan/implicit_layer.d/VkLayer_FROG_gamescope_wsi.x86.json" || exit 1
 
 # extra helper libraries
 # required after bump to glibc 2.34+

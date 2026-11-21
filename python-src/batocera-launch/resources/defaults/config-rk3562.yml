@@ -16,9 +16,12 @@ psx:
 ps2:
   emulator: libretro
   core:     play
+psp:
+  options:
+    gfxbackend: VULKAN
 flash:
   emulator: lightspark
   core:     lightspark
 model3:
-  emulator: supermodel
-  core:     supermodel
+  emulator: keisho
+  core:     keisho

@@ -47,10 +47,12 @@ from .devices.gun import Gun, GunList, guns_need_crosses
 from .devices.hotkeygen import HotkeygenManager
 from .devices.mouse import prepare_mouse
 from .devices.sinden import sinden_gun_modes
+from .devices.trackballspinner import TrackballSpinner, TrackballSpinnerList
 from .devices.video import get_screens, prepare_resolution
 from .devices.wheels import configure_wheels
 from .draw.bezel import bezel_overlay
 from .exceptions import UnknownEmulator
+from .gamescope import gamescope_args, gamescope_available
 from .paths import ES_GAMES_METADATA, ES_GUNS_ART_METADATA, PRECALIBRATION_DIR, SYSTEM_DECORATIONS, USER_DECORATIONS
 from .plugin_manager import HookContext, PluginManager
 from .rom import Rom, ShortGameID
@@ -68,6 +70,7 @@ if TYPE_CHECKING:
     from .devices.controller import Controllers
     from .devices.device import DeviceInfoMapping
     from .devices.gun import Guns
+    from .devices.trackballspinner import TrackballSpinners
     from .profiler import Profiler
     from .types import BezelFiles, HotkeysContext, Resolution, ScreenInfo
 
@@ -123,6 +126,8 @@ class Emulator(AbstractAsyncContextManager['Emulator', bool | None], ABC):
     controllers: Controllers = field(init=False, default=cast('Controllers', None), repr=False)
     guns: Guns = field(init=False, default=cast('Guns', None), repr=False)
     wheels: DeviceInfoMapping = field(init=False, default=cast('DeviceInfoMapping', None), repr=False)
+    trackballs: TrackballSpinners = field(init=False, default=cast('TrackballSpinners', None), repr=False)
+    spinners: TrackballSpinners = field(init=False, default=cast('TrackballSpinners', None), repr=False)
     resolution: Resolution = field(init=False, default=cast('Resolution', None), repr=False)
 
     __client_session: aiohttp.ClientSession | None = field(init=False, default=None, repr=False)
@@ -158,12 +163,15 @@ class Emulator(AbstractAsyncContextManager['Emulator', bool | None], ABC):
             # point to create it
             self.saves_dir.mkdir(parents=True, exist_ok=True)
 
-            controllers, self.guns, self.metadata, _ = await group_tasks(
+            trackballspinners: tuple[TrackballSpinnerList, TrackballSpinnerList]
+            controllers, self.guns, trackballspinners, self.metadata, _ = await group_tasks(
                 asyncio.to_thread(Controller.load_for_players, self.config.cli_args.players),
                 asyncio.to_thread(self.get_all_guns),
+                asyncio.to_thread(self.get_all_trackballspinners),
                 asyncio.to_thread(self.get_games_metadata, ES_GAMES_METADATA),
                 asyncio.to_thread(self.prepare_gun_precalibration),
             )
+            self.trackballs, self.spinners = trackballspinners
 
             ((self.controllers, self.wheels), self.resolution) = await self.__stack.enter_async_context(
                 parallel(
@@ -271,6 +279,32 @@ class Emulator(AbstractAsyncContextManager['Emulator', bool | None], ABC):
     @property
     def handles_hud(self) -> bool:
         return False
+
+    @property
+    def supports_gamescope(self) -> bool:
+        return True
+
+    @property
+    def gamescope_exposes_wayland(self) -> bool:
+        return False
+
+    @cached_property
+    def uses_gamescope(self) -> bool:
+        if not self.supports_gamescope or not self.config.get_bool('gamescope'):
+            return False
+
+        if not gamescope_available():
+            _logger.warning('gamescope is not available in this session, running without it')
+            return False
+
+        return True
+
+    @property
+    def wayland_session(self) -> bool:
+        # gamescope hands its children an X11 display only, unless it exposes its Wayland socket
+        if self.uses_gamescope:
+            return self.gamescope_exposes_wayland
+        return bool(os.environ.get('WAYLAND_DISPLAY'))
 
     def needs_overlayfs(self, rom: Path, /) -> bool:
         return False
@@ -426,6 +460,13 @@ class Emulator(AbstractAsyncContextManager['Emulator', bool | None], ABC):
             return []
 
         return Gun.get_all()
+
+    def get_all_trackballspinners(self) -> tuple[TrackballSpinnerList, TrackballSpinnerList]:
+        if not self.config.use_trackballs and not self.config.use_spinners:
+            _logger.info('trackballs/spinners disabled.')
+            return ([], [])
+
+        return TrackballSpinner.get_all()
 
     def get_games_metadata(self, metadata_file: Path) -> dict[str, str]:
         return get_games_meta_data(metadata_file, self.system, self.rom_short_id)
@@ -864,6 +905,17 @@ class Emulator(AbstractAsyncContextManager['Emulator', bool | None], ABC):
 
                 bezel = await self.prepare_bezel()
                 await self.prepare_hud(command, bezel)
+
+                if self.uses_gamescope:
+                    if not self.gamescope_exposes_wayland:
+                        # without WAYLAND_DISPLAY, GTK falls back to labwc's wayland-0 and escapes gamescope
+                        command.env.setdefault('GDK_BACKEND', 'x11')
+                    if self.config.get_str('gamescope_fps_limit'):
+                        # the WSI layer leaves DXVK and vkd3d to limit themselves, which they don't, so it paces them too
+                        command.env.setdefault('GAMESCOPE_WSI_FRAME_LIMITER_AWARE', '0')
+                    command.prepend_args(
+                        *gamescope_args(self.config, self.resolution, expose_wayland=self.gamescope_exposes_wayland)
+                    )
 
                 async with bezel_overlay(bezel, self.resolution):
                     self.prepare_gun_help()
