@@ -244,22 +244,15 @@ config BR2_PACKAGE_BATOCERA_SEGA_SYSTEMS
 #	select BR2_PACKAGE_REDREAM		if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY || \
 #	                                   BR2_PACKAGE_BATOCERA_XWAYLAND
 
-	# Standalone Sega Model 2 emulator (sm2-emu replaced model2emu upstream)
-	select BR2_PACKAGE_SM2_EMU			if BR2_PACKAGE_BATOCERA_VULKAN
-
-	# Standalone Sega Model 3 emulator
-	select BR2_PACKAGE_SUPERMODEL		    if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY || \
-	                                           BR2_PACKAGE_BATOCERA_TARGET_SM6115     || \
-											   BR2_PACKAGE_BATOCERA_TARGET_SM8250     || \
-											   BR2_PACKAGE_BATOCERA_TARGET_SM8550     || \
-											   BR2_PACKAGE_BATOCERA_TARGET_SM8750
+	# Standalone Sega Model 1/2/3 is now keisho (upstream replaced sm2-emu and
+	# supermodel, 2026-11-16); selected via BATOCERA_ARCADE_SYSTEMS.
 
 	# libretro port of Supermodel (Sega Model 3), an extra core alongside the
 	# standalone one above. x86 only for now: needs OpenGL 4.1 core profile
 	select BR2_PACKAGE_LIBRETRO_SUPERMODEL	if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY
 
-	# Demul emulator - multiple Sega arcade systems
-	select BR2_PACKAGE_DEMUL		if BR2_PACKAGE_BATOCERA_WINE
+	# Disabled for this fork: Demul dropped (Odin/MAME cover the Sega arcade systems).
+	# select BR2_PACKAGE_DEMUL		if BR2_PACKAGE_BATOCERA_WINE
 
 	# Sega Lindbergh
 	select BR2_PACKAGE_LINUXLOADER    if BR2_PACKAGE_BATOCERA_TARGET_X86_64_ANY
