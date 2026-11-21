@@ -15,7 +15,7 @@
 @@ -2750,6 +2755,41 @@
  	{
  		ps_move_data& move_data = ::at32(g_fxo->get<gem_config>().fake_move_data, gem_no);
- 		pos_to_gem_state(gem_no, controller, gem_state, x_pos, y_pos, x_max, y_max, move_data);
+ 		pos_to_gem_state(gem_no, controller, gem_state, x_pos, y_pos, move_data);
 +
 +		// Batocera: a lightgun has no motion sensor. Velocity/acceleration derived from the
 +		// aim position turn normal pointer jitter into a constant "shake" (several G), which
