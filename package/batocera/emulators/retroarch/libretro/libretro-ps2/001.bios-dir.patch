@@ -1,22 +1,24 @@
---- a/libretro/main.cpp	2026-10-03 15:13:12.006620769 +0100
-+++ b/libretro/main.cpp	2026-10-03 15:13:12.015769778 +0100
-@@ -2426,7 +2426,7 @@
- 		FileSystem::FindResultsArray results;
- 		char bios_dir[PCSX2_PATH_MAX];
+diff -ruN a/libretro/main.c b/libretro/main.c
+--- a/libretro/main.c	2026-11-21 08:13:42.000000000 +0000
++++ b/libretro/main.c	2026-11-21 12:59:33.203639474 +0000
+@@ -2359,7 +2359,7 @@
+ 
+ 		memset(&results, 0, sizeof(results));
  
 -		pcsx2_path_join(bios_dir, sizeof(bios_dir), system_base, "pcsx2/bios");
 +		pcsx2_path_join(bios_dir, sizeof(bios_dir), system_base, "ps2");
- 		if (FileSystem::FindFiles(bios_dir, "*", FILESYSTEM_FIND_FILES, &results))
+ 		if (FileSystem_FindFiles(bios_dir, "*", FILESYSTEM_FIND_FILES, &results))
  		{
  			u32 version, region;
---- a/pcsx2/Pcsx2Config.cpp	2026-10-03 15:13:12.011040464 +0100
-+++ b/pcsx2/Pcsx2Config.cpp	2026-10-03 15:13:12.019075337 +0100
-@@ -755,7 +755,7 @@
- {
+diff -ruN a/pcsx2/Pcsx2Config.c b/pcsx2/Pcsx2Config.c
+--- a/pcsx2/Pcsx2Config.c	2026-11-21 08:13:42.000000000 +0000
++++ b/pcsx2/Pcsx2Config.c	2026-11-21 12:59:33.206639454 +0000
+@@ -309,7 +309,7 @@
+ 	struct EmuFoldersData* f = &EmuFolders;
  	/* The only folder a core option sets is the memory cards'; the rest
  	 * are their defaults under DataRoot. */
--	SetFolder(Bios, sizeof(Bios), DataRoot, "bios");
-+	SetFolder(Bios, sizeof(Bios), DataRoot, "/userdata/bios/ps2");
- 	SetFolder(MemoryCards, sizeof(MemoryCards), DataRoot, (memcards && memcards[0]) ? memcards : "memcards");
- 	SetFolder(Cheats, sizeof(Cheats), DataRoot, "cheats");
- 	SetFolder(CheatsWS, sizeof(CheatsWS), DataRoot, "cheats_ws");
+-	SetFolder(f->Bios, sizeof(f->Bios), f->DataRoot, "bios");
++	SetFolder(f->Bios, sizeof(f->Bios), f->DataRoot, "/userdata/bios/ps2");
+ 	SetFolder(f->MemoryCards, sizeof(f->MemoryCards), f->DataRoot, (memcards && memcards[0]) ? memcards : "memcards");
+ 	SetFolder(f->Cheats, sizeof(f->Cheats), f->DataRoot, "cheats");
+ 	SetFolder(f->CheatsWS, sizeof(f->CheatsWS), f->DataRoot, "cheats_ws");

@@ -3,9 +3,9 @@
 # libretro-ps2
 #
 ################################################################################
-# Version: Commits on Oct 11, 2026
-LIBRETRO_PS2_VERSION = 14e75bd69d0997ea9d51ad9f87d5edfe12f502ef
-LIBRETRO_PS2_SITE = https://github.com/libretro/ps2.git
+# Version: Commits on Nov 21, 2026
+LIBRETRO_PS2_VERSION = bbe9e7424f8a63b261addbd856a0a4df3c557156
+LIBRETRO_PS2_SITE = https://github.com/libretro/parallel-ps2.git
 LIBRETRO_PS2_SITE_METHOD = git
 LIBRETRO_PS2_GIT_SUBMODULES = YES
 LIBRETRO_PS2_LICENSE = GPLv2
